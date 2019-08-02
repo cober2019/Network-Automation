@@ -1,8 +1,6 @@
 Project Description:
 
-Utilizing NETCONF/YANG, provide automation of configurations to network devices. In an effort to avoid assigning variables with static XML configuration payloads,
-this program will dynamiclly create XML files depending on the disired configuration i.e. SNMP, User credential etc. The program also allows the deletetion on configuration with dynamic
-XML creation,  Example: "What user do you want to delete?" 'user.'
+This program utilizes NETCONF/YANG to configure network devices. 
 
 Python Modules:
 
