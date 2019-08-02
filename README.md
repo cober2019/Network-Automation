@@ -6,15 +6,11 @@ XML creation example: "What user do you want to delete?" 'user.'
 
 Python Modules:
 
-  ncclient
-
-  xlrd
-
-  xml.etree.ElementTree
-
-  xmltodict
-
-  ncclient.operations
+  ncclient, 
+  xlrd, 
+  xml.etree.ElementTree, 
+  xmltodict, 
+  ncclient.operations, 
 
 Enviroment:
 
