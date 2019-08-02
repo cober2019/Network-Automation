@@ -31,4 +31,4 @@ User Dependencies:
 
 Known Issues:
 
-1.Program errors when viewing config. If config on has only one item to view.Example. If one username exist on device, program will 		error, or one SNMPv2 community program will error etc.
+1. Program errors when viewing config. If config on has only one item to view.Example. If one username exist on device, program will 		 error, or one SNMPv2 community program will error etc.
