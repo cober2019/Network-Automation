@@ -12,20 +12,17 @@ Python Modules:
   xmltodict, 
   ncclient.operations, 
 
-
-
 ENVIRNOMENT:
 
+-Vendor Testing - Cisco
 
-Vendor Testing - Cisco
+-Image: IOS XE 16.7.2
 
-Cisco Image: IOS XE 16.7.2
+-Devices: Catalyst 3850 & ISR 4331
 
-Devices: Catalyst 3850 & ISR 4331
+-Server: CentOS:Yang-Explorer
 
-Server: CentOS:Yang-Explorer
-
-Yang Model: Cisco-IOS-XE-native
+-Yang Model: Cisco-IOS-XE-native
 
 User Dependencies:
 
@@ -34,4 +31,4 @@ User Dependencies:
 
 Known Issues:
 
-1.Program errors when viewing config. If config on has only one item to view.Example. If one username exist on device, program will error, or one SNMPv2 community program will error etc.
+1.Program errors when viewing config. If config on has only one item to view.Example. If one username exist on device, program will 		error, or one SNMPv2 community program will error etc.
