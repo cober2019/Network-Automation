@@ -15,16 +15,20 @@ Python Modules:
 Enviroment:
 
 Vendor Testing - Cisco
+
 Cisco Image: IOS XE 16.7.2
+
 Devices: Catalyst 3850 & ISR 4331
+
 Server: CentOS:Yang-Explorer
+
 Yang Model: Cisco-IOS-XE-native
 
 User Dependencies:
 
-1.For multi device configuration, reading from an xml files works fine. Create a excel and read device IPs from sheet using xlrd
-2.Local directory to store XML dynamic XML files. The program will read and write from this directory.
+1. For multi device configuration, reading from an xml files works fine. Create a excel and read device IPs from sheet using xlrd
+2. Local directory to store XML dynamic XML files. The program will read and write from this directory.
 
 Known Issues:
 
-1.Program errors when viewing config if config on has only one item to view.Example. If one username exist on device, program will error, or one SNMPv2 community program will error etc.
+1.Program errors when viewing config. If config on has only one item to view.Example. If one username exist on device, program will error, or one SNMPv2 community program will error etc.
