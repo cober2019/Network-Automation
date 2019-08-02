@@ -27,7 +27,7 @@ ENVIRNOMENT:
 User Dependencies:
 
 1. For multi device configuration, reading from an xml files works fine. Create a excel and read device IPs from sheet using xlrd.
-2. Local directory to store XML dynamic XML files. The program will read and write from this directory.
+2. Local directory to store dynamic XML files. The program will read and write from this directory.
 
 Known Issues:
 
