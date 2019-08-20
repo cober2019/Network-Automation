@@ -1,6 +1,6 @@
 Project Description:
 
-This program utilizes NETCONF/YANG to configure network devices. I initailly started the program using the static XML payloads. After a while i found this very time consuming to change payload attribures, adding/removing elements, and changing the python payload code to what element/attributes I wanted to use. This program dynamiclly creats XML payloads and saves them to file. The program then reads the file and send the payload to the devices(s).The program also uses the dynamix XML files to delete configuration as well. As of now the program only offers a few options for configuration but shows the potential of what python and  NETCONF/YANG can do together.
+Utilizing NETCONF/YANG, this program allows for automation of network configurations. By building XML files via the program, there is no need to create static payloads. Although this program prevents static payloads, the configurable options within the program are limited. An Engineer would have to fit the program to their needs using this program as an expample to do so.
 
 ENVIRNOMENT:
 
