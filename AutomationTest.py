@@ -1686,7 +1686,12 @@ def interface_configuration():
                 native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
-
+                
+                print("ex. Gigabit Ethernet")
+                print("ex. FastEthernet")
+                print("ex. Loopback")
+                print("ex. Tunnel")
+                print("\n")
                 int_type = input("Enter an interface type: ")
 
                 while int_type  ==  "Gigabit Ethernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
