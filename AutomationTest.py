@@ -40,6 +40,7 @@ def ftp_files():
             print("File Downloaded: Path:  " + dest_path)
             time.sleep(2)
             ftp.quit()
+            main()
 
         except ftplib.error_perm:
             print("Please check the following - Filepath, credentials, Filename")
