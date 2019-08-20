@@ -12,7 +12,9 @@ import time
 from ncclient.operations import RPCError
 
 def ftp_files():
-
+       
+    # DOWNLOADS FILE FROM AN FTP SERVER AND SAVES THEM TO A LOCAL DIRECTORY
+    
     filename = "Book1.xlsx"
     dest_file = open("C:\Python" + "\\" + filename, 'wb')
     dest_path =  "C:\Python" + "\\" + filename
@@ -59,6 +61,8 @@ def ftp_files():
 #################################################################
 
 def select_configuration_send():
+    
+    # CONFIGURATION FILES CAN BE VIEWED FROM THIS DIRECTORY AND SENT. THIS CAN BE USED TO SEND FILES FOR JOBS THAT INTIALLY FAILED
 
     print(" 1: File Select")
     print(" 2: Main Menu")
@@ -102,6 +106,8 @@ def select_configuration_send():
 
 
 def save_configuration():
+    
+    # SAVES RUNNING CONFIG TO STARTUP CONFIG AFTER CONFIGURATION SEND (CISCO)
 
     save_payload = """
     		<cisco-ia:save-config xmlns:cisco-ia="http://cisco.com/yang/cisco-ia"/>
@@ -115,6 +121,8 @@ def save_configuration():
 ########################################################################################
 
 def view_config_send(file):
+    
+    # DEFINES SINGLE DEVICE CONIFGURATION OR MULTI DEVICE SEND. YOU ARE ALSO ABLE TO CANCLE A SEND AS WELL
 
     print("\n")
     print ("Configuration: ")
@@ -152,7 +160,9 @@ def view_config_send(file):
 ######################################################################
 
 
-def ncc_login(host, port, username, password, device_params): # Log into device via NCC client
+def ncc_login(host, port, username, password, device_params):
+    
+    # NCCLIENT LOGIN
 
     global m
     global device
@@ -178,6 +188,9 @@ def ncc_login(host, port, username, password, device_params): # Log into device 
 ################################################################################
 
 def send__multi_configuration(file):
+    
+    # READS DEVICES FROM A EXCEL SPREAD AND FILLS THE CELL WITH EITHER GREEN OR RED. A GREEN FILLED CELL IS A SUCCESS, 
+    # RED IS A FAILURE. THESE ARE FILLED BASED ON AN EXCEPTION DURING THE JOB. 
 
     success_fill = PatternFill(start_color='00FF00',
                                                 end_color='00FF00',
@@ -255,6 +268,9 @@ def send__multi_configuration(file):
     ##################################################################################
 
 def send_single_configuration(file):
+    
+    # SINGLE DEVICE CONFIGURATION. ONCE CONFIGURATION IS COMPLETE, YOU WILL BE RETURNED TO THE MENU FROM WHERE YOU CONFIGURING. 
+    # THIS IS BASED OF THE FILENAME OF THE CONFIGURATION
 
         ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
 
@@ -310,7 +326,9 @@ def send_single_configuration(file):
 ######################################################################################################
 
 def view_qos():
-
+       
+    # VIEW CLASS-MAPS, POLICY-MAPS, SERVICE POLICIES. XML VIEW IN ONLY AVAIBLE FOR NOW.
+    
     classmap_file = "C:\Python\XML_Filters\QoS_Get_Config.xml"
     root = xml.Element("filter")
     native_element = xml.Element("native")
