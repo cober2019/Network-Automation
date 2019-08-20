@@ -23,4 +23,9 @@ Optional:
 
 1. FTP server to download a copy of the inventory excel file
 
+Please reach out to me if you have any questions:
+
+Email - cober91130@gmail.com
+LinkedIn - http://linkedin.com/in/chris-oberdalhoff-43292b56
+
 
