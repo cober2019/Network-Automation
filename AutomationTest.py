@@ -1393,7 +1393,8 @@ def ospf_configuration():
                 view_config_send(OSPF_file)
 
             elif config_selection == "2":
-
+                
+                Delete_Config = "C:\Python\XML_Filters\OSPF_Delete_ConfigTest.xml"
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
