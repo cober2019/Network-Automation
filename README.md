@@ -2,7 +2,7 @@ Project Description:
 
 Utilizing NETCONF/YANG, this program allows for automation of network configurations. By building XML files via the program, there is no need to create static payloads. Although this program prevents static payloads, the configurable options within the program are limited. An Engineer would have to fit the program to their needs using this program as an expample to do so.
 
-ENVIRNOMENT:
+Environment:
 
 -Vendor Testing - Cisco
 
