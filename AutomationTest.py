@@ -7,6 +7,7 @@ import xml.dom.minidom as dom
 import lxml.etree as ET
 import xmltodict
 import pathlib
+from socket import gaierror
 import ftplib
 import time
 from ncclient.operations import RPCError
@@ -21,6 +22,9 @@ def ftp_files():
 
     print(" 1: FTP Download")
     print(" 2: Main Menu")
+    print("\n")
+    print("Press CTRL+C to escape at any time")
+    print("\n")
 
     print("\n")
     question_1 = input("Please select an option: ")
@@ -91,9 +95,16 @@ def select_configuration_send():
             save_configuration()
             main()
 
+        except ncclient.operations.rpc.RPCError:
+            print("\n")
+            print("Invalid XML Element value. Please review your configurations")
+            time.sleep(2)
+            print("\n")
+
         except FileNotFoundError:
             print("\n")
             print("File not found!")
+            time.sleep(2)
             print("\n")
             select_configuration_send()
 
@@ -115,6 +126,8 @@ def save_configuration():
             """
     try:
         response = m.dispatch(ET.fromstring(save_payload))
+        print("Configuration Saved")
+        main()
     except ValueError:
         print("Error")
         main()
@@ -164,26 +177,30 @@ def view_config_send(file):
 def ncc_login(host, port, username, password, device_params): # Log into device via NCC client
 
     #NCCLIENT LOGIN
-
-    global m
-    global device
-    print("\n")
-    device = input("Please Enter a device IP address: ")
-    print("\n")
-
     try:
+        global m
+        global device
+        print("\n")
+        device = input("Please Enter a device IP address: ")
+        print("\n")
+        print("\n")
+        print("Press CTRL+C to escape at any time")
+        print("\n")
+
         try:
             m = manager.connect(host=device, port=port, username=username, password=password, device_params=device_params)
 
             print("\n")
             print("Device:", device, "Session ID: ", m.session_id, " Connection: ",m.connected)
             print("\n")
-
         except (UnicodeError):
             print("Invalid IP address. Insure IP format is correct")
             ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
         except ncclient.NCClientError:
             print("Connection Timeout. Please check connectivity and NETCONF configuration.")
+            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+        except gaierror:
+            print("Invalid IP address. Insure IP format is correct")
             ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
     except KeyboardInterrupt:
         main()
@@ -315,7 +332,6 @@ def send_single_configuration(file):
             print("Connection Unsucessful")
             pass
         except RPCError:
-            print("Payload Error")
             pass
         except (UnicodeError):
             print("Invalid IP address. Please try again")
@@ -323,6 +339,7 @@ def send_single_configuration(file):
         except ncclient.NCClientError:
             print("Please review configuration")
             pass
+
 
 
 ######################################################################################################
@@ -1221,7 +1238,7 @@ def device_admin():
 
         for c in m.server_capabilities:
             print(c)
-            device_admin()
+        device_admin()
 
     elif config_selection == "2":
 
@@ -1546,7 +1563,7 @@ def snmp_configuration():
 
             print("\n")
             print("1. Main Menu")
-            print("2. OSPF Configuration Menu")
+            print("2. SNMP Configuration Menu")
 
             escape_1 = input("What menu do you want to escape to?")
 
@@ -2080,18 +2097,18 @@ def qos_configuration():
                                 tree.write(fh)
 
                         if question_1 == "priority":
+
                             action_type_element.text = "priority"
 
                             priority_container = xml.SubElement(action_list_element, "priority")
 
-                            bandwidth_input = input("Please enter bandwith percent")
+                            bandwidth_input = input("Please enter priority percent")
                             percent_element = xml.SubElement(priority_container, "percent")
                             percent_element.text = bandwidth_input
 
                             tree = xml.ElementTree(root)  # Writes XML file to share
                             with open(policy_map_file, "wb") as fh:
                                 tree.write(fh)
-
 
             if config_selection == "3":
 
