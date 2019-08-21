@@ -23,55 +23,7 @@ How did i build this program, recomendations?
 Not all elements below have to be included in the python code. I can remove policing if i dont intend to uses that option. In the example below I've given an option to shape or police.
 
 
-Python code for creating XML configuration.
-
-root = xml.Element("config") <-------- Root Static element 
-native_element = xml.Element("native") <-------- Static element
-native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native") <-------- Namespace
-root.append(native_element) <-------- Append or Sub Element
-policy_element = xml.Element("policy") <-------- Static element
-native_element.append(policy_element) <-------- Append or Sub Element
-policy_map_element = xml.Element("policy-map") <-------- Static element
-policy_map_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-policy") <-------- Namespace
-policy_element.append(policy_map_element) <-------- Append or Sub Element
-
-pol_map_5_input = input("Please create policy map name: ") <-------- Create Parent policy
-pol_map_5_name = xml.SubElement(policy_map_element, "name") <-------- Create Parent policy
-pol_map_5_name.text = pol_map_5_input <-------- Create Parent policy
-
-pol_class5_element = xml.SubElement(policy_map_element, "class") <-------- Static element
-
-nest_input = input("Please enter a nested class (class-default): ") <-------- class-map to use
-nested_name = xml.SubElement(pol_class5_element, "name")<-------- class-map to use
-nested_name.text = nest_input<-------- class-map to use
-
-action_list_5_element = xml.SubElement(pol_class5_element, "action-list") <-------- Static element
-
-question_1 = input("Shape or Police? ") <------Shape or police
-
-if question_1 == "shape":
-
-action_type_5_element = xml.SubElement(action_list_5_element, "action-type") <-------- Static element
-action_type_5_element.text = "shape" <-------- Static element
-
-shape_element = xml.SubElement(action_list_5_element, "shape") <-------- Static element
-average_element = xml.SubElement(shape_element, "average") <-------- Static element
-
-bandwidth_5_input = input("Please enter bandwith shape in bits: ") <------------ bit rate
-percent_5_element = xml.SubElement(average_element, "bit-rate") <------------ bit rate
-percent_5_element.text = bandwidth_5_input <------------ bit rate
-
-action_list_element = xml.SubElement(pol_class5_element, "action-list") <-------- Static element
-action_type_element = xml.SubElement(action_list_element, "action-type") <-------- Static element
-action_type_element.text = "service-policy" <-------- Static elements
-
-parent_pol_input = input("Please enter a child policy map: ") <-------- Attach a child policy
-action_list_5 = xml.SubElement(action_list_element, "service-policy") <-------- Attach a child policy
-action_list_5.text = parent_pol_input <-------- Attach a child policy
-
-
-
-Program output for nested policy-map with shaping.
+Program output for nested policy-map with shaping. The python code can be viewed on the qos_configuration function.
 
 -<config>
 -	<native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
