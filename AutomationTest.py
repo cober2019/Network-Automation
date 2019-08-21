@@ -145,16 +145,15 @@ def view_config_send(file):
     Interface_config = open(file=file).read()
     print(dom.parseString(str(Interface_config)).toprettyxml())
 
+    while True:
 
-    print(" 1: Send Single Device Configuration")
-    print(" 2: Send Multi  Device Configuration")
-    print(" 3: Cancel Configuration Send")
+        print(" 1: Send Single Device Configuration")
+        print(" 2: Send Multi  Device Configuration")
+        print(" 3: Cancel Configuration Send")
 
-    print("\n")
-    question_1 = input("Please select an option: ")
-    print("\n")
-
-    while question_1 != "3":
+        print("\n")
+        question_1 = input("Please select an option: ")
+        print("\n")
 
         if question_1 == "1":
             send_single_configuration(file=file)
@@ -168,7 +167,10 @@ def view_config_send(file):
             print("\n")
             main()
         else:
+            print("\n")
             print("Invalid input, please try again")
+            print("\n")
+
 
 
 ######################################################################
@@ -1758,14 +1760,14 @@ def interface_configuration():
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
 
-                print("ex. Gigabit Ethernet")
+                print("ex. GigabitEthernet")
                 print("ex. FastEthernet")
                 print("ex. Loopback")
                 print("ex. Tunnel")
                 print("\n")
                 int_type = input("Enter an interface type: ")
 
-                while int_type == "Gigabit Ethernet" or int_type == "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
+                while int_type == "GigabitEthernet" or int_type == "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
 
                     int_type = xml.SubElement(int_element, int_type)
                     int_type.set("xc:operation", "remove")
@@ -2079,11 +2081,23 @@ def qos_configuration():
 
                         action_list_element = xml.SubElement(pol_class1_element, "action-list")
 
-                        question_1 = input("Please enter an action-type (bandwidth or priority)")
-                        action_type_element = xml.SubElement(action_list_element, "action-type")
 
-                        if question_1 == "bandwidth":
+                        print("\n")
+                        print("1. Bandwidth")
+                        print("2. Priority")
+                        print("\n")
 
+                        selection= " "
+                        while selection != "1" or "2":
+
+                            selection = input("Please select an option: ")
+
+                            if selection == "1" or "2":
+                                break
+
+                        if selection == "1":
+
+                            action_type_element = xml.SubElement(action_list_element, "action-type")
                             action_type_element.text = "bandwidth"
 
                             priority_container = xml.SubElement(action_list_element, "bandwidth")
@@ -2096,8 +2110,9 @@ def qos_configuration():
                             with open(policy_map_file, "wb") as fh:
                                 tree.write(fh)
 
-                        if question_1 == "priority":
+                        if selection == "2":
 
+                            action_type_element = xml.SubElement(action_list_element, "action-type")
                             action_type_element.text = "priority"
 
                             priority_container = xml.SubElement(action_list_element, "priority")
@@ -2134,59 +2149,72 @@ def qos_configuration():
 
                 action_list_5_element = xml.SubElement(pol_class5_element, "action-list")
 
-                question_1 = input("Shape or Police? ")
+                while True:
 
-                if question_1 == "shape":
+                    print("\n")
+                    print("1. Shape")
+                    print("2. Police")
+                    print("\n")
 
-                    action_type_5_element = xml.SubElement(action_list_5_element, "action-type")
-                    action_type_5_element.text = "shape"
+                    selection = input("Please select an option: ")
 
-                    shape_element = xml.SubElement(action_list_5_element, "shape")
-                    average_element = xml.SubElement(shape_element, "average")
+                    if selection == "1" or "2":
 
-                    bandwidth_5_input = input("Please enter bandwith shape in bits: ")
-                    percent_5_element = xml.SubElement(average_element, "bit-rate")
-                    percent_5_element.text = bandwidth_5_input
+                        if selection == "1":
 
-                    action_list_element = xml.SubElement(pol_class5_element, "action-list")
-                    action_type_element = xml.SubElement(action_list_element, "action-type")
-                    action_type_element.text = "service-policy"
+                            action_type_5_element = xml.SubElement(action_list_5_element, "action-type")
+                            action_type_5_element.text = "shape"
 
-                    parent_pol_input = input("Please enter a child policy map: ")
-                    action_list_5 = xml.SubElement(action_list_element, "service-policy")
-                    action_list_5.text = parent_pol_input
+                            shape_element = xml.SubElement(action_list_5_element, "shape")
+                            average_element = xml.SubElement(shape_element, "average")
 
-                    tree = xml.ElementTree(root)
-                    with open(serv_policy_file, "wb") as fh:
-                        tree.write(fh)
+                            bandwidth_5_input = input("Please enter bandwith in bits: ")
+                            percent_5_element = xml.SubElement(average_element, "bit-rate")
+                            percent_5_element.text = bandwidth_5_input
 
-                    view_config_send(serv_policy_file)
+                            action_list_element = xml.SubElement(pol_class5_element, "action-list")
+                            action_type_element = xml.SubElement(action_list_element, "action-type")
+                            action_type_element.text = "service-policy"
 
-                if question_1 == "police":
+                            parent_pol_input = input("Please enter a child policy map: ")
+                            action_list_5 = xml.SubElement(action_list_element, "service-policy")
+                            action_list_5.text = parent_pol_input
 
-                    action_type_5_element = xml.SubElement(action_list_5_element, "action-type")
-                    action_type_5_element.text = "police"
+                            tree = xml.ElementTree(root)
+                            with open(serv_policy_file, "wb") as fh:
+                                tree.write(fh)
 
-                    tar_bit_rate = xml.SubElement(action_list_5_element, "police-target-bitrate")
-                    police = xml.SubElement(tar_bit_rate, "police")
+                            view_config_send(serv_policy_file)
 
-                    bandwidth_5_input = input("Please enter bandwith shape in bits: ")
-                    percent_5_element = xml.SubElement(police, "bit-rate")
-                    percent_5_element.text = bandwidth_5_input
+                        elif selection == "2":
 
-                    action_list_element = xml.SubElement(pol_class5_element, "action-list")
-                    action_type_element = xml.SubElement(action_list_element, "action-type")
-                    action_type_element.text = "service-policy"
+                            action_type_5_element = xml.SubElement(action_list_5_element, "action-type")
+                            action_type_5_element.text = "police"
 
-                    parent_pol_input = input("Please enter a child policy map: ")
-                    action_list_5 = xml.SubElement(action_list_element, "service-policy")
-                    action_list_5.text = parent_pol_input
+                            tar_bit_rate = xml.SubElement(action_list_5_element, "police-target-bitrate")
+                            police = xml.SubElement(tar_bit_rate, "police")
 
-                    tree = xml.ElementTree(root)
-                    with open(serv_policy_file, "wb") as fh:
-                        tree.write(fh)
+                            bandwidth_5_input = input("Please enter bandwith in bits: ")
+                            percent_5_element = xml.SubElement(police, "bit-rate")
+                            percent_5_element.text = bandwidth_5_input
 
-                    view_config_send(serv_policy_file)
+                            action_list_element = xml.SubElement(pol_class5_element, "action-list")
+                            action_type_element = xml.SubElement(action_list_element, "action-type")
+                            action_type_element.text = "service-policy"
+
+                            parent_pol_input = input("Please enter a child policy map: ")
+                            action_list_5 = xml.SubElement(action_list_element, "service-policy")
+                            action_list_5.text = parent_pol_input
+
+                            tree = xml.ElementTree(root)
+                            with open(serv_policy_file, "wb") as fh:
+                                tree.write(fh)
+
+                            view_config_send(serv_policy_file)
+
+                        else:
+                            print("Invalid input")
+
 
             if config_selection == "4":
 
