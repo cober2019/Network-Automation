@@ -1393,8 +1393,7 @@ def ospf_configuration():
                 view_config_send(OSPF_file)
 
             elif config_selection == "2":
-                
-                Delete_Config = "C:\Python\XML_Filters\OSPF_Delete_ConfigTest.xml"
+
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -1686,12 +1685,7 @@ def interface_configuration():
                 native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
-                
-                print("ex. Gigabit Ethernet")
-                print("ex. FastEthernet")
-                print("ex. Loopback")
-                print("ex. Tunnel")
-                print("\n")
+
                 int_type = input("Enter an interface type: ")
 
                 while int_type  ==  "Gigabit Ethernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
