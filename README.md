@@ -16,11 +16,11 @@ Configurable Options:
 
 6: QoS - Add Class-maps/Policy-Maps/Interface Service-Policies
 
-7. TACACS - Add/Delete/Modify
+7: TACACS - Add/Delete/Modify
 
-8. Prefix-List - Add/Delete 
+8: Prefix-List - Add/Delete 
 
-9. Device Admin - View capabilites/Send configuration (dynamix XML payload or static if desired)or View configs
+9: Device Admin - View capabilites/Send configuration (dynamix XML payload or static if desired)or View configs
 
 10: FTP Inventory - Download Inventory Files
 
