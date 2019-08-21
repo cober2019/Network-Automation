@@ -2081,49 +2081,46 @@ def qos_configuration():
 
                         action_list_element = xml.SubElement(pol_class1_element, "action-list")
 
+                        while True:
 
-                        print("\n")
-                        print("1. Bandwidth")
-                        print("2. Priority")
-                        print("\n")
-
-                        selection= " "
-                        while selection != "1" or "2":
+                            print("\n")
+                            print("1. Bandwidth")
+                            print("2. Priority")
+                            print("\n")
 
                             selection = input("Please select an option: ")
 
                             if selection == "1" or "2":
-                                break
 
-                        if selection == "1":
+                                if selection == "1":
 
-                            action_type_element = xml.SubElement(action_list_element, "action-type")
-                            action_type_element.text = "bandwidth"
+                                    action_type_element = xml.SubElement(action_list_element, "action-type")
+                                    action_type_element.text = "bandwidth"
 
-                            priority_container = xml.SubElement(action_list_element, "bandwidth")
+                                    priority_container = xml.SubElement(action_list_element, "bandwidth")
 
-                            bandwidth_input = input("Please enter bandwith percent")
-                            percent_element = xml.SubElement(priority_container, "percent")
-                            percent_element.text = bandwidth_input
+                                    bandwidth_input = input("Please enter bandwith percent")
+                                    percent_element = xml.SubElement(priority_container, "percent")
+                                    percent_element.text = bandwidth_input
 
-                            tree = xml.ElementTree(root)  # Writes XML file to share
-                            with open(policy_map_file, "wb") as fh:
-                                tree.write(fh)
+                                    tree = xml.ElementTree(root)  # Writes XML file to share
+                                    with open(policy_map_file, "wb") as fh:
+                                        tree.write(fh)
 
-                        if selection == "2":
+                                if selection == "2":
 
-                            action_type_element = xml.SubElement(action_list_element, "action-type")
-                            action_type_element.text = "priority"
+                                    action_type_element = xml.SubElement(action_list_element, "action-type")
+                                    action_type_element.text = "priority"
 
-                            priority_container = xml.SubElement(action_list_element, "priority")
+                                    priority_container = xml.SubElement(action_list_element, "priority")
 
-                            bandwidth_input = input("Please enter priority percent")
-                            percent_element = xml.SubElement(priority_container, "percent")
-                            percent_element.text = bandwidth_input
+                                    bandwidth_input = input("Please enter priority percent")
+                                    percent_element = xml.SubElement(priority_container, "percent")
+                                    percent_element.text = bandwidth_input
 
-                            tree = xml.ElementTree(root)  # Writes XML file to share
-                            with open(policy_map_file, "wb") as fh:
-                                tree.write(fh)
+                                    tree = xml.ElementTree(root)  # Writes XML file to share
+                                    with open(policy_map_file, "wb") as fh:
+                                        tree.write(fh)
 
             if config_selection == "3":
 
