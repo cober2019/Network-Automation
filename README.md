@@ -30,7 +30,7 @@ How did i build this program, recomendations?
 2. Send configurations via command line, then use the get-config to see how XML elements are tagged/structured and what  namepsaces are used etc. From this you will be able to build your program with configration options of your choice.
 3. Learn Python (DISCLAIMER, IM NOT A PYTHON EXPERT)
 
-Not all elements below have to be included in the python code. I can remove policing if i dont intend to uses that option. In the example below I've given an option to shape or police. I would say more options the better. You code can get long though.
+Not all elements below have to be included in the python code. I can remove policing if i dont intend to uses that option. In the example below I've given an option to shape or police. I would say more options the better.
 
 
 Program output for nested policy-map with shaping. The python code can be viewed in the qos_configuration function.
