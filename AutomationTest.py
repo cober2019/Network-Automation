@@ -172,18 +172,22 @@ def ncc_login(host, port, username, password, device_params): # Log into device 
     print("\n")
 
     try:
-        m = manager.connect(host=device, port=port, username=username, password=password, device_params=device_params)
+        try:
+            m = manager.connect(host=device, port=port, username=username, password=password, device_params=device_params)
 
-        print("\n")
-        print("Device:", device, "Session ID: ", m.session_id, " Connection: ",m.connected)
-        print("\n")
+            print("\n")
+            print("Device:", device, "Session ID: ", m.session_id, " Connection: ",m.connected)
+            print("\n")
 
-    except (UnicodeError):
-        print("Invalid IP address. Insure IP format is correct")
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-    except ncclient.NCClientError:
-        print("Connection Timeout. Please check connectivity and NETCONF configuration.")
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+        except (UnicodeError):
+            print("Invalid IP address. Insure IP format is correct")
+            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+        except ncclient.NCClientError:
+            print("Connection Timeout. Please check connectivity and NETCONF configuration.")
+            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+    except KeyboardInterrupt:
+        main()
+
 
 
 ################################################################################
@@ -219,7 +223,7 @@ def send__multi_configuration(file):
                     workbook.save(wb_file)
                     main()
                 except PermissionError:
-                    print("Could not write to file. Please ensure the file isnt and you have write permissions.")
+                    print("Could not write to file. Please ensure the file isnt open and you have write permissions.")
                     main()
             else:
 
@@ -261,7 +265,7 @@ def send__multi_configuration(file):
                     pass
                 except ncclient.NCClientError:
                     print("\n")
-                    print("Connection Timeout. Please check connectivity and NETCONF configuration.")
+                    print("Please review configuration.")
                     cell.fill = fail_fill
                     pass
 
@@ -281,7 +285,6 @@ def send_single_configuration(file):
             print("\n")
             print("Configuration Complete!")
             print("\n")
-
             main()
 
             if "Credentials" in file:
@@ -318,7 +321,7 @@ def send_single_configuration(file):
             print("Invalid IP address. Please try again")
             pass
         except ncclient.NCClientError:
-            print("Connection Timeout. Please check connectivity and NETCONF configuration.")
+            print("Please review configuration")
             pass
 
 
@@ -1218,7 +1221,7 @@ def device_admin():
 
         for c in m.server_capabilities:
             print(c)
-        device_admin()
+            device_admin()
 
     elif config_selection == "2":
 
@@ -1327,6 +1330,9 @@ def main():
 
 def ospf_configuration():
 
+    OSPF_file = "C:\Python\XML_Filters\Send_Config\OSPF_Send_ConfigTest.xml"
+    Delete_Config = "C:\Python\XML_Filters\OSPF_Delete_ConfigTest.xml"
+
     print("OSPF Configuration:")
 
     config_selection = ' '
@@ -1347,7 +1353,6 @@ def ospf_configuration():
 
             if config_selection == "1":
 
-                OSPF_file = "C:\Python\XML_Filters\Send_Config\OSPF_Send_ConfigTest.xml"
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -1448,6 +1453,9 @@ def ospf_configuration():
 
 def snmp_configuration():
 
+    SNMP_file = "C:\Python\XML_Filters\Send_Config\SNMPv2_Send_Config.xml"
+    Delete_Config = "C:\Python\XML_Filters\SNMPv2_Delete_Config.xml"
+
     config_selection = ' '
     while config_selection != '4':
 
@@ -1466,7 +1474,6 @@ def snmp_configuration():
 
             if config_selection == "1":
 
-                SNMP_file = "C:\Python\XML_Filters\Send_Config\SNMPv2_Send_Config.xml"
                 root = xml.Element("config")
                 native_element = xml.Element("native")
                 native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
@@ -1504,7 +1511,6 @@ def snmp_configuration():
 
             elif config_selection == "2":
 
-                Delete_Config = "C:\Python\XML_Filters\SNMPv2_Delete_Config.xml"
                 root = xml.Element("config")
                 native_element = xml.Element("native")
                 native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
@@ -1555,6 +1561,9 @@ def snmp_configuration():
 
 def credentials_configuration():
 
+    Delete_User_Config = "C:\Python\XML_Filters\Credentials_Delete_Config.xml"
+    Cred_Config = "C:\Python\XML_Filters\Send_Config\Credentials_Send_Config.xml"
+
     config_selection = ' '
     while config_selection != '4':
 
@@ -1572,7 +1581,6 @@ def credentials_configuration():
             config_selection = input("Please select an option:  ")
 
             if config_selection == "1":
-                Cred_Config = "C:\Python\XML_Filters\Send_Config\Credentials_Send_Config.xml"
 
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -1605,8 +1613,6 @@ def credentials_configuration():
                 view_config_send(Cred_Config) # Call Function
 
             if config_selection == "2":
-
-                Delete_User_Config = "C:\Python\XML_Filters\Credentials_Delete_Config.xml"
 
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -1658,6 +1664,8 @@ def credentials_configuration():
 
 def interface_configuration():
 
+    int_file = "C:\Python\XML_Filters\Send_Config\Interface_Send_Config.xml"
+
     config_selection = ' '
     while config_selection != '4':
 
@@ -1686,6 +1694,11 @@ def interface_configuration():
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
 
+                print("ex. Gigabit Ethernet")
+                print("ex. FastEthernet")
+                print("ex. Loopback")
+                print("ex. Tunnel")
+                print("\n")
                 int_type = input("Enter an interface type: ")
 
                 while int_type  ==  "Gigabit Ethernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
@@ -1720,7 +1733,6 @@ def interface_configuration():
 
             if config_selection == "2":
 
-                int_file = "C:\Python\XML_Filters\Send_Config\Interface_Send_Config.xml"
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -1733,6 +1745,7 @@ def interface_configuration():
                 print("ex. FastEthernet")
                 print("ex. Loopback")
                 print("ex. Tunnel")
+                print("\n")
                 int_type = input("Enter an interface type: ")
 
                 while int_type == "Gigabit Ethernet" or int_type == "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
@@ -1775,6 +1788,8 @@ def interface_configuration():
 
 def dmvpn_configuration():
 
+    dmvpn_file = "C:\Python\XML_Filters\Send_Config\DMVPN_Send_Config.xml"
+
     config_selection = ' '
     while config_selection != '4':
 
@@ -1793,7 +1808,6 @@ def dmvpn_configuration():
 
             if config_selection == "1":
 
-                dmvpn_file = "C:\Python\XML_Filters\Send_Config\DMVPN_Send_Config.xml"
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -2223,6 +2237,9 @@ def tacacs_configuration():
     config_selection = ' '
     while config_selection != '4':
 
+        tacacs_file = "C:\Python\XML_Filters\Send_Config\TACACS_Send_Config.xml"
+        del_tacacs = "C:\Python\XML_Filters\Send_Config\TACACS_Delete_Config.xml"
+
         try:
 
             print("\n")
@@ -2238,7 +2255,6 @@ def tacacs_configuration():
 
             if config_selection == "1":
 
-                tacacs_file = "C:\Python\XML_Filters\Send_Config\TACACS_Send_Config.xml"
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -2313,7 +2329,6 @@ def tacacs_configuration():
 
                 if config_selection == "2":
 
-                    del_tacacs = "C:\Python\XML_Filters\Send_Config\TACACS_Delete_Config.xml"
                     root = xml.Element("config")
                     root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                     root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -2378,6 +2393,9 @@ def tacacs_configuration():
 
 def prefix_configuration():
 
+    prefix_file = "C:\Python\XML_Filters\Send_Config\Prefix_Send_Config.xml"
+    prefix_del = "C:\Python\XML_Filters\Send_Config\Prefix_Delete_Config.xml"
+
     config_selection = ' '
     while config_selection != '4':
 
@@ -2396,8 +2414,6 @@ def prefix_configuration():
 
             if config_selection == "1":
 
-                global prefix_file
-                prefix_file = "C:\Python\XML_Filters\Send_Config\Prefix_Send_Config.xml"
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -2438,7 +2454,6 @@ def prefix_configuration():
 
             elif config_selection == "2":
 
-                prefix_del = "C:\Python\XML_Filters\Send_Config\Prefix_Delete_Config.xml"
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
