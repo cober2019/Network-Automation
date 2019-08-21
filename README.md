@@ -34,7 +34,7 @@ How did i build this program, recomendations?
 Not all elements below have to be included in the python code. I can remove policing if i dont intend to uses that option. In the example below I've given an option to shape or police.
 
 
-Program output for nested policy-map with shaping. The python code can be viewed on the qos_configuration function.
+Program output for nested policy-map with shaping. The python code can be viewed in the qos_configuration function.
 
 -<config>
 -	<native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
