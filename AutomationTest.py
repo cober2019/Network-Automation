@@ -13,7 +13,7 @@ from ncclient.operations import RPCError
 
 def ftp_files():
 
-    # DOWNLOADS FILE FROM AN FTP SERVER AND SAVES THEM TO A LOCAL DIRECTORY
+    # DOWNLOADS FILE FROM AN FTP SERVER AND SAVES THEM TO A LOCAL DIRECTORY. THIS FILE IS ITERATED THROUGH WHEN A MULTI DEVICE JOB IS SENT
 
     filename = "Book1.xlsx"
     dest_file = open("C:\Python" + "\\" + filename, 'wb')
@@ -63,7 +63,8 @@ def ftp_files():
 
 def select_configuration_send():
 
-    # CONFIGURATION FILES CAN BE VIEWED FROM THIS DIRECTORY AND SENT. THIS CAN BE USED TO SEND FILES THAT INTIALLY FAILED
+    # CONFIGURATION FILES CAN BE VIEWED FROM THIS DIRECTORY AND SENT. THIS CAN BE USED TO SEND FILES THAT INTIALLY FAILED.
+    # YOU CAN ALSO USED TO SEND STATIC PAYLOADS AS WELL
 
     print(" 1: File Select")
     print(" 2: Main Menu")
@@ -123,7 +124,7 @@ def save_configuration():
 
 def view_config_send(file):
 
-    # DEFINES SINGLE DEVICE CONIFGURATION OR MULTI DEVICE SEND. YOU ARE ALSO ABLE TO CANCLE A SEND AS WELL
+    # DEFINES SINGLE DEVICE CONIFGURATION OR MULTI DEVICE SEND. ALLOW A VIEW OF THE CONFIGURATION IN XML
 
     print("\n")
     print ("Configuration: ")
@@ -163,7 +164,7 @@ def view_config_send(file):
 
 def ncc_login(host, port, username, password, device_params): # Log into device via NCC client
 
-    #NCCLIENT LOGIN
+    #NCCLIENT LOGIN. ESCAPE KEYS ARE PERMITTED WITH CTRL + C
 
     global m
     global device
@@ -195,7 +196,8 @@ def ncc_login(host, port, username, password, device_params): # Log into device 
 def send__multi_configuration(file):
 
     #READS DEVICE FROM AND EXCEL SPREAD AND FILLS THE CELL WITH EITHER GREEN OR RED. A GREEN FILLED CELL IS A SUCCESS, RED IS A FAILURE. THESE ARE FILLED BASED ON AN EXCEPTION DURING THE JOB
-
+    # I WOULD RECOMMEND TO DOWLOAD FILE FROM FTP FOR EACH JOB. CAN BE ACCESSED FROM THE MAIN MENU, PTION 10.
+    
     success_fill = PatternFill(start_color='00FF00',
                                                 end_color='00FF00',
                                                 fill_type='solid')
@@ -209,7 +211,7 @@ def send__multi_configuration(file):
     active_sheet = workbook.active
     active_sheet.protection = False
 
-    for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=5):
+    for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=5): # SET ROW/COLUMNS TO YOUR CELL COUNT
         for cell in row:
             print(cell.value)
 
@@ -273,7 +275,8 @@ def send__multi_configuration(file):
 
 def send_single_configuration(file):
 
-        # USED FOR SINGLE DEVICE CONFIGURATION. ONCE CONFIGURATION IS COMPLETE, YOU WILL BE RETURNED TO THE MENU FROM WHERE YOU CONFIGURING. THIS IS BASED OF THE FILENAME OF THE CONFIGURATION
+        # USED FOR SINGLE DEVICE CONFIGURATION. ONCE CONFIGURATION IS COMPLETE, YOU WILL BE RETURNED TO THE MENU 
+        # FROM WHERE YOU  WERE CONFIGURING. THIS IS BASED OF THE CONTENTS OF THE FILENAME OF THE CONFIGURATION.
 
         ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
 
@@ -323,7 +326,18 @@ def send_single_configuration(file):
         except ncclient.NCClientError:
             print("Please review configuration")
             pass
+######################################################################################################
 
+# THERE ARE SERVERAL VIEW FUNCTIONS DPENEDING ON WHAT YOU WANT TO VIEW. WHEN VIEWING THE CONFIGURATIONS
+# IT APPEARS THE ORDERED DICTIONARY ARE VERY PARTICULAR EX. IF THERE IS ONE USERNAME CONFIGURED, THE FOR LOOP
+# WILL NOT WORK TO DISPLAY OUTPUT. WHEN THERE IS 2 + USERNAMES A FORLOOP IS NEEDED. YOU WOULD THINK A FOR LOOP
+# WOULD HANDLE EVEN SINGLE CONFIGURATIONS. LIKEWISE, THERE IS ALWAYS AN EXPCEPTION IF A GIVEN CONFIGURATION OPTION DOESNT 
+# EXIST. EXAMPLE, IF THERE ISNT A VRF, THERE WILL BE AN EXPCEPTION WICH WOULD HALT THE PROGRAM. INSTEAD WE WILL PASS
+# THE EXCPETION. SOMETIMES THERE WHEN THE XML IS CONVERTED TO ORDERED DICTIONARY, ELEMENTS MAYBE BE CONVERT WITH DIFFERENT
+# TAG. IT REALLY VARIES BETWEEN CONFIGURATIONS. EX. DICTNARY CONVERTION FOR PREFIX LIST IS DIFFERENT FOR A
+# AND A PREFIX LIST WITH MULTIPLE STATEMENTS. YOU CAN OBSERVE THIS VIA THE PYTHON CONFIGURATION IN THE VIEW PREFIX FUNCTION.
+# QOS AND PREFIX LIST OUTPUT I ONLY HAVE IN XML DUE TO THE DEPTH OF ELEMENT TREE IN CONJUNTIONS WITH DICTIONARY CONVERTION.
+# I HOPE TO FIGURE THIS OUT IN THE NEAR FUTRE. UNTIL THEN THESE OUTPUT ARE XML. SUGESTIONS WELCOME
 
 ######################################################################################################
 
