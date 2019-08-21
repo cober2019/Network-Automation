@@ -19,6 +19,7 @@ How did i build this program, recomendations?
 
 1. Use YANG EXPLORER to see how XML trees are strucutred
 2. Send configurations via command line, then use the get-config to see how XML elements are tagged/structured and what  namepsaces are used etc. From this you will be able to build your program with configration options of your choice Ex. What do you want to automate, Policy-Maps: 
+
 3 Learn Python (DISCLAIMER, IM NOT A PYTHON EXPERT)
 
 Not all elements below have to be included in the python code. I can remove policing if i dont intend to uses that option. In the example below I've given an option to shape or police.
