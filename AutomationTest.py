@@ -12,6 +12,19 @@ import ftplib
 import time
 from ncclient.operations import RPCError
 
+
+def cleanup_empty_elements(root_var, file):
+
+    tree = xml.ElementTree(element=root_var)
+    tree.write(file_or_filename=file)
+
+    root = ET.fromstring(open(file=file).read())
+    for element in root.xpath("//*[not(node())]"):
+        element.getparent().remove(element)
+
+    tree = xml.ElementTree(element=root)
+    tree.write(file_or_filename=file)
+
 def ftp_files():
 
     # DOWNLOADS FILE FROM AN FTP SERVER AND SAVES THEM TO A LOCAL DIRECTORY
@@ -108,11 +121,13 @@ def select_configuration_send():
             print("\n")
             select_configuration_send()
 
-    if question_1 == "2":
+    elif question_1 == "2":
         main()
 
     else:
-        print("Invalid input, please try again")
+        print("\n")
+        print("Invalid Selection")
+        print("\n")
 
 #######################################################################################
 
@@ -157,18 +172,18 @@ def view_config_send(file):
 
         if question_1 == "1":
             send_single_configuration(file=file)
-
+            break
         if question_1 == "2":
             send__multi_configuration(file=file)
-
+            break
         if question_1 == "3":
             print("\n")
             print("Configuration Canceled")
             print("\n")
-            main()
+            break
         else:
             print("\n")
-            print("Invalid input, please try again")
+            print("Invalid Selection")
             print("\n")
 
 
@@ -333,14 +348,10 @@ def send_single_configuration(file):
         except AttributeError:
             print("Connection Unsucessful")
             pass
-        except RPCError:
-            pass
         except (UnicodeError):
             print("Invalid IP address. Please try again")
             pass
-        except ncclient.NCClientError:
-            print("Please review configuration")
-            pass
+
 
 
 
@@ -459,12 +470,16 @@ def view_qos():
         qos_configuration()
         print("\n")
 
-    if config_selection == "3":
+    elif config_selection == "3":
         view_interfaces()
-    if config_selection == "4":
+    elif config_selection == "4":
         qos_configuration()
     elif config_selection == "5":
         main()
+    else:
+        print("\n")
+        print("Invalid Selection")
+        print("\n")
 
 ########################################################################
 
@@ -787,7 +802,8 @@ def view_interfaces():
             main()
         else:
             print("\n")
-            print("Invalid input, please try again")
+            print("Invalid Selection")
+            print("\n")
 
 
 ###################################################################################
@@ -894,8 +910,9 @@ def view_ospf():
         if config_selection == "3":
             main()
         else:
-                print("\n")
-                print("Invalid input, please try again")
+            print("\n")
+            print("Invalid Selection")
+            print("\n")
 
 
 ###################################################################################
@@ -979,7 +996,8 @@ def view_tacacs():
             main()
         else:
             print("\n")
-            print("Invalid input, please try again")
+            print("Invalid Selection")
+            print("\n")
 
 def view_prefix_list():
 
@@ -1027,7 +1045,8 @@ def view_prefix_list():
         main()
     else:
         print("\n")
-        print("Invalid input, please try again")
+        print("Invalid Selection")
+        print("\n")
 
 
 
@@ -1103,8 +1122,8 @@ def view_snmp_users():
             main()
         else:
             print("\n")
-            print("Invalid input, please try again")
-
+            print("Invalid Selection")
+            print("\n")
 ###################################################################################
 
 
@@ -1217,7 +1236,7 @@ def view_users():
             main()
         else:
             print("\n")
-            print("Invalid selection")
+            print("Invalid Selection")
             print("\n")
 
 ###########################################################################
@@ -1278,7 +1297,7 @@ def device_admin():
                 main()
             else:
                 print("\n")
-                print("Invalid selection")
+                print("Invalid Selection")
                 print("\n")
 
     elif config_selection == "3":
@@ -1340,7 +1359,9 @@ def main():
             print("Exiting Program")
             print("\n")
         else:
+            print("\n")
             print("Invalid Selection")
+            print("\n")
 
     print("Thank you for using the Basic Network Programabiltiy and Automation Program")
     quit()
@@ -1349,7 +1370,7 @@ def main():
 
 def ospf_configuration():
 
-    OSPF_file = "C:\Python\XML_Filters\Send_Config\OSPF_Send_ConfigTest.xml"
+    OSPF_file = "C:\Python\XML_Filters\Send_Config\OSPF_Send_Config.xml"
     Delete_Config = "C:\Python\XML_Filters\OSPF_Delete_ConfigTest.xml"
 
     print("OSPF Configuration:")
@@ -1382,8 +1403,6 @@ def ospf_configuration():
                 router_element = xml.SubElement(native_element, "router")
                 ospf_element = xml.SubElement(router_element, "ios-ospf:ospf")
 
-                Delete_Config = "C:\Python\XML_Filters\OSPF_Delete_Config.xml"
-
                 print("\n")
                 print("New Routing Configuration")
                 print("\n")
@@ -1396,25 +1415,43 @@ def ospf_configuration():
                 rid_id = xml.SubElement(ospf_element, "ios-ospf:router-id")
                 rid_id.text = rid_input
 
-                network_leaf = xml.SubElement(ospf_element, "ios-ospf:network")
+                while True:
 
-                network_input = input("Please Enter a Network ID: ")
-                network_id = xml.SubElement(network_leaf, "ios-ospf:ip")
-                network_id.text = network_input
+                    print("\n")
+                    print("1. Add Network")
+                    print("2. Send Configuration")
 
-                mask_input = input("Please Enter a Wildcard: ")
-                mask = xml.SubElement(network_leaf, "ios-ospf:mask")
-                mask.text = mask_input
+                    config_selection = input("Please select an option:  ")
 
-                area_input = input("Please Enter a Area: ")
-                area_id = xml.SubElement(network_leaf, "ios-ospf:area")
-                area_id.text = area_input
+                    if config_selection == "1":
 
-                tree = xml.ElementTree(root)  # Writes XML file to share
-                with open(OSPF_file, "wb") as fh:
-                    tree.write(fh)
+                        network_leaf = xml.SubElement(ospf_element, "ios-ospf:network")
 
-                view_config_send(OSPF_file)
+                        network_input = input("Please Enter a Network ID: ")
+                        network_id = xml.SubElement(network_leaf, "ios-ospf:ip")
+                        network_id.text = network_input
+
+                        mask_input = input("Please Enter a Wildcard: ")
+                        mask = xml.SubElement(network_leaf, "ios-ospf:mask")
+                        mask.text = mask_input
+
+                        area_input = input("Please Enter a Area: ")
+                        area_id = xml.SubElement(network_leaf, "ios-ospf:area")
+                        area_id.text = area_input
+
+                        cleanup_empty_elements(root, OSPF_file)
+                        break
+
+                    elif config_selection == "2":
+
+                        cleanup_empty_elements(root, OSPF_file)
+                        view_config_send(OSPF_file)
+                        break
+
+                    else:
+                        print("\n")
+                        print("Invalid Selection")
+                        print("\n")
 
             elif config_selection == "2":
 
@@ -1449,7 +1486,7 @@ def ospf_configuration():
                 main()
             else:
                 print("\n")
-                print("Invalid selection")
+                print("Invalid Selection")
                 print("\n")
 
         except KeyboardInterrupt:
@@ -1466,7 +1503,9 @@ def ospf_configuration():
             if escape_1 == "2":
                 ospf_configuration()
             else:
-                print("Invalid selection")
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
     ###########################################################################
 
@@ -1515,18 +1554,15 @@ def snmp_configuration():
                     acl_element = xml.SubElement(community_element, "access-list-name")
                     acl_element.text = acl_input
 
-                    tree = xml.ElementTree(root) # Writes XML file to share
-                    with open(SNMP_file, "wb") as fh:
-                        tree.write(fh)
-
-                    view_config_send(SNMP_file) # Call Function
+                    cleanup_empty_elements(root, SNMP_file)
+                    view_config_send(SNMP_file)
+                    break
 
                 else:
-                    tree = xml.ElementTree(root) # Writes XML file to share
-                    with open(SNMP_file, "wb") as fh:
-                        tree.write(fh)
 
-                    view_config_send(SNMP_file) # Call Function
+                    cleanup_empty_elements(root, SNMP_file)
+                    view_config_send(SNMP_file)
+                    break
 
             elif config_selection == "2":
 
@@ -1546,19 +1582,19 @@ def snmp_configuration():
                 comm_id.set("operation", "delete")
                 comm_id.text = comm_input
 
-                tree = xml.ElementTree(root) # Writes XML file to share
-                with open(Delete_Config, "wb") as fh:
-                    tree.write(fh)
+                cleanup_empty_elements(root, SNMP_file)
 
-                send_single_configuration(Delete_Config) # Call Function
+                send_single_configuration(Delete_Config)
 
             elif config_selection == "3":
                 view_snmp_users()
+                break
             elif config_selection == "4":
                 main()
+                break
             else:
                 print("\n")
-                print("Invalid selection")
+                print("Invalid Selection")
                 print("\n")
 
         except KeyboardInterrupt:
@@ -1574,7 +1610,9 @@ def snmp_configuration():
             if escape_1 == "2":
                 snmp_configuration()
             else:
-                print("Invalid selection")
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
 ###########################################################################
 
@@ -1589,10 +1627,10 @@ def credentials_configuration():
         try:
 
             print("\n")
-            print("1. Add configuration")
-            print("2. Remove configuration")
+            print("1. Add/Modify Configuration")
+            print("2. Remove Configuration")
             print("3. View Users")
-            print("4. Main menu")
+            print("4. Main Menu")
             print("\n")
             print("Press CTRL+C to escape at any time")
             print("\n")
@@ -1619,17 +1657,36 @@ def credentials_configuration():
                 priv_element = xml.SubElement(username_element, "privilege")
                 priv_element.text = priv_input
 
-                password_element = xml.SubElement(username_element, "password")
+                while True:
 
-                password_input = input("Please Enter Password: ")
-                pass_element = xml.SubElement(password_element, "password")
-                pass_element.text = password_input
+                    print("\n")
+                    print("1. Add Passwrd")
+                    print("2. Save Configuration")
 
-                tree = xml.ElementTree(root) # Writes XML file to share
-                with open(Cred_Config, "wb") as fh:
-                    tree.write(fh)
+                    config_selection = input("Please select an option:  ")
 
-                view_config_send(Cred_Config) # Call Function
+                    if config_selection == "1":
+
+                        password_element = xml.SubElement(username_element, "password")
+
+                        password_input = input("Please Enter Password: ")
+                        pass_element = xml.SubElement(password_element, "password")
+                        pass_element.text = password_input
+
+                        cleanup_empty_elements(root, Cred_Config)
+                        view_config_send(Cred_Config) # Call Function
+                        break
+
+                    elif config_selection == "2":
+
+                        cleanup_empty_elements(root, Cred_Config)
+                        view_config_send(Cred_Config)
+                        break
+
+                    else:
+                        print("\n")
+                        print("Invalid Selection")
+                        print("\n")
 
             if config_selection == "2":
 
@@ -1648,11 +1705,9 @@ def credentials_configuration():
                 name_id.set("xc:operation", "remove")
                 name_id.text = question_1
 
-                tree = xml.ElementTree(root)  # Writes XML file to share
-                with open(Delete_User_Config, "wb") as fh:
-                    tree.write(fh)
+                cleanup_empty_elements(root, Cred_Config)
 
-                view_config_send(Delete_User_Config)  # Call Function
+                view_config_send(Delete_User_Config)
 
             if config_selection == "3":
                 view_users()
@@ -1661,7 +1716,7 @@ def credentials_configuration():
 
             else:
                 print("\n")
-                print("Invalid selection")
+                print("Invalid Selection")
                 print("\n")
 
         except KeyboardInterrupt:
@@ -1674,10 +1729,14 @@ def credentials_configuration():
 
             if escape_1 == "1":
                 main()
+                break
             if escape_1 == "2":
                 credentials_configuration()
+                break
             else:
-                print("Invalid selection")
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
     ################################################################################
 
@@ -1692,7 +1751,7 @@ def interface_configuration():
 
             print("\n")
             print("1. Add/Modify configuration")
-            print("2. Remove configuration")
+            print("2. Remove Interface (Tunnel/Loopback")
             print("3. View Interface(s)")
             print("4. Main menu")
             print("\n")
@@ -1713,14 +1772,14 @@ def interface_configuration():
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
 
-                print("ex. Gigabit Ethernet")
+                print("ex. GigabitEthernet")
                 print("ex. FastEthernet")
                 print("ex. Loopback")
                 print("ex. Tunnel")
                 print("\n")
                 int_type = input("Enter an interface type: ")
 
-                while int_type  ==  "Gigabit Ethernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
+                while int_type  ==  "GigabitEthernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
 
                     int_type_leaf = xml.SubElement(int_element, int_type)
 
@@ -1732,23 +1791,42 @@ def interface_configuration():
                     int_descrp = xml.SubElement(int_type_leaf, "description")
                     int_descrp.text = int_choice_1
 
-                    ip_leaf = xml.SubElement(int_type_leaf, "ip")
-                    address_leaf = xml.SubElement(ip_leaf, "address")
-                    primary_leaf = xml.SubElement(address_leaf, "primary")
+                    while True:
 
-                    ip_input = input("Please Enter A IP Address: ")
-                    address = xml.SubElement(primary_leaf, "address")
-                    address.text = ip_input
+                        print("\n")
+                        print("1. Add/Modify IP Configuration")
+                        print("2. Save Configuration")
 
-                    mask_input = input("Please Enter a Subnet Mask: ")
-                    mask = xml.SubElement(primary_leaf, "mask")
-                    mask.text = mask_input
+                        config_selection = input("Please select an option: ")
 
-                    tree = xml.ElementTree(root)
-                    with open(int_file, "wb") as fh:
-                        tree.write(fh)
+                        if config_selection =="1":
 
-                    view_config_send(int_file)
+                            ip_leaf = xml.SubElement(int_type_leaf, "ip")
+                            address_leaf = xml.SubElement(ip_leaf, "address")
+                            primary_leaf = xml.SubElement(address_leaf, "primary")
+
+                            ip_input = input("Please Enter A IP Address: ")
+                            address = xml.SubElement(primary_leaf, "address")
+                            address.text = ip_input
+
+                            mask_input = input("Please Enter a Subnet Mask: ")
+                            mask = xml.SubElement(primary_leaf, "mask")
+                            mask.text = mask_input
+
+                            cleanup_empty_elements(root, int_file)
+                            view_config_send(int_file)
+                            break
+
+                        elif config_selection =="2":
+
+                            cleanup_empty_elements(root, int_file)
+                            view_config_send(int_file)
+                            break
+
+                        else:
+                            print("\n")
+                            print("Invalid Selection")
+                            print("\n")
 
             if config_selection == "2":
 
@@ -1777,16 +1855,18 @@ def interface_configuration():
                     int_name.set("xc:operation", "remove")
                     int_name.text = interface_number
 
-                    tree = xml.ElementTree(root)
-                    with open(int_file, "wb") as fh:
-                        tree.write(fh)
-
+                    cleanup_empty_elements(root, int_file)
                     view_config_send(int_file)
+                    break
 
             if config_selection == "3":
                 view_interfaces()
             elif config_selection == "4":
                 main()
+            else:
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
         except KeyboardInterrupt:
 
@@ -1798,10 +1878,14 @@ def interface_configuration():
 
             if escape_1 == "1":
                 main()
+                break
             if escape_1 == "2":
                 interface_configuration()
+                break
             else:
-                print("Invalid selection")
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
 ################################################################################
 
@@ -1815,8 +1899,8 @@ def dmvpn_configuration():
         try:
 
             print("\n")
-            print("1. Add configuration")
-            print("2. Remove/Modify configuration")
+            print("1. Add/Modify Configuration")
+            print("2. Remove/Modify Configuration")
             print("3. View Interface")
             print("4. Main menu")
             print("\n")
@@ -1835,104 +1919,174 @@ def dmvpn_configuration():
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
 
-                ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
                 int_type_leaf = xml.SubElement(int_element, "Tunnel")
 
                 interface_name = input("Please Enter An Interface: Tunnel: ")
                 int_name = xml.SubElement(int_type_leaf, "name")
                 int_name.text = interface_name
 
+                ip_leaf = xml.SubElement(int_type_leaf, "ip")
+
                 int_choice_1 = input("Please enter a description: ")
                 int_descrp = xml.SubElement(int_type_leaf, "description")
                 int_descrp.text = int_choice_1
 
-                ip_leaf = xml.SubElement(int_type_leaf, "ip")
 
-                address_leaf = xml.SubElement(ip_leaf, "address")
-                primary_leaf = xml.SubElement(address_leaf, "primary")
+                while True:
 
-                ip_input = input("Please Enter A IP Address: ")
-                address = xml.SubElement(primary_leaf, "address")
-                address.text = ip_input
+                    print("\n")
+                    print("1. Add New DMVPN Configuration")
+                    print("2. Modiy NHRP")
+                    print("3. Modify NHS")
+                    print("4. Modify NHS Mapping")
+                    print("5. Change Tunnel Source")
+                    print("6. Save Configuration")
 
-                mask_input = input("Please Enter a Subnet Mask: ")
-                mask = xml.SubElement(primary_leaf, "mask")
-                mask.text = mask_input
+                    config_selection = input("Please select an option: ")
 
-                global nhrp_leaf
-                nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
-                nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                    if config_selection == "1":
 
-                nhrp_input1 = input("Please Enter NHRP auth ")
-                nhrp_auth = xml.SubElement(nhrp_leaf, "authentication")
-                nhrp_auth.text = nhrp_input1
+                        address_leaf = xml.SubElement(ip_leaf, "address")
+                        primary_leaf = xml.SubElement(address_leaf, "primary")
 
-                nhrp_input2 = input("Please Enter NHRP group: ")
-                nhrp_group = xml.SubElement(nhrp_leaf, "group")
-                nhrp_group.text = nhrp_input2
+                        ip_input = input("Please Enter A IP Address: ")
+                        address = xml.SubElement(primary_leaf, "address")
+                        address.text = ip_input
 
-                nhrp_input3 = input("Please Enter NHRP holdtime: ")
-                nhrp_hold = xml.SubElement(nhrp_leaf, "holdtime")
-                nhrp_hold.text = nhrp_input3
+                        mask_input = input("Please Enter a Subnet Mask: ")
+                        mask = xml.SubElement(primary_leaf, "mask")
+                        mask.text = mask_input
 
-                nhrp_map_leaf = xml.SubElement(nhrp_leaf, "map")
-                nhrp_dest_leaf = xml.SubElement(nhrp_map_leaf, "dest-ipv4")
+                        ospf_leaf = xml.SubElement(ip_leaf, "ospf")
+                        ospf_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-ospf")
 
-                nhrp_input4 = input("Please Enter Hub Tunnel IP:  ")
-                nhrp_hub = xml.SubElement(nhrp_dest_leaf, "dest-ipv4")
-                nhrp_hub.text = nhrp_input4
+                        ospf_net_type = input("Please Enter OSPF network Type: ")
+                        ospf_type = xml.SubElement(ospf_leaf, "network")
+                        ospf_type.text = ospf_net_type
+                        cleanup_empty_elements(root, dmvpn_file)
+                        view_config_send(dmvpn_file)
+                        break
 
-                nhrp_nbma1 = xml.SubElement(nhrp_dest_leaf, "nbma-ipv4")
+                    elif config_selection == "2":
 
-                nhrp_input4 = input("Please Enter Hub NBMA: ")
-                nhrp_hub = xml.SubElement(nhrp_nbma1, "nbma-ipv4")
-                nhrp_hub.text = nhrp_input4
+                        nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                        nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
 
-                multicast_container = xml.SubElement(nhrp_map_leaf, "multicast")
+                        nhrp_input1 = input("Please Enter NHRP auth ")
+                        nhrp_auth = xml.SubElement(nhrp_leaf, "authentication")
+                        nhrp_auth.text = nhrp_input1
 
-                nhrp_hub = xml.SubElement(multicast_container, "nbma_ipv4")
-                nhrp_hub.text = nhrp_input4
+                        nhrp_input2 = input("Please Enter NHRP group: ")
+                        nhrp_group = xml.SubElement(nhrp_leaf, "group")
+                        nhrp_group.text = nhrp_input2
 
-                nhrp_input8 = input("Please Enter NHRP network ID: ")
-                nhrp_ID = xml.SubElement(nhrp_leaf, "network-id")
-                nhrp_ID.text = nhrp_input8
+                        nhrp_input3 = input("Please Enter NHRP holdtime: ")
+                        nhrp_hold = xml.SubElement(nhrp_leaf, "holdtime")
+                        nhrp_hold.text = nhrp_input3
 
-                nhs_container = xml.SubElement(nhrp_leaf, "nhs")
-                global nhs_leaf
-                nhs_leaf = xml.SubElement(nhs_container, "ipv4")
+                        nhrp_input8 = input("Please Enter NHRP network ID: ")
+                        nhrp_ID = xml.SubElement(nhrp_leaf, "network-id")
+                        nhrp_ID.text = nhrp_input8
 
-                nhrp_input7= input("Please Enter NHRP NHS: ")
-                nhrp_nhs = xml.SubElement(nhs_leaf, "ipv4")
-                nhrp_nhs.text = nhrp_input7
+                        cleanup_empty_elements(root, dmvpn_file)
+                        view_config_send(dmvpn_file)
+                        break
 
-                tun_leaf = xml.SubElement(int_type_leaf, "tunnel")
-                tun_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-tunnel")
+                    elif config_selection == "3":
 
-                source_input= input("Please Enter a tunnel source: ")
-                tun_source = xml.SubElement(tun_leaf, "source")
-                tun_source.text = source_input
+                        nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                        nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                        nhs_container = xml.SubElement(nhrp_leaf, "nhs")
+                        nhs_leaf = xml.SubElement(nhs_container, "ipv4")
 
-                ospf_leaf = xml.SubElement(ip_leaf, "ospf")
-                ospf_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-ospf")
+                        nhrp_input7= input("Please Enter NHRP NHS: ")
+                        nhrp_nhs = xml.SubElement(nhs_leaf, "ipv4")
+                        nhrp_nhs.text = nhrp_input7
 
-                ospf_net_type = input("Please Enter OSPF network Type: ")
-                ospf_type = xml.SubElement(ospf_leaf, "network")
-                ospf_type.text = ospf_net_type
+                        while True:
 
-                tree = xml.ElementTree(root) # Writes XML file to share
-                with open(dmvpn_file, "wb") as fh:
-                    tree.write(fh)
+                            config_selection_2 = input("Do you want to add a NHS prioirty (yes/no?) ")
 
-                view_config_send(dmvpn_file) # Call Function
+                            if config_selection_2 == "yes":
 
-            if config_selection == "3":
+                                nhrp_pri_el = xml.SubElement(nhs_leaf, "priority")
+                                nhrp_range = xml.SubElement(nhrp_pri_el, "pri-range")
+
+                                nhrp_prio= input("Please Enter NHS Priority: ")
+                                nhrp_range= xml.SubElement(nhrp_range, "pri-range")
+                                nhrp_range.text = nhrp_prio
+
+                                cleanup_empty_elements(root, dmvpn_file)
+                                view_config_send(dmvpn_file)
+                                break
+
+                            if config_selection_2 =="no":
+
+                                cleanup_empty_elements(root, dmvpn_file)
+                                view_config_send(dmvpn_file)
+                                break
+
+                            else:
+                                print("\n")
+                                print("Invalid Input")
+                                print("\n")
+
+                    elif config_selection == "4":
+
+                        nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                        nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                        nhrp_map_leaf = xml.SubElement(nhrp_leaf, "map")
+
+                        nhrp_dest_leaf = xml.SubElement(nhrp_map_leaf, "dest-ipv4")
+
+                        nhrp_input4 = input("Please Enter Hub Tunnel IP:  ")
+                        nhrp_hub = xml.SubElement(nhrp_dest_leaf, "dest-ipv4")
+                        nhrp_hub.text = nhrp_input4
+
+                        nhrp_nbma1 = xml.SubElement(nhrp_dest_leaf, "nbma-ipv4")
+
+                        nhrp_input4 = input("Which NBMA IP did the tunnel change for:  ")
+                        nhrp_hub = xml.SubElement(nhrp_nbma1, "nbma-ipv4")
+                        nhrp_hub.text = nhrp_input4
+
+                        multicast_container = xml.SubElement(nhrp_map_leaf, "multicast")
+
+                        nhrp_hub = xml.SubElement(multicast_container, "nbma_ipv4")
+                        nhrp_hub.text = nhrp_input4
+
+                        cleanup_empty_elements(root, dmvpn_file)
+                        view_config_send(dmvpn_file)
+                        break
+
+                    elif config_selection == "5":
+
+                        tun_leaf = xml.SubElement(int_type_leaf, "tunnel")
+                        tun_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-tunnel")
+
+                        print("Ex. Tunner source must be entered as GigabitEthernet0/0/1, FastEthernet0/0/1 etc. NO SPACES!")
+                        source_input = input("Please Enter a tunnel source: ")
+                        tun_source = xml.SubElement(tun_leaf, "source")
+                        tun_source.text = source_input
+
+                        cleanup_empty_elements(root, dmvpn_file)
+                        view_config_send(dmvpn_file)
+                        break
+
+                    else:
+
+                        cleanup_empty_elements(root, dmvpn_file)
+                        view_config_send(dmvpn_file) # Call Function
+                        break
+
+            if config_selection == "5":
                 view_interfaces()
-            if config_selection == "4":
+                break
+            if config_selection == "6":
                 main()
+                break
             else:
                 print("\n")
-                print("Invalid selection")
+                print("Invalid Selection")
                 print("\n")
 
         except KeyboardInterrupt:
@@ -1948,7 +2102,10 @@ def dmvpn_configuration():
             if escape_1 == "2":
                 dmvpn_configuration()
             else:
-                print("Invalid selection")
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
+
 ###################################################################3
 
 def qos_configuration():
@@ -1959,7 +2116,7 @@ def qos_configuration():
     int_policy_map_file = "C:\Python\XML_Filters\Send_Config\PolicyMap_Interface_Shape_Send_Config.xml"
 
     config_selection = ' '
-    while config_selection != '7':
+    while config_selection != '6':
 
         try:
             print("\n")
@@ -1974,8 +2131,6 @@ def qos_configuration():
             print("\n")
 
             config_selection = input("Please select an option:  ")
-
-
 
             if config_selection == "1":
 
@@ -2004,41 +2159,22 @@ def qos_configuration():
 
                 match_element = xml.SubElement(class_element, "match")
 
-                tree = xml.ElementTree(root)  # Writes XML file to share
-                with open(classmap_file, "wb") as fh:
-                    tree.write(fh)
-
-                print("\n")
-                print("1. Configure Match Statement")
-                print("2. QoS Configuration Menu")
-
-                config_selection =  input("Please selct an option")
-                print("\n")
-
-                if config_selection =="1":
-
-                    while True:
-
-                            print("Please add match statements")
-                            print("\n")
-                            print("Press CTRL+C to escape at any time")
-                            print("\n")
-
-                            DSCP_input = input("Please Enter class-map DSCP/CoS values): ")
-                            match_1_element = xml.SubElement(match_element, "dscp")
-                            match_1_element.text = DSCP_input
-
-                            tree = xml.ElementTree(root)  # Writes XML file to share
-                            with open(classmap_file, "wb") as fh:
-                                tree.write(fh)
-
-                if config_selection == "2":
-                    qos_configuration()
+                while class1_1_input  not in {'match-all', 'match-any'}:
+                    class1_1_input = input("Please Enter class-map type (match-any/all): ")
 
                 else:
-                    print("\n")
-                    print("Invalid selection")
-                    print("\n")
+                    while True:
+                        print("Please add match statements")
+                        print("\n")
+                        print("Press CTRL+C to escape at any time")
+                        print("\n")
+
+                        DSCP_input = input("Please Enter class-map DSCP/CoS values): ")
+                        match_1_element = xml.SubElement(match_element, "dscp")
+                        match_1_element.text = DSCP_input
+
+                        cleanup_empty_elements(root, classmap_file)
+
 
             if config_selection == "2":
 
@@ -2056,10 +2192,11 @@ def qos_configuration():
                 print("Policy-map Configuration")
                 print("\n")
 
-                config_notice = input("Did you send you last configuration. If not it will be overwritten (yes/no) ").lower()
+                config_notice = input("Did you send you last configuration. If not it will be overwritten (yes/no) ")
 
                 if config_notice == "no":
                     view_config_send(policy_map_file)
+                    break
 
                 elif config_notice == 'yes':
 
@@ -2103,9 +2240,8 @@ def qos_configuration():
                                     percent_element = xml.SubElement(priority_container, "percent")
                                     percent_element.text = bandwidth_input
 
-                                    tree = xml.ElementTree(root)  # Writes XML file to share
-                                    with open(policy_map_file, "wb") as fh:
-                                        tree.write(fh)
+                                    cleanup_empty_elements(root, policy_map_file)
+                                    break
 
                                 if selection == "2":
 
@@ -2118,9 +2254,8 @@ def qos_configuration():
                                     percent_element = xml.SubElement(priority_container, "percent")
                                     percent_element.text = bandwidth_input
 
-                                    tree = xml.ElementTree(root)  # Writes XML file to share
-                                    with open(policy_map_file, "wb") as fh:
-                                        tree.write(fh)
+                                    cleanup_empty_elements(root, policy_map_file)
+                                    break
 
             if config_selection == "3":
 
@@ -2177,11 +2312,9 @@ def qos_configuration():
                             action_list_5 = xml.SubElement(action_list_element, "service-policy")
                             action_list_5.text = parent_pol_input
 
-                            tree = xml.ElementTree(root)
-                            with open(serv_policy_file, "wb") as fh:
-                                tree.write(fh)
-
+                            cleanup_empty_elements(root, serv_policy_file)
                             view_config_send(serv_policy_file)
+                            break
 
                         elif selection == "2":
 
@@ -2203,14 +2336,14 @@ def qos_configuration():
                             action_list_5 = xml.SubElement(action_list_element, "service-policy")
                             action_list_5.text = parent_pol_input
 
-                            tree = xml.ElementTree(root)
-                            with open(serv_policy_file, "wb") as fh:
-                                tree.write(fh)
-
+                            cleanup_empty_elements(root, serv_policy_file)
                             view_config_send(serv_policy_file)
+                            break
 
                         else:
-                            print("Invalid input")
+                            print("\n")
+                            print("Invalid Selection")
+                            print("\n")
 
 
             if config_selection == "4":
@@ -2238,9 +2371,7 @@ def qos_configuration():
                 service_1_output = xml.SubElement(service_1_element, "output")
                 service_1_output.text = output_1_policy
 
-                tree = xml.ElementTree(root)  # Writes XML file to share
-                with open(int_policy_map_file, "wb") as fh:
-                    tree.write(fh)
+                cleanup_empty_elements(root, int_policy_map_file)
 
                 view_config_send(int_policy_map_file)  # Call Function
 
@@ -2250,7 +2381,7 @@ def qos_configuration():
                 main()
             else:
                 print("\n")
-                print("Invalid selection")
+                print("Invalid Selection")
                 print("\n")
 
         except KeyboardInterrupt:
@@ -2272,21 +2403,23 @@ def qos_configuration():
             if escape_1 == "4":
                 qos_configuration()
             else:
-                print("Invalid selection")
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
 def tacacs_configuration():
 
-    config_selection = ' '
-    while config_selection != '4':
+    tacacs_file = "C:\Python\XML_Filters\Send_Config\TACACS_Send_Config.xml"
+    del_tacacs = "C:\Python\XML_Filters\Send_Config\TACACS_Delete_Config.xml"
 
-        tacacs_file = "C:\Python\XML_Filters\Send_Config\TACACS_Send_Config.xml"
-        del_tacacs = "C:\Python\XML_Filters\Send_Config\TACACS_Delete_Config.xml"
+    selection = " "
+    while selection != "4":
 
         try:
 
             print("\n")
-            print("1. Add configuration")
-            print("2. Remove/Modify configuration")
+            print("1. Add/Modify Configuration")
+            print("2. Remove Configuration")
             print("3. View TACACS")
             print("4. Main menu")
             print("\n")
@@ -2315,75 +2448,58 @@ def tacacs_configuration():
                 tac_name = xml.SubElement(tac_server, "name")
                 tac_name.text = tac_name_input
 
-                tac_address = xml.SubElement(tac_server, "address")
+                while True:
 
-                tac_ipv4_input = input("Please enter a TACACS server IP: ")
-                tac_ipv4 = xml.SubElement(tac_address, "ipv4")
-                tac_ipv4.text = tac_ipv4_input
+                    print("\n")
+                    print("1. Add/Change TACACS Server")
+                    print("2.Change TACACS Key")
+                    print("3. Main Menu")
 
-                tac_key_elem = xml.SubElement(tac_server, "key")
+                    config_selection = input("Please select an option: ")
 
-                tac_key_input = input("Please enter a TACACS key: ")
-                tac_key = xml.SubElement(tac_key_elem, "key")
-                tac_key.text = tac_key_input
+                    if config_selection == "1":
 
-                tree = xml.ElementTree(root)  # Writes XML file to share
-                with open(tacacs_file, "wb") as fh:
-                    tree.write(fh)
+                        tac_address = xml.SubElement(tac_server, "address")
 
-                view_config_send(tacacs_file)
+                        tac_ipv4_input = input("Please enter a TACACS server IP: ")
+                        tac_ipv4 = xml.SubElement(tac_address, "ipv4")
+                        tac_ipv4.text = tac_ipv4_input
+
+                        cleanup_empty_elements(root, tacacs_file)
+                        view_config_send(tacacs_file)
+                        break
+
+                    elif config_selection == "2":
+
+                        tac_key_elem = xml.SubElement(tac_server, "key")
+
+                        tac_key_input = input("Please enter a TACACS key: ")
+                        tac_key = xml.SubElement(tac_key_elem, "key")
+                        tac_key.text = tac_key_input
+
+                        cleanup_empty_elements(root, tacacs_file)
+                        view_config_send(tacacs_file)
+                        break
+
+                    elif config_selection == "3":
+                        main()
+                        break
+                    else:
+                        print("\n")
+                        print("Invalid Selection")
+                        print("\n")
 
             elif config_selection == "2":
 
-                print("\n")
-                print("Configure TACACS Server:")
-                print("\n")
-
-                print("\n")
-                print("1. Remove TACACS Group")
-                print("2. Remove/Modify TACACS Group")
-                print("\n")
-                print("Press CTRL+C to escape at any time")
-                print("\n")
-
-                config_selection = input("Please select an option:  ")
-
-                if config_selection == "1":
-
-                    del_tacacs = "C:\Python\XML_Filters\Send_Config\TACACS_Delete_Config.xml"
-                    root = xml.Element("config")
-                    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                    native_element = xml.Element("native")
-                    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-                    root.append(native_element)
-
-                    tacacs_elem = xml.SubElement(native_element, "tacacs")
-                    tac_server = xml.SubElement(tacacs_elem, "server")
-                    tac_server.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-aaa")
-
-                    tac_name_input = input("Please enter a TACACS group: ")
-                    tac_name = xml.SubElement(tac_server, "name")
-                    tac_name.set("xc:operation", "remove")
-                    tac_name.text = tac_name_input
-
-                    view_config_send(del_tacacs)
-
-                if config_selection == "2":
-
-                    root = xml.Element("config")
-                    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                    native_element = xml.Element("native")
-                    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-                    root.append(native_element)
-
-                    tacacs_elem = xml.SubElement(native_element, "tacacs")
-                    tac_server = xml.SubElement(tacacs_elem, "server")
-                    tac_server.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-aaa")
+                while True:
 
                     print("\n")
-                    print("1. Add/Remove TACACS Server")
+                    print("Configure TACACS Server:")
+                    print("\n")
+
+                    print("\n")
+                    print("1. Remove TACACS Group")
+                    print("2. Main Menu")
                     print("\n")
                     print("Press CTRL+C to escape at any time")
                     print("\n")
@@ -2392,176 +2508,200 @@ def tacacs_configuration():
 
                     if config_selection == "1":
 
+                        del_tacacs = "C:\Python\XML_Filters\Send_Config\TACACS_Delete_Config.xml"
+                        root = xml.Element("config")
+                        root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
+                        root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
+                        native_element = xml.Element("native")
+                        native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
+                        root.append(native_element)
+
+                        tacacs_elem = xml.SubElement(native_element, "tacacs")
+                        tac_server = xml.SubElement(tacacs_elem, "server")
+                        tac_server.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-aaa")
+
                         tac_name_input = input("Please enter a TACACS group: ")
                         tac_name = xml.SubElement(tac_server, "name")
+                        tac_name.set("xc:operation", "remove")
                         tac_name.text = tac_name_input
 
-                        tac_address = xml.SubElement(tac_server, "address")
-
-                        tac_ipv4_input = input("Please enter a TACACS server IP: ")
-                        tac_ipv4 = xml.SubElement(tac_address, "ipv4")
-                        tac_ipv4.set("xc:operation", "remove")
-                        tac_ipv4.text = tac_ipv4_input
-
-                        tree = xml.ElementTree(root)  # Writes XML file to share
-                        with open(del_tacacs, "wb") as fh:
-                            tree.write(fh)
-
+                        cleanup_empty_elements(root, del_tacacs)
                         view_config_send(del_tacacs)
+                        break
+
+                    elif config_selection == "2":
+                        main()
+                        break
+                    else:
+                        print("\n")
+                        print("Invalid Selection")
+                        print("\n")
 
             elif config_selection == "3":
                 view_tacacs()
+                break
             elif config_selection == "4":
                 main()
+                break
             else:
                 print("\n")
-                print("Invalid selection")
+                print("Invalid Selection")
                 print("\n")
+
 
         except KeyboardInterrupt:
 
-            print("\n")
-            print("1. Main Menu")
-            print("2. TACACS Configuration Menu")
+                    print("\n")
+                    print("1. Main Menu")
+                    print("2. TACACS Configuration Menu")
 
-            escape_1 = input("What menu do you want to escape to?")
+                    escape_1 = input("What menu do you want to escape to?")
 
-            if escape_1 == "1":
-                main()
-            if escape_1 == "2":
-                tacacs_configuration()
-            else:
-                print("Invalid selection")
+                    if escape_1 == "1":
+                        main()
+                    if escape_1 == "2":
+                        tacacs_configuration()
+                    else:
+                        print("\n")
+                        print("Invalid Selection")
+                        print("\n")
 
 def prefix_configuration():
 
     prefix_file = "C:\Python\XML_Filters\Send_Config\Prefix_Send_Config.xml"
-    prefix_del = "C:\Python\XML_Filters\Send_Config\Prefix_Delete_Config.xml"
+    prefix_del = "C:\Python\XML_Filters\Prefix_Delete_Config.xml"
 
-    config_selection = ' '
-    while config_selection != '4':
+
+    while True:
 
         try:
 
-            print("\n")
-            print("1. Add configuration")
-            print("2. Remove/Modify configuration")
-            print("3. View Prefix-list")
-            print("4. Main menu")
-            print("\n")
-            print("Press CTRL+C to escape at any time")
-            print("\n")
-
-            config_selection = input("Please select an option:  ")
-
-            if config_selection == "1":
-
-                root = xml.Element("config")
-                root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                native_element = xml.Element("native")
-                native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-                root.append(native_element)
+            while True:
 
                 print("\n")
-                print("Configure Prefix-List:")
-                print("\n")
-
-                prefix = xml.SubElement(native_element, "ip")
-                prefix_list = xml.SubElement(prefix, "prefix-list")
-                prefixes = xml.SubElement(prefix_list, "prefixes")
-
-                prefix_name_input = input("Please enter a prefix-list name: ")
-                prefix_name = xml.SubElement(prefixes, "name")
-                prefix_name.text = prefix_name_input
-
-
-                while config_selection == "1":
-
-                    seq = xml.SubElement(prefixes, "seq")
-
-                    seq_input = input("Please enter a seq number: ")
-                    num = xml.SubElement(seq, "no")
-                    num.text = seq_input
-
-                    permit_deny = xml.SubElement(seq, "permit")
-
-                    prefix_input = input("Please enter a prefix: ")
-                    ip = xml.SubElement(permit_deny, "ip")
-                    ip.text =prefix_input
-
-                    tree = xml.ElementTree(root)  # Writes XML file to share
-                    with open(prefix_file, "wb") as fh:
-                        tree.write(fh)
-
-            elif config_selection == "2":
-
-                root = xml.Element("config")
-                root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-                native_element = xml.Element("native")
-                native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-                root.append(native_element)
-
-                print("\n")
-                print("Modify/Delete  Prefix-List:")
-                print("\n")
-
-                prefix = xml.SubElement(native_element, "ip")
-                prefix_list = xml.SubElement(prefix, "prefix-list")
-                prefixes = xml.SubElement(prefix_list, "prefixes")
-
-                print("\n")
-                print("1. Remove Prefix List")
-                print("2. Remove/Modify Prefix Statement")
-                print("\n")
-                print("Press CTRL+C to escape at any time")
-                print("\n")
+                print("1. Add configuration")
+                print("2. Remove/Modify configuration")
+                print("3. View Prefix-list")
+                print("4. Main menu")
 
                 config_selection = input("Please select an option:  ")
 
                 if config_selection == "1":
 
+                    root = xml.Element("config")
+                    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
+                    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
+                    native_element = xml.Element("native")
+                    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
+                    root.append(native_element)
+
+                    print("\n")
+                    print("Configure Prefix-List:")
+                    print("\n")
+
+                    prefix = xml.SubElement(native_element, "ip")
+                    prefix_list = xml.SubElement(prefix, "prefix-list")
+                    prefixes = xml.SubElement(prefix_list, "prefixes")
+
                     prefix_name_input = input("Please enter a prefix-list name: ")
                     prefix_name = xml.SubElement(prefixes, "name")
                     prefix_name.text = prefix_name_input
 
-                    tree = xml.ElementTree(root)  # Writes XML file to share
-                    with open(prefix_del, "wb") as fh:
-                        tree.write(fh)
+                    while config_selection == "1":
 
-                    view_config_send(prefix_del)
+                        print("\n")
+                        print("Press CTRL+C to escape at any time")
+                        print("\n")
 
-                if config_selection == "2":
+                        seq = xml.SubElement(prefixes, "seq")
 
-                    prefix_name_input = input("Please enter a prefix-list name: ")
-                    prefix_name = xml.SubElement(prefixes, "name")
-                    prefix_name.text = prefix_name_input
+                        seq_input = input("Please enter a seq number: ")
+                        num = xml.SubElement(seq, "no")
+                        num.text = seq_input
 
-                    seq = xml.SubElement(prefixes, "seq")
-                    seq.set("xc:operation", "remove")
+                        permit_deny = xml.SubElement(seq, "permit")
 
-                    seq_input = input("Please enter a seq number: ")
-                    num = xml.SubElement(seq, "no")
-                    num.set("xc:operation", "remove")
-                    num.text = seq_input
+                        prefix_input = input("Please enter a prefix: ")
+                        ip = xml.SubElement(permit_deny, "ip")
+                        ip.text =prefix_input
 
-                    tree = xml.ElementTree(root)  # Writes XML file to share
-                    with open(prefix_del, "wb") as fh:
-                        tree.write(fh)
+                        cleanup_empty_elements(root, prefix_file)
 
-                    view_config_send(prefix_del)
+                elif config_selection == "2":
 
-            elif config_selection == "3":
-                view_prefix_list()
+                    root = xml.Element("config")
+                    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
+                    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
+                    native_element = xml.Element("native")
+                    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
+                    root.append(native_element)
 
-            elif config_selection == "4":
-                main()
+                    print("\n")
+                    print("Modify/Delete  Prefix-List:")
+                    print("\n")
 
-            else:
-                print("\n")
-                print("Invalid selection")
-                print("\n")
+                    prefix = xml.SubElement(native_element, "ip")
+                    prefix_list = xml.SubElement(prefix, "prefix-list")
+                    prefixes = xml.SubElement(prefix_list, "prefixes")
+                    prefixes.set("xc:operation", "remove")
+
+                    while True:
+
+                        print("\n")
+                        print("1. Remove Prefix List")
+                        print("2. Remove/Modify Prefix Sequence")
+
+                        config_selection = input("Please select an option:  ")
+
+                        if config_selection == "1":
+
+                            prefix_name_input = input("Please enter a prefix-list name: ")
+                            prefix_name = xml.SubElement(prefixes, "name")
+                            prefix_name.text = prefix_name_input
+                            prefix_name.set("xc:operation", "remove")
+
+                            cleanup_empty_elements(root, prefix_del)
+                            view_config_send(prefix_del)
+                            break
+
+                        if config_selection == "2":
+
+                            prefix = xml.SubElement(native_element, "ip")
+                            prefix_list = xml.SubElement(prefix, "prefix-list")
+                            prefixes = xml.SubElement(prefix_list, "prefixes")
+
+                            prefix_name_input = input("Please enter a prefix-list name: ")
+                            prefix_name = xml.SubElement(prefixes, "name")
+                            prefix_name.text = prefix_name_input
+
+                            seq = xml.SubElement(prefixes, "seq")
+                            seq.set("xc:operation", "remove")
+
+                            seq_input = input("Please enter a seq number: ")
+                            num = xml.SubElement(seq, "no")
+                            num.set("xc:operation", "remove")
+                            num.text = seq_input
+
+                            cleanup_empty_elements(root, prefix_del)
+                            view_config_send(prefix_del)
+                            break
+
+                        else:
+                            print("\n")
+                            print("Invalid Selection")
+                            print("\n")
+
+
+                elif config_selection == "3":
+                    view_prefix_list()
+
+                elif config_selection == "4":
+                    main()
+
+                else:
+                    print("\n")
+                    print("Invalid Selection")
+                    print("\n")
 
         except KeyboardInterrupt:
 
@@ -2579,7 +2719,9 @@ def prefix_configuration():
             if escape_1 == "3":
                 view_config_send(prefix_file)
             else:
-                print("Invalid selection")
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
 
 if __name__ == '__main__':
