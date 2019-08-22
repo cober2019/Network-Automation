@@ -351,6 +351,9 @@ def send_single_configuration(file):
         except (UnicodeError):
             print("Invalid IP address. Please try again")
             pass
+        except ncclient.operations.rpc.RPCError:
+            print("Please check your configuration")
+            pass
 
 
 
