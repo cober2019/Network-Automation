@@ -20,7 +20,7 @@ Configurable Options:
 
 8: Prefix-List - Add/Delete 
 
-9. BGP - Add/Delete configuration, neighbor add, network add, redistribution 
+9. BGP - Add/Delete configuration, neighbor add, network add, redistribute connected and OSPF
 
 10: Device Admin - View capabilites/Send configuration (dynamix XML payload or static if desired)or View configs
 
