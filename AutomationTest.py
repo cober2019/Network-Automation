@@ -2039,8 +2039,7 @@ def dmvpn_configuration():
                         while True:
                             try:
                                 ip_input, mask_input = input("Please Ente a IP address and mask: ").split()
-                                dmvpn_network = ip_input + "/" + mask_input
-                                ipaddress.IPv4Network(dmvpn_network)
+                                ipaddress.IPv4Addressk(ip_input)
 
                             except ipaddress.AddressValueError:
                                 print("\n")
