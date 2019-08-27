@@ -2771,10 +2771,6 @@ def prefix_configuration():
                                 print("Invalid Input")
                                 print("\n")
 
-                            else:
-
-                                cleanup_empty_elements(root, prefix_file)
-
 
                 elif config_selection == "2":
 
