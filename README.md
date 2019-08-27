@@ -4,7 +4,7 @@ Utilizing NETCONF/YANG, this program allows for automation of network configurat
 
 Configurable Options:
 
-1: OSPF - Add/Remove OSPF Process
+1: OSPF - Add/Remove OSPF Process, redistribution of connected, BGP, static
 
 2: SNMPv2 Add/Remove SNMPv2 communities/ACLs
 
@@ -20,9 +20,11 @@ Configurable Options:
 
 8: Prefix-List - Add/Delete 
 
-9: Device Admin - View capabilites/Send configuration (dynamix XML payload or static if desired)or View configs
+9. BGP - Add/Delete configuration, neighbor add, network add, redistribution 
 
-10: FTP Inventory - Download Inventory Files
+10: Device Admin - View capabilites/Send configuration (dynamix XML payload or static if desired)or View configs
+
+11: FTP Inventory - Download Inventory Files
 
 How did i build this program, recomendations?
 
