@@ -13,14 +13,6 @@ import ftplib
 import time
 from ncclient.operations import RPCError
 
-def get_configuration():
-
-    ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-    get_config = open("C:\Python\XML_Filters\\Interface_Get_Config.xml").read()
-    qos_get = m.get(get_config)
-
-    print(qos_get)
 
 def cleanup_empty_elements(root_var, file):
 
