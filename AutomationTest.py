@@ -8,10 +8,19 @@ import lxml.etree as ET
 import xmltodict
 import pathlib
 from socket import gaierror
+import ipaddress
 import ftplib
 import time
 from ncclient.operations import RPCError
 
+def get_configuration():
+
+    ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+
+    get_config = open("C:\Python\XML_Filters\\Interface_Get_Config.xml").read()
+    qos_get = m.get(get_config)
+
+    print(qos_get)
 
 def cleanup_empty_elements(root_var, file):
 
@@ -243,7 +252,7 @@ def send__multi_configuration(file):
     active_sheet = workbook.active
     active_sheet.protection = False
 
-    for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=5):
+    for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=10):
         for cell in row:
             print(cell.value)
 
@@ -262,7 +271,7 @@ def send__multi_configuration(file):
             else:
 
                 try:
-                    x = manager.connect(host=cell.value, port=830, username="cisco", password="cisco", device_params={
+                    x = manager.connect(host=cell.value, port=830, username="chris.oberdalhoff", password="Ravens.2014!", device_params={
                         'name': 'csr'})
 
                     print("\n")
@@ -348,12 +357,10 @@ def send_single_configuration(file):
         except AttributeError:
             print("Connection Unsucessful")
             pass
-        except (UnicodeError):
-            print("Invalid IP address. Please try again")
+        except RPCError:
+            print("Possible Sync in Progress")
             pass
-        except ncclient.operations.rpc.RPCError:
-            print("Please check your configuration")
-            pass
+
 
 
 
@@ -447,27 +454,6 @@ def view_qos():
 
     if config_selection == "2":
 
-        policy_map_file = "C:\Python\XML_Filters\PolicyMap_Get_Config.xml"
-
-        root = xml.Element("filter")
-        native_element = xml.Element("native")
-        native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-        root.append(native_element)
-        policy_element = xml.Element("policy")
-        native_element.append(policy_element)
-        policy_map_element = xml.Element("policy-map")
-        policy_map_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-policy")
-        policy_element.append(policy_map_element)
-
-        tree = xml.ElementTree(root)
-        with open(policy_map_file, "wb") as fh:
-            tree.write(fh)
-
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-        pol_config = open("C:\Python\XML_Filters\PolicyMap_Get_Config.xml").read()
-        pol_get = m.get(pol_config)
-        print(dom.parseString(str(pol_get)).toprettyxml())
 
         print("\n")
         qos_configuration()
@@ -1258,7 +1244,7 @@ def device_admin():
     config_selection = input("Please select an option?  ")
 
     if config_selection == "1":
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+        ncc_login("device", 830, "cisco", "cisco!", {'name': 'csr'})
 
         for c in m.server_capabilities:
             print(c)
@@ -1330,8 +1316,9 @@ def main():
         print(" 6: QoS (multi device)")
         print(" 7. TACACS (multi device)")
         print(" 8. Prefix-List")
-        print(" 9: Device Admin")
-        print(" 10: FTP Inventory")
+        print(" 9. BGP ")
+        print(" 10: Device Admin")
+        print(" 11: FTP Inventory")
         print("[q] (quit)")
 
         print("\n")
@@ -1355,8 +1342,10 @@ def main():
         elif config_selection == "8":
             prefix_configuration()
         elif config_selection == "9":
-            device_admin()
+            bgp_configuration()
         elif config_selection == "10":
+            device_admin()
+        elif config_selection == "11":
             ftp_files()
         elif config_selection == "q":
             print("Exiting Program")
@@ -1407,7 +1396,9 @@ def ospf_configuration():
                 ospf_element = xml.SubElement(router_element, "ios-ospf:ospf")
 
                 print("\n")
-                print("New Routing Configuration")
+                print("OSPF Configuration")
+                print("\n")
+                print("Press enter to bypass configuration option")
                 print("\n")
 
                 process_input = input("Please Enter a OSPF Process: ")
@@ -1418,43 +1409,155 @@ def ospf_configuration():
                 rid_id = xml.SubElement(ospf_element, "ios-ospf:router-id")
                 rid_id.text = rid_input
 
-                while True:
+                print("\n")
+                print("1. Add Network")
+                print("2. Redistribution")
+                print("3. Send Configuration")
+                print("\n")
 
+                config_selection = input("Please select an option:  ")
+
+                if config_selection == "1":
+
+                    network_leaf = xml.SubElement(ospf_element, "ios-ospf:network")
+
+                    while True:
+                        try:
+
+                            network_input, mask_input, area_input = input("Please Enter a  OSPF network and mask: ").split()
+
+                            ospf_network = network_input + "/" + mask_input
+                            ipaddress.IPv4Network(ospf_network)
+
+                        except ipaddress.AddressValueError:
+                            print("\n")
+                            print("Invalid Network Address")
+                            print("\n")
+                        except ipaddress.NetmaskValueError:
+                            pass
+                        else:
+
+                            network_id = xml.SubElement(network_leaf, "ios-ospf:ip")
+                            network_id.text = network_input
+
+                            mask = xml.SubElement(network_leaf, "ios-ospf:mask")
+                            mask.text = mask_input
+
+                            area_id = xml.SubElement(network_leaf, "ios-ospf:area")
+                            area_id.text = area_input
+
+                            cleanup_empty_elements(root, OSPF_file)
+                            view_config_send(OSPF_file)
+                            break
+
+                if config_selection == "2":
+
+                    redis = xml.SubElement(ospf_element, "ios-ospf:redistribute")
+
+                    while True:
+
+                        print("\n")
+                        print("1. Connected")
+                        print("2. BGP")
+                        print("3. Static")
+
+                        print("\n")
+                        config_selection = input("Please select an option:  ")
+                        print("\n")
+
+                        if config_selection == "1":
+
+                            conn= xml.SubElement(redis, "ios-ospf:connected")
+                            red_options =  xml.SubElement(conn, "ios-ospf:redist-options")
+                            subnets = xml.SubElement(red_options, "ios-ospf:subnets")
+                            subnets_2 = xml.SubElement(subnets, "ios-ospf:subnets")
+
+                            tag_prefix = input("Please enter a tag: ")
+                            tag = xml.SubElement(red_options, "ios-ospf:tag")
+                            tag.text = tag_prefix
+
+                            metric_type = input("Please enter a metric-type (default(2): ")
+                            m_type = xml.SubElement(red_options, "ios-ospf:metric-type")
+                            m_type.text = metric_type
+
+                            red_map = input("Please enter a route-map: ")
+                            route_map = xml.SubElement(red_options, "ios-ospf:route-map")
+                            route_map.text = red_map
+                            cleanup_empty_elements(root, OSPF_file)
+                            view_config_send(OSPF_file)
+                            break
+
+                        if config_selection == "2":
+
+                            while True:
+
+                                bgp = xml.SubElement(redis, "ios-ospf:bgp")
+                                as_num_input = input("Please enter a BGP AS: ")
+                                AS_range = range(1, 65353)
+
+                                if as_num_input not in AS_range:
+                                    print(" Invalid AS")
+
+                                else:
+
+                                    AS_str = str(as_num_input)
+                                    as_num =  xml.SubElement(bgp, "ios-ospf:as-number")
+                                    as_num.text = AS_str
+
+                                    red_options = xml.SubElement(bgp, "ios-ospf:redist-options")
+
+                                    tag_prefix = input("Please enter a tag: ")
+                                    tag = xml.SubElement(red_options, "ios-ospf:tag")
+                                    tag.text = tag_prefix
+
+                                    metric_type = input("Please enter a metric-type (default(2): ")
+                                    m_type = xml.SubElement(red_options, "ios-ospf:metric-type")
+                                    m_type.text = metric_type
+
+                                    red_map = input("Please enter a route-map: ")
+                                    route_map = xml.SubElement(red_options, "ios-ospf:route-map")
+                                    route_map.text = red_map
+                                    cleanup_empty_elements(root, OSPF_file)
+                                    view_config_send(OSPF_file)
+                                    break
+
+                        if config_selection == "3":
+
+                            static= xml.SubElement(redis, "ios-ospf:static")
+                            red_options =  xml.SubElement(static, "ios-ospf:redist-options")
+                            subnets = xml.SubElement(red_options, "ios-ospf:subnets")
+                            subnets_2 = xml.SubElement(subnets, "ios-ospf:subnets")
+
+                            tag_prefix = input("Please enter a tag: ")
+                            tag = xml.SubElement(red_options, "ios-ospf:tag")
+                            tag.text = tag_prefix
+
+                            metric_type = input("Please enter a metric-type (default(2): ")
+                            m_type = xml.SubElement(red_options, "ios-ospf:metric-type")
+                            m_type.text = metric_type
+
+                            red_map = input("Please enter a route-map: ")
+                            route_map = xml.SubElement(red_options, "ios-ospf:route-map")
+                            route_map.text = red_map
+                            cleanup_empty_elements(root, OSPF_file)
+                            view_config_send(OSPF_file)
+                            break
+
+                        else:
+                            print("\n")
+                            print("Invalid Selection")
+                            print("\n")
+
+                elif config_selection == "3":
+
+                    cleanup_empty_elements(root, OSPF_file)
+                    view_config_send(OSPF_file)
+                    break
+
+                else:
                     print("\n")
-                    print("1. Add Network")
-                    print("2. Send Configuration")
-
-                    config_selection = input("Please select an option:  ")
-
-                    if config_selection == "1":
-
-                        network_leaf = xml.SubElement(ospf_element, "ios-ospf:network")
-
-                        network_input = input("Please Enter a Network ID: ")
-                        network_id = xml.SubElement(network_leaf, "ios-ospf:ip")
-                        network_id.text = network_input
-
-                        mask_input = input("Please Enter a Wildcard: ")
-                        mask = xml.SubElement(network_leaf, "ios-ospf:mask")
-                        mask.text = mask_input
-
-                        area_input = input("Please Enter a Area: ")
-                        area_id = xml.SubElement(network_leaf, "ios-ospf:area")
-                        area_id.text = area_input
-
-                        cleanup_empty_elements(root, OSPF_file)
-                        break
-
-                    elif config_selection == "2":
-
-                        cleanup_empty_elements(root, OSPF_file)
-                        view_config_send(OSPF_file)
-                        break
-
-                    else:
-                        print("\n")
-                        print("Invalid Selection")
-                        print("\n")
+                    print("Invalid Selection")
+                    print("\n")
 
             elif config_selection == "2":
 
@@ -1585,7 +1688,7 @@ def snmp_configuration():
                 comm_id.set("operation", "delete")
                 comm_id.text = comm_input
 
-                cleanup_empty_elements(root, SNMP_file)
+                cleanup_empty_elements(root, Delete_Config)
 
                 send_single_configuration(Delete_Config)
 
@@ -1663,7 +1766,7 @@ def credentials_configuration():
                 while True:
 
                     print("\n")
-                    print("1. Add Passwrd")
+                    print("1. Add Password")
                     print("2. Save Configuration")
 
                     config_selection = input("Please select an option:  ")
@@ -1708,7 +1811,7 @@ def credentials_configuration():
                 name_id.set("xc:operation", "remove")
                 name_id.text = question_1
 
-                cleanup_empty_elements(root, Cred_Config)
+                cleanup_empty_elements(root, Delete_User_Config)
 
                 view_config_send(Delete_User_Config)
 
@@ -1795,41 +1898,33 @@ def interface_configuration():
                     int_descrp.text = int_choice_1
 
                     while True:
+                        try:
 
-                        print("\n")
-                        print("1. Add/Modify IP Configuration")
-                        print("2. Save Configuration")
+                            ip_input, mask_input = input("Please Enter A IP address and mask:  ").split()
+                            ipaddress.IPv4Address(ip_input)
 
-                        config_selection = input("Please select an option: ")
+                        except ValueError:
+                            print("\n")
+                            print("Invalid Input")
+                            print("\n")
 
-                        if config_selection =="1":
+                        else:
 
                             ip_leaf = xml.SubElement(int_type_leaf, "ip")
                             address_leaf = xml.SubElement(ip_leaf, "address")
                             primary_leaf = xml.SubElement(address_leaf, "primary")
 
-                            ip_input = input("Please Enter A IP Address: ")
                             address = xml.SubElement(primary_leaf, "address")
                             address.text = ip_input
 
-                            mask_input = input("Please Enter a Subnet Mask: ")
                             mask = xml.SubElement(primary_leaf, "mask")
                             mask.text = mask_input
 
                             cleanup_empty_elements(root, int_file)
                             view_config_send(int_file)
-                            break
-
-                        elif config_selection =="2":
-
                             cleanup_empty_elements(root, int_file)
                             view_config_send(int_file)
                             break
-
-                        else:
-                            print("\n")
-                            print("Invalid Selection")
-                            print("\n")
 
             if config_selection == "2":
 
@@ -1949,26 +2044,35 @@ def dmvpn_configuration():
 
                     if config_selection == "1":
 
-                        address_leaf = xml.SubElement(ip_leaf, "address")
-                        primary_leaf = xml.SubElement(address_leaf, "primary")
+                        while True:
+                            try:
+                                ip_input, mask_input = input("Please Ente a IP address and mask: ").split()
+                                dmvpn_network = ip_input + "/" + mask_input
+                                ipaddress.IPv4Network(dmvpn_network)
 
-                        ip_input = input("Please Enter A IP Address: ")
-                        address = xml.SubElement(primary_leaf, "address")
-                        address.text = ip_input
+                            except ipaddress.AddressValueError:
+                                print("\n")
+                                print("Invalid Network Address")
+                                print("\n")
+                            except ipaddress.NetmaskValueError:
+                                print("\n")
+                                print("Invalid Wilcard")
+                                print("\n")
+                            except ValueError:
+                                print("\n")
+                                print("Invalid Input")
+                                print("\n")
+                            else:
 
-                        mask_input = input("Please Enter a Subnet Mask: ")
-                        mask = xml.SubElement(primary_leaf, "mask")
-                        mask.text = mask_input
+                                ospf_leaf = xml.SubElement(ip_leaf, "ospf")
+                                ospf_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-ospf")
 
-                        ospf_leaf = xml.SubElement(ip_leaf, "ospf")
-                        ospf_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-ospf")
-
-                        ospf_net_type = input("Please Enter OSPF network Type: ")
-                        ospf_type = xml.SubElement(ospf_leaf, "network")
-                        ospf_type.text = ospf_net_type
-                        cleanup_empty_elements(root, dmvpn_file)
-                        view_config_send(dmvpn_file)
-                        break
+                                ospf_net_type = input("Please Enter OSPF network Type: ")
+                                ospf_type = xml.SubElement(ospf_leaf, "network")
+                                ospf_type.text = ospf_net_type
+                                cleanup_empty_elements(root, dmvpn_file)
+                                view_config_send(dmvpn_file)
+                                break
 
                     elif config_selection == "2":
 
@@ -2078,7 +2182,7 @@ def dmvpn_configuration():
                     else:
 
                         cleanup_empty_elements(root, dmvpn_file)
-                        view_config_send(dmvpn_file) # Call Function
+                        view_config_send(dmvpn_file)
                         break
 
             if config_selection == "5":
@@ -2166,17 +2270,38 @@ def qos_configuration():
                     class1_1_input = input("Please Enter class-map type (match-any/all): ")
 
                 else:
-                    while True:
-                        print("Please add match statements")
-                        print("\n")
-                        print("Press CTRL+C to escape at any time")
-                        print("\n")
+                    try:
+                        while True:
+                            print("Please add match statements")
+                            print("\n")
+                            print("Press CTRL+C to escape at any time")
+                            print("\n")
 
-                        DSCP_input = input("Please Enter class-map DSCP/CoS values): ")
-                        match_1_element = xml.SubElement(match_element, "dscp")
-                        match_1_element.text = DSCP_input
+                            tag_input, tag_value= str(input("Please Enter tag type: ")),  int(input("Please enter a tag value: "))
 
-                        cleanup_empty_elements(root, classmap_file)
+                            COS_range = range(1, 7)
+                            DSCP_range = (0,10, 12, 14, 18, 20, 22, 26, 28, 30, 24, 26, 38, 8, 16, 34, 24, 32, 40, 40, 56, 46)
+                            AF_range = (21, 22, 23, 31, 32, 33, 41, 42, 43)
+
+                            if tag_input == "cs" and tag_value in COS_range or tag_input == "dscp" and tag_value in DSCP_range or tag_input == "af" \
+                                    and tag_value in AF_range:
+
+                                tag_value_str = str(tag_value)
+                                match_1_element = xml.SubElement(match_element, "tag")
+                                match_1_element.text = tag_input + tag_value_str
+
+                                cleanup_empty_elements(root, classmap_file)
+
+                            else:
+                                print("\n")
+                                print("Invalid Input")
+                                print("\n")
+
+                    except ValueError:
+
+                        print("\n")
+                        print("Invalid Input")
+                        print("\n")
 
 
             if config_selection == "2":
@@ -2461,16 +2586,26 @@ def tacacs_configuration():
                     config_selection = input("Please select an option: ")
 
                     if config_selection == "1":
+                        while True:
+                            try:
+                                tac_ipv4_input = input("Please enter a TACACS server IP: ")
+                                ipaddress.ip_address(tac_ipv4_input)
 
-                        tac_address = xml.SubElement(tac_server, "address")
+                            except ValueError:
 
-                        tac_ipv4_input = input("Please enter a TACACS server IP: ")
-                        tac_ipv4 = xml.SubElement(tac_address, "ipv4")
-                        tac_ipv4.text = tac_ipv4_input
+                                print("\n")
+                                print("Invalid IP")
+                                print("\n")
 
-                        cleanup_empty_elements(root, tacacs_file)
-                        view_config_send(tacacs_file)
-                        break
+                            else:
+
+                                tac_address = xml.SubElement(tac_server, "address")
+                                tac_ipv4 = xml.SubElement(tac_address, "ipv4")
+                                tac_ipv4.text = tac_ipv4_input
+
+                                cleanup_empty_elements(root, tacacs_file)
+                                view_config_send(tacacs_file)
+                                break
 
                     elif config_selection == "2":
 
@@ -2611,24 +2746,33 @@ def prefix_configuration():
                     prefix_name.text = prefix_name_input
 
                     while config_selection == "1":
+                        while True:
+                            try:
+                                print("\n")
+                                print("Press CTRL+C to escape at any time")
+                                print("\n")
 
-                        print("\n")
-                        print("Press CTRL+C to escape at any time")
-                        print("\n")
+                                seq_input = input("Please enter a seq number: ")
 
-                        seq = xml.SubElement(prefixes, "seq")
+                                prefix_input = input("Please enter a prefix: ")
+                                ipaddress.IPv4Network(prefix_input)
 
-                        seq_input = input("Please enter a seq number: ")
-                        num = xml.SubElement(seq, "no")
-                        num.text = seq_input
+                            except ValueError:
+                                print("\n")
+                                print("Invalid Input")
+                                print("\n")
 
-                        permit_deny = xml.SubElement(seq, "permit")
+                            else:
 
-                        prefix_input = input("Please enter a prefix: ")
-                        ip = xml.SubElement(permit_deny, "ip")
-                        ip.text =prefix_input
+                                seq = xml.SubElement(prefixes, "seq")
+                                num = xml.SubElement(seq, "no")
+                                permit_deny = xml.SubElement(seq, "permit")
+                                num.text = seq_input
+                                ip = xml.SubElement(permit_deny, "ip")
+                                ip.text = prefix_input
 
-                        cleanup_empty_elements(root, prefix_file)
+                                cleanup_empty_elements(root, prefix_file)
+                                continue
 
                 elif config_selection == "2":
 
@@ -2726,6 +2870,153 @@ def prefix_configuration():
                 print("Invalid Selection")
                 print("\n")
 
+def bgp_configuration():
+
+
+    bgp_file = "C:\Python\XML_Filters\Send_Config\BGP_Send_Config.xml"
+    bgp_del = "C:\Python\XML_Filters\BGP_Delete_Config.xml"
+
+    root = xml.Element("config")
+    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
+    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
+    native_element = xml.Element("native")
+    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
+    root.append(native_element)
+    router_elem = xml.SubElement(native_element, "router")
+    bgp_elem = xml.SubElement(router_elem, "bgp")
+    bgp_elem.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-bgp")
+
+
+
+    while True:
+
+        AS_input = int(input("Please enter a local AS: "))
+        AS_range = range(1, 65353)
+
+        if AS_input not in AS_range:
+            print("invalid AS")
+
+        else:
+
+            AS_str = str(AS_input) # CONVERTS INTIGER TO STRING TO WIRTE TO XML TREE. FUNCTION WONT WRITE INTIGERS TO ELEEMENTS
+            AS_id = xml.SubElement(bgp_elem, "id")
+            AS_id.text = AS_str
+            cleanup_empty_elements(root, bgp_file)
+
+            while True:
+
+                print("\n")
+                print("1. Add Neighbor")
+                print("2. Add Network Statement")
+                print("3. Redistribtion")
+
+                config_selection = input("Please select an option:  ")
+
+                if config_selection =="1":
+
+                    bgp_neigh = xml.SubElement(bgp_elem, "neighbor")
+
+                    neigh_id= input("Please enter a neighbor: ")
+                    id = xml.SubElement(bgp_neigh, "id")
+                    id.text = neigh_id
+
+                    while True:
+
+                        neigh_AS = int(input("Please enter a neighbor AS: "))
+                        AS_range = range(1, 65353)
+
+                        if neigh_AS not in AS_range:
+                            print("invalid AS")
+
+                        else:
+
+                            AS_str = str(neigh_AS) # CONVERTS INTIGER TO STRING TO WIRTE TO XML TREE. FUNCTION WONT WRITE INTIGERS TO ELEEMENTS
+                            AS_id = xml.SubElement(bgp_neigh, "remote-as")
+                            AS_id.text = AS_str
+                            cleanup_empty_elements(root, bgp_file)
+
+                            soft_reconf = xml.SubElement(bgp_neigh, "soft-reconfiguration")
+                            soft_reconf.text = "inbound"
+
+                            cleanup_empty_elements(root, bgp_file)
+                            view_config_send(bgp_file)
+
+
+                if config_selection == "2":
+                    bgp_network = xml.SubElement(bgp_elem, "network")
+
+                    while True:
+                        try:
+                            bgp_net_input = input("Please enter a network: ")
+                            ipaddress.IPv4Network(bgp_net_input)
+
+                            bgp_mask_input= input("Please enter network mask: ")
+                            ipaddress.IPv4Network(bgp_mask_input)
+
+                        except ValueError:
+                            print("\n")
+                            print("Invalid Configuration")
+                            print("\n")
+                        except ipaddress.IPv4Network:
+                            print("\n")
+                            print("Invalid Network")
+                            print("\n")
+                        else:
+
+                            bgp_num = xml.SubElement(bgp_network, "number")
+                            bgp_num.text = bgp_net_input
+
+                            bgp_mask = xml.SubElement(bgp_network, "mask")
+                            bgp_mask.text = bgp_mask_input
+
+                            cleanup_empty_elements(root, bgp_file)
+                            view_config_send(bgp_file)
+
+                if config_selection == "3":
+
+                    redis = xml.SubElement(bgp_elem, "redistribute")
+
+                    while True:
+
+                        print("\n")
+                        print("1. Connected")
+                        print("2. OSPF")
+
+                        print("\n")
+                        config_selection = input("Please select an option:  ")
+                        print("\n")
+
+                        if config_selection == "1":
+
+                            redis = xml.SubElement(redis, "connected")
+
+                            red_map = input("Please enter a route-map: ")
+                            route_map= xml.SubElement(redis, "route-map")
+                            route_map.text = red_map
+                            cleanup_empty_elements(root, bgp_file)
+                            view_config_send(bgp_file)
+                            break
+
+                        if config_selection == "2":
+
+                            redis = xml.SubElement(redis, "ospf")
+
+                            red_map = input("Please enter a route-map: ")
+                            route_map = xml.SubElement(redis, "route-map")
+                            route_map.text = red_map
+                            cleanup_empty_elements(root, bgp_file)
+                            view_config_send(bgp_file)
+                            break
+
+                        else:
+                            print("\n")
+                            print("Invalid Selection")
+                            print("\n")
+
+            else:
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
 
 if __name__ == '__main__':
 
