@@ -2744,10 +2744,27 @@ def prefix_configuration():
                                 print("Press CTRL+C to escape at any time")
                                 print("\n")
 
-                                seq_input = input("Please enter a seq number: ")
+                                # Auto increase prefix list sequence by 5 starting 5, up to 1000. Currently this block of code will not through an expcetion if a prefix length is not entered
+                                # The configuration will through an expcetion when sent to the device.
 
-                                prefix_input = input("Please enter a prefix: ")
-                                ipaddress.IPv4Network(prefix_input)
+                                for i in range(5, 1000, 5):
+
+                                    seq_input = i
+
+                                    seq = xml.SubElement(prefixes, "seq")
+                                    num = xml.SubElement(seq, "no")
+                                    num.text = str(seq_input)
+
+                                    permit_deny = xml.SubElement(seq, "permit")
+
+                                    prefix_input = input("Please enter a prefix: ")
+                                    ipaddress.IPv4Network(prefix_input)
+
+                                    ip = xml.SubElement(permit_deny, "ip")
+                                    ip.text = prefix_input
+
+                                    cleanup_empty_elements(root, prefix_file)
+
 
                             except ValueError:
                                 print("\n")
@@ -2756,15 +2773,8 @@ def prefix_configuration():
 
                             else:
 
-                                seq = xml.SubElement(prefixes, "seq")
-                                num = xml.SubElement(seq, "no")
-                                permit_deny = xml.SubElement(seq, "permit")
-                                num.text = seq_input
-                                ip = xml.SubElement(permit_deny, "ip")
-                                ip.text = prefix_input
-
                                 cleanup_empty_elements(root, prefix_file)
-                                continue
+
 
                 elif config_selection == "2":
 
