@@ -58,6 +58,61 @@ try:
     from ncclient.operations import RPCError
 except ImportError:
     print("Module NCC Client not available.")
+try:
+    import paramiko
+except ImportError:
+    print("Module paramiko not available.")
+
+def disable_paging(remote_conn):
+
+    remote_conn.send("terminal length 0\n")
+    time.sleep(1)
+
+    output = remote_conn.recv(1000)
+    return output
+
+def paramiko_login(command):
+
+    try:
+        ip = input("Please enter a IP address: ")
+        username = 'cisco'
+        password = 'cisco'
+
+        remote_conn_pre = paramiko.SSHClient()
+
+        remote_conn_pre.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        remote_conn_pre.connect(ip, username=username, password=password, look_for_keys=False, allow_agent=False)
+        print("SSH connection established to %s" % ip)
+
+        remote_conn = remote_conn_pre.invoke_shell()
+        print("Interactive SSH session established")
+
+        output = remote_conn.recv(1000)
+        print(output)
+
+        disable_paging(remote_conn)
+
+        remote_conn.send("\n")
+        remote_conn.send(command)
+        time.sleep(2)
+
+        output = remote_conn.recv(5000)
+        output_str = output.decode('utf-8')
+        print(output_str)
+    except paramiko.ssh_exception:
+        print("\n")
+        print("Connection Unsuccessful")
+        print("\n")
+        device_admin()
+
+def permit_deny_selection(text, state):
+
+    permit_deny = ["permit", "deny"]
+    perm_deny_commands = [cmd for cmd in permit_deny if cmd.startswith(text)]
+
+    if state < len(perm_deny_commands):
+        return perm_deny_commands
 
 def ospf_net_type_selection(text, state):
 
@@ -408,25 +463,29 @@ def send_single_configuration(file):
             main()
 
             if "Credentials" in file:
-                view_users()
+                paramiko_login("show run | i user\n")
 
-            if "SNMP" in file:
-                view_snmp_users()
+            elif "SNMP" in file:
+                paramiko_login("show run | s snmp\n")
 
-            if "OSPF" in file:
-                view_ospf()
+            elif "OSPF" in file:
+                paramiko_login("show run | s ospf")
 
-            if "Interface" in file:
-                view_interfaces()
+            elif "Interface" in file:
+                paramiko_login("show run | s interface ")
 
-            if "QoS" in file:
-                view_qos()
+            elif "QoS" in file:
+                selection = input("Polciy=map or Class-map: ")
+                paramiko_login(" show run %s\n" % selection)
 
-            if "TACACS" in file:
-                view_tacacs()
+            elif "TACACS" in file:
+                paramiko_login("show run | s tacacs\n")
 
-            if "Prefix" in file:
-                view_prefix_list()
+            elif "Prefix" in file:
+                paramiko_login("show ip prefix-list\n")
+
+            elif "BGP" in file:
+                paramiko_login("show run | s bgp\n")
 
         except ValueError:
             # This exception can be triggered but the configuration is still saved to startup-config
@@ -440,873 +499,6 @@ def send_single_configuration(file):
             print("Please verify configuration succeded")
             pass
 
-
-
-
-
-######################################################################################################
-
-def view_qos():
-
-    # VIEW CLASS-MAPS, POLICY-MAPS, SERVICE POLICIES. XML VIEW IN ONLY AVAIBLE FOR NOW.
-
-    classmap_file = "C:\Python\XML_Filters\QoS_Get_Config.xml"
-    root = xml.Element("filter")
-    native_element = xml.Element("native")
-    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-    root.append(native_element)
-    policy_element = xml.Element("policy")
-    native_element.append(policy_element)
-    class_element = xml.Element("class-map")
-    class_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-policy")
-    policy_element.append(class_element)
-
-    tree = xml.ElementTree(root)
-    with open(classmap_file, "wb") as fh:
-        tree.write(fh)
-
-    print("\n")
-    print("Interface Selection Menu")
-
-    print("\n")
-    print(" 1: View Class-maps")
-    print(" 2: View Policy-maps")
-    print(" 3: Interface Policy")
-    print(" 4: QoS Configuration")
-    print(" 5: Main Menu")
-    print("\n")
-
-    config_selection = input("Please select an option:  ")
-
-    if config_selection == "1":
-
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-        qos_config = open("C:\Python\XML_Filters\QoS_Get_Config.xml").read()
-        qos_get = m.get(qos_config)
-        qos_details = xmltodict.parse(qos_get.xml)["rpc-reply"]["data"]
-
-        qos_config = qos_details["native"]["policy"]["class-map"]
-        print("")
-        print("Qos Details:")
-
-        try:
-            print("  Class-map: {}".format(qos_config["name"]))
-        except (KeyError, TypeError):
-            pass
-        try:
-            print("  match-:{}".format(qos_config["prematch"]))
-        except (KeyError, TypeError):
-            pass
-        try:
-            print("  Tag: {}".format(qos_config["match"]["dscp"]))
-        except (KeyError, TypeError):
-            pass
-
-        for item in qos_config:
-            qos_filter = item
-
-            try:
-                print("")
-                if "name" in qos_filter:
-                    try:
-                        print("  Class-map: {}".format(qos_filter["name"]))
-                    except (KeyError, TypeError):
-                        pass
-                if "prematch" in qos_filter:
-                    try:
-                        print("  Match Type: {}".format(qos_filter["prematch"]))
-                    except (KeyError, TypeError):
-                        pass
-                if "match" in qos_filter:
-                    try:
-                        print("  Tag: {}".format(qos_filter["match"]["dscp"]))
-                    except (KeyError, TypeError):
-                        pass
-            except (KeyError, TypeError):
-                pass
-                print("No Class-map configured")
-
-        print("\n")
-        qos_configuration()
-        print("\n")
-
-    if config_selection == "2":
-
-
-        print("\n")
-        qos_configuration()
-        print("\n")
-
-    elif config_selection == "3":
-        view_interfaces()
-    elif config_selection == "4":
-        qos_configuration()
-    elif config_selection == "5":
-        main()
-    else:
-        print("\n")
-        print("Invalid Selection")
-        print("\n")
-
-########################################################################
-
-def view_interfaces():
-
-        filename = "C:\Python\XML_Filters\Interface_Get_Config.xml"
-        root = xml.Element("filter")
-        root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-        root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-        native_element = xml.Element("native")
-        native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-        root.append(native_element)
-        int_element = xml.SubElement(native_element, "interface")
-
-        tree = xml.ElementTree(root)
-        with open(filename, "wb") as fh:
-            tree.write(fh)
-
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-        intf_config = open("C:\Python\XML_Filters\Interface_Get_Config.xml").read()
-        intf_get = m.get(intf_config)
-        intf_details = xmltodict.parse(intf_get.xml)["rpc-reply"]["data"]
-
-        print("\n")
-        print("Interface Selection Menu")
-
-        print("\n")
-        print(" 1: Tunnel")
-        print(" 2: Loopback")
-        print(" 3: GigabitEthernet")
-        print(" 4: Interface Configuration")
-        print(" 5: QoS Configuration")
-        print(" 6: Main Menu")
-        print("\n")
-
-
-        config_selection = input("Please select an option:  ")
-
-        if config_selection == "1":
-
-            tun_config = intf_details["native"]["interface"]["Tunnel"]
-            print("")
-            print("Interface Details:")
-
-            try:
-                print("  Tunnel: {}".format(tun_config["name"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Description: {}".format(tun_config["description"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  VRF: {}".format(tun_config["vrf"]["forwarding"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  IP: {}".format(tun_config["ip"]["address"]["primary"]["address"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Mask: {}".format(tun_config["ip"]["address"]["primary"]["mask"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  NHRP Auth: {}".format(tun_config["ip"]["nhrp"]["authentication"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  NHRP Group: {}".format(tun_config["ip"]["nhrp"]["group"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  NHRP Holtime: {}".format(tun_config["ip"]["nhrp"]["holdtime"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  NHS: {}".format(tun_config["ip"]["nhrp"]["map"]["dest-ipv4"]["dest-ipv4"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  NHS NMBA: {}".format(tun_config["ip"]["nhrp"]["map"]["dest-ipv4"]["nbma-ipv4"]["nbma-ipv4"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  OSPF Net Type: {}".format(tun_config["ip"]["nhrp"]["ospf"]["network"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  NHRP Network ID: {}".format(tun_config["ip"]["nhrp"]["map"]["dest-ipv4"]["network-id"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Tunnel Source: {}".format(tun_config["tunnel"]["source"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Service Policy: {}".format(tun_config["service-policy"]["output"]))
-            except (KeyError, TypeError):
-                pass
-
-            for item in tun_config:
-                tun_filter = item
-
-                try:
-                    print("")
-                    if "name" in tun_filter:
-                        try:
-                            print("  Tunnel: {}".format(tun_filter["name"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "description" in tun_filter:
-                        try:
-                            print("  Description: {}".format(tun_filter["description"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "vrf" in tun_filter:
-                        try:
-                            print("  VRF: {}".format(tun_filter["vrf"]["forwarding"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  IP: {}".format(tun_filter["ip"]["address"]["primary"]["address"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  Mask: {}".format(tun_filter["ip"]["address"]["primary"]["mask"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  NHRP Auth: {}".format(tun_filter["ip"]["nhrp"]["authentication"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  NHRP Group: {}".format(tun_filter["ip"]["nhrp"]["group"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  NHRP Holtime: {}".format(tun_filter["ip"]["nhrp"]["holdtime"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  NHS: {}".format(tun_filter["ip"]["nhrp"]["map"]["dest-ipv4"]["dest-ipv4"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  NHS NMBA: {}".format(tun_filter["ip"]["nhrp"]["map"]["dest-ipv4"]["nbma-ipv4"]["nbma-ipv4"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  NHRP Network ID: {}".format(tun_filter["ip"]["nhrp"]["map"]["dest-ipv4"]["network-id"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  OSPF Net Type: {}".format(tun_filter["ip"]["nhrp"]["ospf"]["network"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  Tunnel Source: {}".format(tun_filter["tunnel"]["source"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in tun_filter:
-                        try:
-                            print("  Service-Policy {}".format(tun_filter["service-policy"]["output"]))
-                        except (KeyError, TypeError):
-                            pass
-                except (KeyError, TypeError):
-                    pass
-                    print("No Tunnel Interfaces")
-
-            print("\n")
-            interface_configuration()
-            print("\n")
-
-        if config_selection == "2":
-
-            loop_config = intf_details["native"]["interface"]["Loopback"]
-            print("")
-            print("Interface Details:")
-
-            try:
-                print("  Loopback: {}".format(loop_config["name"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Description: {}".format(loop_config["description"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  VRF: {}".format(loop_config["vrf"]["forwarding"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  IP: {}".format(loop_config["ip"]["address"]["primary"]["address"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Mask: {}".format(loop_config["ip"]["address"]["primary"]["mask"]))
-            except (KeyError, TypeError):
-                pass
-
-            for item in loop_config:
-                loop_filter = item
-
-                try:
-                    print("")
-                    if "name" in loop_filter:
-                        try:
-                            print("  Loopback: {}".format(loop_filter["name"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "description" in loop_filter:
-                        try:
-                            print("  Description: {}".format(loop_filter["description"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in loop_filter:
-                        try:
-                            print("  IP: {}".format(loop_filter["ip"]["address"]["primary"]["address"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in loop_filter:
-                        try:
-                            print("  Mask: {}".format(loop_filter["ip"]["address"]["primary"]["mask"]))
-                        except (KeyError, TypeError):
-                            pass
-                except :
-                    print("No Loopback Interfaces")
-                    pass
-
-            print("\n")
-            interface_configuration()
-            print("\n")
-
-        if config_selection == "3":
-
-
-            gig_config = intf_details["native"]["interface"]["GigabitEthernet"]
-            print("")
-            print("Interface Details:")
-            try:
-                print("  GigabitEthernet: {}".format(gig_config["name"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Description: {}".format(gig_config["description"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  IP: {}".format(gig_config["ip"]["address"]["primary"]["address"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Mask: {}".format(gig_config["ip"]["address"]["primary"]["mask"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Service-Policy  {}".format(gig_config["service-policy"]["output"]))
-            except (KeyError, TypeError):
-                pass
-
-            for item in gig_config :
-                int_filter = item
-
-                try:
-                    print("")
-                    if "name" in int_filter:
-                        try:
-                            print("  GigabitEthernet: {}".format(int_filter["name"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "vrf" in int_filter:
-                        try:
-                            print("  VRF: {}".format(int_filter["vrf"]["forwarding"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "description" in int_filter:
-                        try:
-                            print("  Description: {}".format(int_filter["description"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in int_filter:
-                        try:
-                            print("  IP: {}".format(int_filter["ip"]["address"]["primary"]["address"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "ip" in int_filter:
-                        try:
-                            print("  Mask: {}".format(int_filter["ip"]["address"]["primary"]["mask"]))
-                        except (KeyError, TypeError):
-                            pass
-                    if "service-policy" in int_filter:
-                        try:
-                            print("  Service-Policy {}".format(int_filter["service-policy"]["output"]))
-                        except (KeyError, TypeError):
-                            pass
-                except:
-                    print("No Gigabit Interfaces")
-                    pass
-
-            print("\n")
-            interface_configuration()
-            print("\n")
-
-        if config_selection == "4":
-            interface_configuration()
-        if config_selection == "5":
-            qos_configuration()
-        if config_selection == "6":
-            main()
-        else:
-            print("\n")
-            print("Invalid Selection")
-            print("\n")
-
-
-###################################################################################
-
-def view_ospf():
-
-        filename = "C:\Python\XML_Filters\OSPF_Get_Config.xml"
-        root = xml.Element("filter")
-        native_element = xml.Element("native")
-        native_element.set("xmlns:ios-ospf", "http://cisco.com/ns/yang/Cisco-IOS-XE-ospf")
-        native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-        root.append(native_element)
-        router_element = xml.SubElement(native_element, "router")
-        ospf_element = xml.SubElement(router_element, "ios-ospf:ospf")
-
-        tree = xml.ElementTree(root)
-        with open(filename, "wb") as fh:
-            tree.write(fh)
-
-        print("\n")
-        print("OSPF Menu")
-        print("\n")
-
-        print(" 1: View OSPF Configurations")
-        print(" 2: Configure OSPF")
-        print(" 3: Main Menu")
-
-        print("\n")
-        config_selection = input("Please select an option:  ")
-        print("\n")
-
-        if config_selection == "1":
-
-            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-            ospf_config = open("C:\Python\XML_Filters\OSPF_Get_Config.xml").read()
-            ospf_get = m.get(ospf_config)
-            ospf_details = xmltodict.parse(ospf_get.xml)["rpc-reply"]["data"]
-            ospf_config = ospf_details["native"]["router"]["ospf"]
-
-            try:
-                print("  Process: {}".format(ospf_config["id"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Router ID: {}".format(ospf_config["router-id"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Network: {}".format(ospf_config["network"]["ip"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Wildcard: {}".format(ospf_config["network"]["mask"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Area: {}".format(ospf_config["network"]["area"]))
-            except (KeyError, TypeError):
-                pass
-
-            for item in ospf_config:
-                ospf_filter = item
-
-                ospf_config = open("C:\Python\XML_Filters\OSPF_Get_Config.xml").read()
-                ospf_get = m.get(ospf_config)
-                ospf_details = xmltodict.parse(ospf_get.xml)["rpc-reply"]["data"]
-                ospf_config = ospf_details["native"]["router"]["ospf"]
-
-                print("")
-                print("OSPF Details:")
-                if "id" in ospf_filter:
-                    try:
-                        print("  Process: {}".format(ospf_filter["id"]))
-                    except (KeyError, TypeError):
-                        pass
-                if "router-id" in ospf_filter:
-                    try:
-                        print("  Router ID: {}".format(ospf_filter["router-id"]))
-                    except (KeyError, TypeError):
-                        pass
-                if "network" in ospf_filter:
-                    try:
-                        print("  Network: {}".format(ospf_filter["network"]["ip"]))
-                    except (KeyError, TypeError):
-                        pass
-                if "network" in ospf_filter:
-                    try:
-                        print("  Wildcard: {}".format(ospf_filter["network"]["mask"]))
-                    except (KeyError, TypeError):
-                        pass
-                if "network" in ospf_filter:
-                    try:
-                        print("  Area: {}".format(ospf_filter["network"]["area"]))
-                    except (KeyError, TypeError):
-                        pass
-
-            print("\n")
-            view_ospf()
-            print("\n")
-
-        if config_selection == "2":
-            ospf_configuration()
-        if config_selection == "3":
-            main()
-        else:
-            print("\n")
-            print("Invalid Selection")
-            print("\n")
-
-
-###################################################################################
-
-def view_tacacs():
-
-    tacacs_file = "C:\Python\XML_Filters\TACACS_Get_Config.xml"
-    root = xml.Element("filter")
-    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-    native_element = xml.Element("native")
-    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-    root.append(native_element)
-
-    tacacs_elem = xml.SubElement(native_element, "tacacs")
-
-
-    tree = xml.ElementTree(root)
-    with open(tacacs_file, "wb") as fh:
-        tree.write(fh)
-
-    print("TACACS  Menu")
-
-    print("\n")
-    print(" 1: View TACACS Groups")
-    print(" 2: Configure TCACS")
-    print(" 3: Main Menu")
-
-    print("\n")
-
-    config_selection = str(input("Please select an option:  "))
-
-    if config_selection == "1":
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-        TACACS_config = open("C:\Python\XML_Filters\TACACS_Get_Config.xml").read()
-        TACACS_get = m.get(TACACS_config)
-        TACACS_details = xmltodict.parse(TACACS_get.xml)["rpc-reply"]["data"]
-        TACACS_config = TACACS_details["native"]["tacacs"]["server"]
-
-        try:
-            print("  Group: {}".format(TACACS_config["name"]))
-        except (KeyError, TypeError):
-            pass
-        try:
-            print("  Server: {}".format(TACACS_config["address"]["ipv4"]))
-        except (KeyError, TypeError):
-            pass
-        try:
-            print("  Key: {}".format(TACACS_config["key"]["key"]))
-        except (KeyError, TypeError):
-            pass
-
-        for item in TACACS_config:
-            tacacs_conf = item
-
-            print("")
-            print("TACACS Details:")
-            try:
-                if "name" in tacacs_conf:
-                    print("  Group: {}".format(tacacs_conf["name"]))
-            except (KeyError, TypeError):
-                pass
-            if "address" in tacacs_conf:
-                try:
-                    print("  Server: {}".format(tacacs_conf["address"]["ipv4"]))
-                except (KeyError, TypeError):
-                    pass
-            if "key" in tacacs_conf:
-                try:
-                    print("  Key: {}".format(tacacs_conf["key"]["key"]))
-                except (KeyError, TypeError):
-                    pass
-
-        print("\n")
-        view_tacacs()
-        print("\n")
-
-        if config_selection == "2":
-            tacacs_configuration()
-        if config_selection == "3":
-            main()
-        else:
-            print("\n")
-            print("Invalid Selection")
-            print("\n")
-
-def view_prefix_list():
-
-    filename = "C:\Python\XML_Filters\Prefix_Get_Config.xml"
-    root = xml.Element("filter")
-    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-    native_element = xml.Element("native")
-    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-    root.append(native_element)
-
-    prefix = xml.SubElement(native_element, "ip")
-    prefix_list = xml.SubElement(prefix, "prefix-list")
-
-    tree = xml.ElementTree(root)
-    with open(filename, "wb") as fh:
-        tree.write(fh)
-
-    print("Prefix-List  Menu")
-
-    print("\n")
-    print(" 1: View Prefix-List")
-    print(" 2: Configure Prefix-List")
-    print(" 3: Main Menu")
-
-    print("\n")
-
-    config_selection = str(input("Please select an option:  "))
-
-    if config_selection == "1":
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-        prefix_config = open("C:\Python\XML_Filters\Prefix_Get_Config.xml").read()
-        prefix_get = m.get(prefix_config)
-
-        print(dom.parseString(str(prefix_get)).toprettyxml())
-
-        print("\n")
-        view_prefix_list()
-        print("\n")
-
-    if config_selection == "2":
-        prefix_configuration()
-    if config_selection == "3":
-        main()
-    else:
-        print("\n")
-        print("Invalid Selection")
-        print("\n")
-
-
-
-def view_snmp_users():
-
-        filename = "C:\Python\XML_Filters\SNMPv2_Get_Config.xml"
-        root = xml.Element("filter")
-        native_element = xml.Element("native")
-        native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-        root.append(native_element)
-        snmp_element = xml.Element("snmp-server")
-        native_element.append(snmp_element)
-        community_element = xml.Element("community")
-        community_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-snmp")
-        snmp_element.append(community_element)
-
-        tree = xml.ElementTree(root)
-        with open(filename, "wb") as fh:
-            tree.write(fh)
-
-        print("SNMP  Menu")
-
-        print("\n")
-        print(" 1: View SNMP Users")
-        print(" 2: Configure SNMP Users")
-        print(" 3: Main Menu")
-
-        print("\n")
-
-        config_selection = str(input("Please select an option:  "))
-
-        if config_selection== "1":
-
-            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-            SNMPv2_config = open("C:\Python\XML_Filters\SNMPv2_Get_Config.xml").read()
-            SNMP_get = m.get(SNMPv2_config)
-            SNMP_details = xmltodict.parse(SNMP_get.xml)["rpc-reply"]["data"]
-            SNMP_config = SNMP_details["native"]["snmp-server"]["community"]
-
-            try:
-                print("  Community: {}".format(SNMP_config["name"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Access: {}".format(SNMP_config["access-list-name"]))
-            except (KeyError, TypeError):
-                pass
-
-            for item in SNMP_config:
-                snmp_comm = item
-
-                print("")
-                print("SNMP Details:")
-                try:
-                    if "name" in snmp_comm:
-                        print("  Community: {}".format(snmp_comm["name"]))
-                except (KeyError, TypeError):
-                    pass
-                try:
-                    if "access-list-name" in snmp_comm:
-                        print("  Access: {}".format(snmp_comm["access-list-name"]))
-                except (KeyError, TypeError):
-                    pass
-
-            print("\n")
-            view_snmp_users()
-            print("\n")
-
-        if config_selection == "2":
-            snmp_configuration()
-        if config_selection == "3":
-            main()
-        else:
-            print("\n")
-            print("Invalid Selection")
-            print("\n")
-###################################################################################
-
-
-def view_users():
-
-        filename = "C:\Python\XML_Filters\Credentials_Get_Config.xml"
-        root = xml.Element("filter")
-        root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-        native_element = xml.Element("native")
-        native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-        root.append(native_element)
-        username_element = xml.SubElement(native_element, "username")
-
-        tree = xml.ElementTree(root)
-        with open(filename, "wb") as fh:
-            tree.write(fh)
-
-        print("User Menu")
-
-        print("\n")
-        print(" 1: View Users")
-        print(" 2: Configure Users")
-        print(" 3: Main Menu")
-        print("\n")
-
-        config_selection = input("Please select an option:  ")
-
-        if config_selection == "1":
-
-            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
-
-            credential_config = open("C:\Python\XML_Filters\Credentials_Get_Config.xml").read()
-            config_data = m.get(credential_config)
-
-            cred_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
-            cred_config = cred_details["native"]["username"]
-
-            print("")
-            print("Username Details:")
-            try:
-                    print("  Username: {}".format(cred_config["name"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                    print("  Priv: {}".format(cred_config["privilege"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                    print("  Encryption: {}".format(cred_config["password"]["encryption"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                    print("  Password: {}".format(cred_config["password"]["password"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                    print("  Enable Encryption: {}".format(cred_config["secret"]["encryption"]))
-            except (KeyError, TypeError):
-                pass
-            try:
-                print("  Enable Password: {}".format(cred_config["secret"]["secret"]))
-                print("\n")
-            except (KeyError, TypeError):
-                pass
-
-            for item in cred_config:
-                user = item
-
-                print("")
-                print("Username Details:")
-                try:
-                    if "name" in user:
-                        print("  Username: {}".format(user["name"]))
-                except (KeyError, TypeError):
-                    pass
-                try:
-                    if "privilege" in user:
-                        print("  Priv: {}".format(user["privilege"]))
-                except (KeyError, TypeError):
-                    pass
-                try:
-                    if "password" in user:
-                        print("  Encryption: {}".format(user["password"]["encryption"]))
-                except (KeyError, TypeError):
-                    pass
-                try:
-                    if "password" in user:
-                        print("  Password: {}".format(user["password"]["password"]))
-                except (KeyError, TypeError):
-                    pass
-                try:
-                    if "secret" in user:
-                        print("  Enable Encryption: {}".format(user["secret"]["encryption"]))
-                except (KeyError, TypeError):
-                    pass
-                try:
-                    if "secret" in user:
-                        print("  Enable Password: {}".format(user["secret"]["secret"]))
-                        print("\n")
-                except (KeyError, TypeError):
-                    pass
-
-            print("\n")
-            view_users()
-            print("\n")
-
-        if config_selection == "2":
-            credentials_configuration()
-        if config_selection == "3":
-            main()
-        else:
-            print("\n")
-            print("Invalid Selection")
-            print("\n")
 
 ###########################################################################
 
@@ -1333,7 +525,7 @@ def device_admin():
     elif config_selection == "2":
 
         config_selection = ' '
-        while config_selection != '8':
+        while config_selection != '9':
 
             print("\n")
             print(" 1: OSPF")
@@ -1343,26 +535,30 @@ def device_admin():
             print(" 5: QoS (multi device)")
             print(" 6: TACACS")
             print(" 7: Prefix-List")
-            print(" 8: Main Menu")
+            print(" 8: BGP")
+            print(" 9: Main Menu")
 
             print("\n")
             config_selection = input("Please select an option:  ")
 
             if config_selection == "1":
-                view_ospf()
+                paramiko_login("show run | s ospf")
             elif config_selection == "2":
-                view_snmp_users()
+                paramiko_login("show run | s snmp\n")
             elif config_selection == "3":
-                view_users()
+                paramiko_login("show run | i user\n")
             elif config_selection == "4":
-                view_interfaces()
+                paramiko_login("show run | s interface ")
             elif config_selection == "5":
-                view_qos()
+                selection = input("Policy=map or Class-map: ")
+                paramiko_login(" show run %s\n" % selection)
             elif config_selection == "6":
-                view_tacacs()
+                paramiko_login("show run | s tacacs\n")
             elif config_selection == "7":
-                view_prefix_list()
+                paramiko_login("show ip prefix-list\n")
             elif config_selection == "8":
+                paramiko_login("show run | s bgp \n")
+            elif config_selection == "9":
                 main()
             else:
                 print("\n")
@@ -1570,9 +766,8 @@ def ospf_configuration():
                         if config_selection == "2":
 
                             while True:
-
                                 bgp = xml.SubElement(redis, "ios-ospf:bgp")
-                                as_num_input = input("Please enter a BGP AS: ")
+                                as_num_input = int(input("Please enter a BGP AS: "))
                                 AS_range = range(1, 65353)
 
                                 if as_num_input not in AS_range:
@@ -1629,7 +824,6 @@ def ospf_configuration():
                             print("\n")
 
                 elif config_selection == "3":
-
                     cleanup_empty_elements(root, OSPF_file)
                     view_config_send(OSPF_file)
                     break
@@ -1667,7 +861,7 @@ def ospf_configuration():
                 send_single_configuration(Delete_Config)  # Call Function
 
             elif config_selection == "3":
-                view_ospf()
+                paramiko_login("show run | s ospf")
             elif config_selection == "4":
                 main()
             else:
@@ -1745,7 +939,6 @@ def snmp_configuration():
                     break
 
                 else:
-
                     cleanup_empty_elements(root, SNMP_file)
                     view_config_send(SNMP_file)
                     break
@@ -1773,8 +966,7 @@ def snmp_configuration():
                 send_single_configuration(Delete_Config)
 
             elif config_selection == "3":
-                view_snmp_users()
-                break
+                paramiko_login("show run | s snmp\n")
             elif config_selection == "4":
                 main()
                 break
@@ -1896,7 +1088,7 @@ def credentials_configuration():
                 view_config_send(Delete_User_Config)
 
             if config_selection == "3":
-                view_users()
+                paramiko_login("show run | i user\n")
             if config_selection == "4":
                 main()
 
@@ -2046,7 +1238,7 @@ def interface_configuration():
                         break
 
             if config_selection == "3":
-                view_interfaces()
+                paramiko_login("show run | s interface\n ")
             elif config_selection == "4":
                 main()
             else:
@@ -2117,10 +1309,10 @@ def dmvpn_configuration():
                 int_descrp.text = int_choice_1
 
                 print("\n")
-                print("1. Add New DMVPN Configuration")
-                print("2. Modiy NHRP")
-                print("3. Modify NHS")
-                print("4. Modify NHS Mapping")
+                print("1. Add New DMVPN Tunnel")
+                print("2. Add/Modiy NHRP")
+                print("3. Add/Modify NHS")
+                print("4. Add/Modify NHS Mapping")
                 print("5. Change Tunnel Source")
                 print("6. Save Configuration")
 
@@ -2197,70 +1389,98 @@ def dmvpn_configuration():
                     break
 
                 elif config_selection == "3":
-
-                    nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
-                    nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
-                    nhs_container = xml.SubElement(nhrp_leaf, "nhs")
-                    nhs_leaf = xml.SubElement(nhs_container, "ipv4")
-
-                    nhrp_input7= input("Please Enter NHRP NHS: ")
-                    nhrp_nhs = xml.SubElement(nhs_leaf, "ipv4")
-                    nhrp_nhs.text = nhrp_input7
-
                     while True:
+                        try:
 
-                        config_selection_2 = input("Do you want to add a NHS prioirty (yes/no?) ")
+                            nhs_ip= input("Please Enter NHRP NHS: ")
+                            ipaddress.IPv4Address(nhs_ip)
 
-                        if config_selection_2 == "yes":
-
-                            nhrp_pri_el = xml.SubElement(nhs_leaf, "priority")
-                            nhrp_range = xml.SubElement(nhrp_pri_el, "pri-range")
-
-                            nhrp_prio= input("Please Enter NHS Priority: ")
-                            nhrp_range= xml.SubElement(nhrp_range, "pri-range")
-                            nhrp_range.text = nhrp_prio
-
-                            cleanup_empty_elements(root, dmvpn_file)
-                            view_config_send(dmvpn_file)
-                            break
-
-                        if config_selection_2 =="no":
-
-                            cleanup_empty_elements(root, dmvpn_file)
-                            view_config_send(dmvpn_file)
-                            break
-
-                        else:
+                        except ipaddress.AddressValueError:
+                            print("\n")
+                            print("Invalid Network Address")
+                            print("\n")
+                        except ValueError:
                             print("\n")
                             print("Invalid Input")
                             print("\n")
+                        else:
+
+                            nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                            nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                            nhs_container = xml.SubElement(nhrp_leaf, "nhs")
+                            nhs_leaf = xml.SubElement(nhs_container, "ipv4")
+                            nhrp_nhs = xml.SubElement(nhs_leaf, "ipv4")
+                            nhrp_nhs.text = nhs_ip
+
+                            config_selection_2 = input("Do you want to add a NHS prioirty (yes/no?) ")
+
+                            while True:
+                                if config_selection_2 == "yes":
+
+                                    nhrp_pri_el = xml.SubElement(nhs_leaf, "priority")
+                                    nhrp_range = xml.SubElement(nhrp_pri_el, "pri-range")
+
+                                    nhrp_prio= input("Please Enter NHS Priority: ")
+                                    nhrp_range= xml.SubElement(nhrp_range, "pri-range")
+                                    nhrp_range.text = nhrp_prio
+
+                                    cleanup_empty_elements(root, dmvpn_file)
+                                    view_config_send(dmvpn_file)
+                                    break
+
+                                if config_selection_2 =="no":
+
+                                    cleanup_empty_elements(root, dmvpn_file)
+                                    view_config_send(dmvpn_file)
+                                    break
+
+                                else:
+                                    print("\n")
+                                    print("Invalid Input")
+                                    print("\n")
 
                 elif config_selection == "4":
+                    while True:
+                        try:
 
-                    nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
-                    nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
-                    nhrp_map_leaf = xml.SubElement(nhrp_leaf, "map")
+                            hub_tun = input("Please Enter Hub Tunnel IP:  ")
+                            ipaddress.IPv4Address(hub_tun)
 
-                    nhrp_dest_leaf = xml.SubElement(nhrp_map_leaf, "dest-ipv4")
+                            hub_nbma = input("Which NBMA IP did the tunnel change for:  ")
+                            ipaddress.IPv4Address(hub_nbma)
 
-                    nhrp_input4 = input("Please Enter Hub Tunnel IP:  ")
-                    nhrp_hub = xml.SubElement(nhrp_dest_leaf, "dest-ipv4")
-                    nhrp_hub.text = nhrp_input4
+                        except ipaddress.AddressValueError:
+                            print("\n")
+                            print("Invalid IP Address")
+                            print("\n")
+                        except ValueError:
+                            print("\n")
+                            print("Invalid Input")
+                            print("\n")
+                        else:
 
-                    nhrp_nbma1 = xml.SubElement(nhrp_dest_leaf, "nbma-ipv4")
+                            nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                            nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                            nhrp_map_leaf = xml.SubElement(nhrp_leaf, "map")
 
-                    nhrp_input4 = input("Which NBMA IP did the tunnel change for:  ")
-                    nhrp_hub = xml.SubElement(nhrp_nbma1, "nbma-ipv4")
-                    nhrp_hub.text = nhrp_input4
+                            nhrp_dest_leaf = xml.SubElement(nhrp_map_leaf, "dest-ipv4")
 
-                    multicast_container = xml.SubElement(nhrp_map_leaf, "multicast")
+                            nhrp_hub = xml.SubElement(nhrp_dest_leaf, "dest-ipv4")
+                            nhrp_hub.text = hub_tun
 
-                    nhrp_hub = xml.SubElement(multicast_container, "nbma_ipv4")
-                    nhrp_hub.text = nhrp_input4
+                            nhrp_nbma1 = xml.SubElement(nhrp_dest_leaf, "nbma-ipv4")
 
-                    cleanup_empty_elements(root, dmvpn_file)
-                    view_config_send(dmvpn_file)
-                    break
+                            nhrp_hub = xml.SubElement(nhrp_nbma1, "nbma-ipv4")
+                            nhrp_hub.text = hub_nbma
+
+                            multicast_container = xml.SubElement(nhrp_map_leaf, "multicast")
+
+                            nhrp_hub = xml.SubElement(multicast_container, "nbma_ipv4")
+                            nhrp_hub.text = hub_nbma
+
+                            cleanup_empty_elements(root, dmvpn_file)
+                            view_config_send(dmvpn_file)
+                            break
 
                 elif config_selection == "5":
 
@@ -2285,8 +1505,8 @@ def dmvpn_configuration():
                     break
 
             if config_selection == "2":
-                view_interfaces()
-                break
+                tun_num = input("Tunnel Number: ")
+                paramiko_login("show run interface tunnel %s\n" % tun_num)
             if config_selection == "3":
                 main()
                 break
@@ -2399,9 +1619,7 @@ def qos_configuration():
                                 print("\n")
                                 print("Invalid Input")
                                 print("\n")
-
                     except ValueError:
-
                         print("\n")
                         print("Invalid Input")
                         print("\n")
@@ -2472,6 +1690,7 @@ def qos_configuration():
                                     percent_element.text = bandwidth_input
 
                                     cleanup_empty_elements(root, policy_map_file)
+                                    view_config_send(policy_map_file)
                                     break
 
                                 if selection == "2":
@@ -2486,6 +1705,7 @@ def qos_configuration():
                                     percent_element.text = bandwidth_input
 
                                     cleanup_empty_elements(root, policy_map_file)
+                                    view_config_send(policy_map_file)
                                     break
 
             if config_selection == "3":
@@ -2570,7 +1790,6 @@ def qos_configuration():
                             cleanup_empty_elements(root, serv_policy_file)
                             view_config_send(serv_policy_file)
                             break
-
                         else:
                             print("\n")
                             print("Invalid Selection")
@@ -2607,7 +1826,8 @@ def qos_configuration():
                 view_config_send(int_policy_map_file)  # Call Function
 
             if config_selection == "5":
-                view_qos()
+                selection = input("Polciy=map or Class-map: ")
+                paramiko_login(" show run %s\n" % selection)
             if config_selection == "6":
                 main()
             else:
@@ -2779,8 +1999,7 @@ def tacacs_configuration():
                         print("\n")
 
             elif config_selection == "3":
-                view_tacacs()
-                break
+                paramiko_login("show run | s tacacs\n")
             elif config_selection == "4":
                 main()
                 break
@@ -2864,7 +2083,11 @@ def prefix_configuration():
                                     num = xml.SubElement(seq, "no")
                                     num.text = str(seq_input)
 
-                                    permit_deny = xml.SubElement(seq, "permit")
+                                    readline.parse_and_bind("tab: complete")
+                                    readline.set_completer(permit_deny_selection)
+
+                                    per_deny_input = input("Permit ir Deny?")
+                                    permit_deny = xml.SubElement(seq, per_deny_input)
 
                                     prefix_input = input("Please enter a prefix: ")
                                     ipaddress.IPv4Network(prefix_input)
@@ -2874,14 +2097,11 @@ def prefix_configuration():
 
                                     cleanup_empty_elements(root, prefix_file)
 
-
                             except ValueError:
                                 print("\n")
                                 print("Invalid Input")
                                 print("\n")
-
                             else:
-
                                 cleanup_empty_elements(root, prefix_file)
 
 
@@ -2951,11 +2171,9 @@ def prefix_configuration():
 
 
                 elif config_selection == "3":
-                    view_prefix_list()
-
+                    paramiko_login("show ip prefix-list\n")
                 elif config_selection == "4":
                     main()
-
                 else:
                     print("\n")
                     print("Invalid Selection")
@@ -2997,8 +2215,6 @@ def bgp_configuration():
     bgp_elem = xml.SubElement(router_elem, "bgp")
     bgp_elem.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-bgp")
 
-
-
     while True:
 
         AS_input = int(input("Please enter a local AS: "))
@@ -3020,6 +2236,9 @@ def bgp_configuration():
                 print("1. Add Neighbor")
                 print("2. Add Network Statement")
                 print("3. Redistribtion")
+                print("4. View Configuration")
+                print("\n")
+
 
                 config_selection = input("Please select an option:  ")
 
@@ -3123,7 +2342,8 @@ def bgp_configuration():
                             print("\n")
                             print("Invalid Selection")
                             print("\n")
-
+                if config_selection == "4":
+                    paramiko_login("show run | s bgp \n")
             else:
                 print("\n")
                 print("Invalid Selection")
@@ -3132,3 +2352,4 @@ def bgp_configuration():
 if __name__ == '__main__':
 
     main()
+
