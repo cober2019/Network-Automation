@@ -1,18 +1,103 @@
-from ncclient import manager
-import  ncclient
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill
-import xml.etree.ElementTree as xml
-import xml.dom.minidom as dom
-import lxml.etree as ET
-import xmltodict
-import pathlib
-from socket import gaierror
-import ipaddress
-import ftplib
-import time
-from ncclient.operations import RPCError
+try:
+    from ncclient import manager
+except ImportError:
+    print("Module NCC Client not available.")
+try:
+    import  ncclient
+except ImportError:
+    print("Module NCC Client not available.")
+try:
+    from openpyxl import load_workbook
+except ImportError:
+    print("Module openpyxl not available.")
+try:
+    from openpyxl.styles import PatternFill
+except ImportError:
+    print("Module openpyxl not available.")
+try:
+    import xml.etree.ElementTree as xml
+except ImportError:
+    print("Module xml.etree.ElementTree not available.")
+try:
+    import xml.dom.minidom as dom
+except ImportError:
+    print("Module xml.dom.minidom not available.")
+try:
+    import lxml.etree as ET
+except ImportError:
+    print("Module lxml.etree as ET not available.")
+try:
+    import xmltodict
+except ImportError:
+    print("Module xmltodict not available.")
+try:
+    import pathlib
+except ImportError:
+    print("Module pathlib not available.")
+try:
+    from socket import gaierror
+except ImportError:
+    print("Module socket not available.")
+try:
+    import ipaddress
+except ImportError:
+    print("Module readline not available.")
+try:
+    import ftplib
+except ImportError:
+    print("Module ipaddress not available.")
+try:
+    import time
+except ImportError:
+    print("Module time not available.")
+try:
+    import readline
+except ImportError:
+    print("Module readline not available.")
+try:
+    from ncclient.operations import RPCError
+except ImportError:
+    print("Module NCC Client not available.")
 
+def ospf_net_type_selection(text, state):
+
+    net_types = ["point-to-point", "point-to-multipoint", "broadcast"]
+    net_types_commands = [cmd for cmd in net_types if cmd.startswith(text)]
+
+    if state < len(net_types_commands):
+        return net_types_commands[state]
+    else:
+        return None
+
+def qos_match_selection(text, state):
+
+    match_types = ["match-any", "match-all"]
+    match_types_commands = [cmd for cmd in match_types if cmd.startswith(text)]
+
+    if state < len(match_types_commands):
+        return match_types_commands[state]
+    else:
+        return None
+
+def int_type_selection(text, state):
+
+    int_types = ["0/0/0", "0/0/1", "0/0/2", "0/0/3"]
+    int_type_commands = [cmd for cmd in int_types if cmd.startswith(text)]
+
+    if state < len(int_type_commands):
+        return int_type_commands[state]
+    else:
+        return None
+
+def int_selection(text, state):
+
+    int_options = ["Tunnel", "GigabitEthernet", "FastEthernet", "Loopback"]
+    int_opt_commands = [cmd for cmd in int_options if cmd.startswith(text)]
+
+    if state < len(int_opt_commands):
+        return int_opt_commands[state]
+    else:
+        return None
 
 def cleanup_empty_elements(root_var, file):
 
@@ -211,7 +296,7 @@ def ncc_login(host, port, username, password, device_params): # Log into device 
             print("\n")
             print("Device:", device, "Session ID: ", m.session_id, " Connection: ",m.connected)
             print("\n")
-        except (UnicodeError):
+        except UnicodeError:
             print("Invalid IP address. Insure IP format is correct")
             ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
         except ncclient.NCClientError:
@@ -293,7 +378,7 @@ def send__multi_configuration(file):
                         print("Payload Error")
                         cell.fill = fail_fill
                         pass
-                except (UnicodeError):
+                except UnicodeError:
                     print("\n")
                     print("Invalid IP address. Please try again")
                     cell.fill = fail_fill
@@ -344,13 +429,15 @@ def send_single_configuration(file):
                 view_prefix_list()
 
         except ValueError:
+            # This exception can be triggered but the configuration is still saved to startup-config
             print("Configuration Saved")
             main()
         except AttributeError:
             print("Connection Unsucessful")
             pass
         except RPCError:
-            print("Possible Sync in Progress")
+            # This exception can be triggered but the configuration is successful.
+            print("Please verify configuration succeded")
             pass
 
 
@@ -496,6 +583,7 @@ def view_interfaces():
         print(" 5: QoS Configuration")
         print(" 6: Main Menu")
         print("\n")
+
 
         config_selection = input("Please select an option:  ")
 
@@ -1870,53 +1958,57 @@ def interface_configuration():
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
 
-                print("ex. GigabitEthernet")
-                print("ex. FastEthernet")
-                print("ex. Loopback")
-                print("ex. Tunnel")
-                print("\n")
-                int_type = input("Enter an interface type: ")
+                readline.parse_and_bind("tab: complete")
+                readline.set_completer(int_selection)
 
-                while int_type  ==  "GigabitEthernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
+                while True:
+                    print("Use tab to show options")
+                    print("\n")
+                    int_type = input("Please select an interface: ")
 
-                    int_type_leaf = xml.SubElement(int_element, int_type)
+                    if int_type  ==  "GigabitEthernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
 
-                    interface_number = input("Please Enter An Interface number:  ")
-                    int_name = xml.SubElement(int_type_leaf, "name")
-                    int_name.text = interface_number
+                        readline.parse_and_bind("tab: complete")
+                        readline.set_completer(int_type_selection)
 
-                    int_choice_1 = input("Please enter a description: ")
-                    int_descrp = xml.SubElement(int_type_leaf, "description")
-                    int_descrp.text = int_choice_1
+                        int_type_leaf = xml.SubElement(int_element, int_type)
 
-                    while True:
-                        try:
+                        interface_number = input("Please Enter An Interface number:  ")
+                        int_name = xml.SubElement(int_type_leaf, "name")
+                        int_name.text = interface_number
 
-                            ip_input, mask_input = input("Please Enter A IP address and mask:  ").split()
-                            ipaddress.IPv4Address(ip_input)
+                        int_choice_1 = input("Please enter a description: ")
+                        int_descrp = xml.SubElement(int_type_leaf, "description")
+                        int_descrp.text = int_choice_1
 
-                        except ValueError:
-                            print("\n")
-                            print("Invalid Input")
-                            print("\n")
+                        while True:
+                            try:
 
-                        else:
+                                ip_input, mask_input = input("Please Enter A IP address and mask:  ").split()
+                                ipaddress.IPv4Address(ip_input)
 
-                            ip_leaf = xml.SubElement(int_type_leaf, "ip")
-                            address_leaf = xml.SubElement(ip_leaf, "address")
-                            primary_leaf = xml.SubElement(address_leaf, "primary")
+                            except ValueError:
+                                print("\n")
+                                print("Invalid Input")
+                                print("\n")
 
-                            address = xml.SubElement(primary_leaf, "address")
-                            address.text = ip_input
+                            else:
 
-                            mask = xml.SubElement(primary_leaf, "mask")
-                            mask.text = mask_input
+                                ip_leaf = xml.SubElement(int_type_leaf, "ip")
+                                address_leaf = xml.SubElement(ip_leaf, "address")
+                                primary_leaf = xml.SubElement(address_leaf, "primary")
 
-                            cleanup_empty_elements(root, int_file)
-                            view_config_send(int_file)
-                            cleanup_empty_elements(root, int_file)
-                            view_config_send(int_file)
-                            break
+                                address = xml.SubElement(primary_leaf, "address")
+                                address.text = ip_input
+
+                                mask = xml.SubElement(primary_leaf, "mask")
+                                mask.text = mask_input
+
+                                cleanup_empty_elements(root, int_file)
+                                view_config_send(int_file)
+                                cleanup_empty_elements(root, int_file)
+                                view_config_send(int_file)
+                                break
 
             if config_selection == "2":
 
@@ -1928,26 +2020,30 @@ def interface_configuration():
                 root.append(native_element)
                 int_element = xml.SubElement(native_element, "interface")
 
-                print("ex. GigabitEthernet")
-                print("ex. FastEthernet")
-                print("ex. Loopback")
-                print("ex. Tunnel")
-                print("\n")
-                int_type = input("Enter an interface type: ")
+                readline.parse_and_bind("tab: complete")
+                readline.set_completer(int_selection)
 
-                while int_type == "GigabitEthernet" or int_type == "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
+                while True:
+                    print("Use tab to show options")
+                    print("\n")
+                    int_type = input("Enter an interface type: ")
 
-                    int_type = xml.SubElement(int_element, int_type)
-                    int_type.set("xc:operation", "remove")
+                    if int_type == "GigabitEthernet" or int_type == "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
 
-                    interface_number = input("Please Enter An Interface number:  ")
-                    int_name = xml.SubElement(int_type, "name")
-                    int_name.set("xc:operation", "remove")
-                    int_name.text = interface_number
+                        readline.parse_and_bind("tab: complete")
+                        readline.set_completer(int_type_selection)
 
-                    cleanup_empty_elements(root, int_file)
-                    view_config_send(int_file)
-                    break
+                        int_type = xml.SubElement(int_element, int_type)
+                        int_type.set("xc:operation", "remove")
+
+                        interface_number = input("Please Enter An Interface number:  ")
+                        int_name = xml.SubElement(int_type, "name")
+                        int_name.set("xc:operation", "remove")
+                        int_name.text = interface_number
+
+                        cleanup_empty_elements(root, int_file)
+                        view_config_send(int_file)
+                        break
 
             if config_selection == "3":
                 view_interfaces()
@@ -1990,9 +2086,8 @@ def dmvpn_configuration():
 
             print("\n")
             print("1. Add/Modify Configuration")
-            print("2. Remove/Modify Configuration")
-            print("3. View Interface")
-            print("4. Main menu")
+            print("2. View Interface(s)")
+            print("3. Main menu")
             print("\n")
             print("Press CTRL+C to escape at any time")
             print("\n")
@@ -2021,165 +2116,178 @@ def dmvpn_configuration():
                 int_descrp = xml.SubElement(int_type_leaf, "description")
                 int_descrp.text = int_choice_1
 
+                print("\n")
+                print("1. Add New DMVPN Configuration")
+                print("2. Modiy NHRP")
+                print("3. Modify NHS")
+                print("4. Modify NHS Mapping")
+                print("5. Change Tunnel Source")
+                print("6. Save Configuration")
 
-                while True:
+                config_selection = input("Please select an option: ")
 
-                    print("\n")
-                    print("1. Add New DMVPN Configuration")
-                    print("2. Modiy NHRP")
-                    print("3. Modify NHS")
-                    print("4. Modify NHS Mapping")
-                    print("5. Change Tunnel Source")
-                    print("6. Save Configuration")
+                if config_selection == "1":
 
-                    config_selection = input("Please select an option: ")
+                    while True:
+                        try:
+                            ip_input, mask_input = input("Please Ente a IP address and mask: ").split()
+                            ipaddress.IPv4Address(ip_input)
 
-                    if config_selection == "1":
+                        except ipaddress.AddressValueError:
+                            print("\n")
+                            print("Invalid Network Address")
+                            print("\n")
+                        except ipaddress.NetmaskValueError:
+                            print("\n")
+                            print("Invalid Wilcard")
+                            print("\n")
+                        except ValueError:
+                            print("\n")
+                            print("Invalid Input")
+                            print("\n")
+                        else:
 
-                        while True:
-                            try:
-                                ip_input, mask_input = input("Please Ente a IP address and mask: ").split()
-                                ipaddress.IPv4Addressk(ip_input)
+                            ip_leaf = xml.SubElement(int_type_leaf, "ip")
+                            address_leaf = xml.SubElement(ip_leaf, "address")
+                            primary_leaf = xml.SubElement(address_leaf, "primary")
 
-                            except ipaddress.AddressValueError:
-                                print("\n")
-                                print("Invalid Network Address")
-                                print("\n")
-                            except ipaddress.NetmaskValueError:
-                                print("\n")
-                                print("Invalid Wilcard")
-                                print("\n")
-                            except ValueError:
-                                print("\n")
-                                print("Invalid Input")
-                                print("\n")
-                            else:
+                            address = xml.SubElement(primary_leaf, "address")
+                            address.text = ip_input
 
-                                ospf_leaf = xml.SubElement(ip_leaf, "ospf")
-                                ospf_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-ospf")
+                            mask = xml.SubElement(primary_leaf, "mask")
+                            mask.text = mask_input
 
-                                ospf_net_type = input("Please Enter OSPF network Type: ")
-                                ospf_type = xml.SubElement(ospf_leaf, "network")
-                                ospf_type.text = ospf_net_type
-                                cleanup_empty_elements(root, dmvpn_file)
-                                view_config_send(dmvpn_file)
-                                break
+                            readline.parse_and_bind("tab: complete")
+                            readline.set_completer(ospf_net_type_selection)
 
-                    elif config_selection == "2":
+                            ospf_leaf = xml.SubElement(ip_leaf, "ospf")
+                            ospf_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-ospf")
 
-                        nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
-                        nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                            ospf_net_type = input("Please Enter OSPF network Type: ")
+                            ospf_type = xml.SubElement(ospf_leaf, "network")
+                            ospf_type.text = ospf_net_type
 
-                        nhrp_input1 = input("Please Enter NHRP auth ")
-                        nhrp_auth = xml.SubElement(nhrp_leaf, "authentication")
-                        nhrp_auth.text = nhrp_input1
+                            cleanup_empty_elements(root, dmvpn_file)
+                            view_config_send(dmvpn_file)
+                            break
 
-                        nhrp_input2 = input("Please Enter NHRP group: ")
-                        nhrp_group = xml.SubElement(nhrp_leaf, "group")
-                        nhrp_group.text = nhrp_input2
+                elif config_selection == "2":
 
-                        nhrp_input3 = input("Please Enter NHRP holdtime: ")
-                        nhrp_hold = xml.SubElement(nhrp_leaf, "holdtime")
-                        nhrp_hold.text = nhrp_input3
+                    nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                    nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
 
-                        nhrp_input8 = input("Please Enter NHRP network ID: ")
-                        nhrp_ID = xml.SubElement(nhrp_leaf, "network-id")
-                        nhrp_ID.text = nhrp_input8
+                    nhrp_input1 = input("Please Enter NHRP auth ")
+                    nhrp_auth = xml.SubElement(nhrp_leaf, "authentication")
+                    nhrp_auth.text = nhrp_input1
 
-                        cleanup_empty_elements(root, dmvpn_file)
-                        view_config_send(dmvpn_file)
-                        break
+                    nhrp_input2 = input("Please Enter NHRP group: ")
+                    nhrp_group = xml.SubElement(nhrp_leaf, "group")
+                    nhrp_group.text = nhrp_input2
 
-                    elif config_selection == "3":
+                    nhrp_input3 = input("Please Enter NHRP holdtime: ")
+                    nhrp_hold = xml.SubElement(nhrp_leaf, "holdtime")
+                    nhrp_hold.text = nhrp_input3
 
-                        nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
-                        nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
-                        nhs_container = xml.SubElement(nhrp_leaf, "nhs")
-                        nhs_leaf = xml.SubElement(nhs_container, "ipv4")
+                    nhrp_input8 = input("Please Enter NHRP network ID: ")
+                    nhrp_ID = xml.SubElement(nhrp_leaf, "network-id")
+                    nhrp_ID.text = nhrp_input8
 
-                        nhrp_input7= input("Please Enter NHRP NHS: ")
-                        nhrp_nhs = xml.SubElement(nhs_leaf, "ipv4")
-                        nhrp_nhs.text = nhrp_input7
+                    cleanup_empty_elements(root, dmvpn_file)
+                    view_config_send(dmvpn_file)
+                    break
 
-                        while True:
+                elif config_selection == "3":
 
-                            config_selection_2 = input("Do you want to add a NHS prioirty (yes/no?) ")
+                    nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                    nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                    nhs_container = xml.SubElement(nhrp_leaf, "nhs")
+                    nhs_leaf = xml.SubElement(nhs_container, "ipv4")
 
-                            if config_selection_2 == "yes":
+                    nhrp_input7= input("Please Enter NHRP NHS: ")
+                    nhrp_nhs = xml.SubElement(nhs_leaf, "ipv4")
+                    nhrp_nhs.text = nhrp_input7
 
-                                nhrp_pri_el = xml.SubElement(nhs_leaf, "priority")
-                                nhrp_range = xml.SubElement(nhrp_pri_el, "pri-range")
+                    while True:
 
-                                nhrp_prio= input("Please Enter NHS Priority: ")
-                                nhrp_range= xml.SubElement(nhrp_range, "pri-range")
-                                nhrp_range.text = nhrp_prio
+                        config_selection_2 = input("Do you want to add a NHS prioirty (yes/no?) ")
 
-                                cleanup_empty_elements(root, dmvpn_file)
-                                view_config_send(dmvpn_file)
-                                break
+                        if config_selection_2 == "yes":
 
-                            if config_selection_2 =="no":
+                            nhrp_pri_el = xml.SubElement(nhs_leaf, "priority")
+                            nhrp_range = xml.SubElement(nhrp_pri_el, "pri-range")
 
-                                cleanup_empty_elements(root, dmvpn_file)
-                                view_config_send(dmvpn_file)
-                                break
+                            nhrp_prio= input("Please Enter NHS Priority: ")
+                            nhrp_range= xml.SubElement(nhrp_range, "pri-range")
+                            nhrp_range.text = nhrp_prio
 
-                            else:
-                                print("\n")
-                                print("Invalid Input")
-                                print("\n")
+                            cleanup_empty_elements(root, dmvpn_file)
+                            view_config_send(dmvpn_file)
+                            break
 
-                    elif config_selection == "4":
+                        if config_selection_2 =="no":
 
-                        nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
-                        nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
-                        nhrp_map_leaf = xml.SubElement(nhrp_leaf, "map")
+                            cleanup_empty_elements(root, dmvpn_file)
+                            view_config_send(dmvpn_file)
+                            break
 
-                        nhrp_dest_leaf = xml.SubElement(nhrp_map_leaf, "dest-ipv4")
+                        else:
+                            print("\n")
+                            print("Invalid Input")
+                            print("\n")
 
-                        nhrp_input4 = input("Please Enter Hub Tunnel IP:  ")
-                        nhrp_hub = xml.SubElement(nhrp_dest_leaf, "dest-ipv4")
-                        nhrp_hub.text = nhrp_input4
+                elif config_selection == "4":
 
-                        nhrp_nbma1 = xml.SubElement(nhrp_dest_leaf, "nbma-ipv4")
+                    nhrp_leaf = xml.SubElement(ip_leaf, "nhrp")
+                    nhrp_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-nhrp")
+                    nhrp_map_leaf = xml.SubElement(nhrp_leaf, "map")
 
-                        nhrp_input4 = input("Which NBMA IP did the tunnel change for:  ")
-                        nhrp_hub = xml.SubElement(nhrp_nbma1, "nbma-ipv4")
-                        nhrp_hub.text = nhrp_input4
+                    nhrp_dest_leaf = xml.SubElement(nhrp_map_leaf, "dest-ipv4")
 
-                        multicast_container = xml.SubElement(nhrp_map_leaf, "multicast")
+                    nhrp_input4 = input("Please Enter Hub Tunnel IP:  ")
+                    nhrp_hub = xml.SubElement(nhrp_dest_leaf, "dest-ipv4")
+                    nhrp_hub.text = nhrp_input4
 
-                        nhrp_hub = xml.SubElement(multicast_container, "nbma_ipv4")
-                        nhrp_hub.text = nhrp_input4
+                    nhrp_nbma1 = xml.SubElement(nhrp_dest_leaf, "nbma-ipv4")
 
-                        cleanup_empty_elements(root, dmvpn_file)
-                        view_config_send(dmvpn_file)
-                        break
+                    nhrp_input4 = input("Which NBMA IP did the tunnel change for:  ")
+                    nhrp_hub = xml.SubElement(nhrp_nbma1, "nbma-ipv4")
+                    nhrp_hub.text = nhrp_input4
 
-                    elif config_selection == "5":
+                    multicast_container = xml.SubElement(nhrp_map_leaf, "multicast")
 
-                        tun_leaf = xml.SubElement(int_type_leaf, "tunnel")
-                        tun_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-tunnel")
+                    nhrp_hub = xml.SubElement(multicast_container, "nbma_ipv4")
+                    nhrp_hub.text = nhrp_input4
 
-                        print("Ex. Tunner source must be entered as GigabitEthernet0/0/1, FastEthernet0/0/1 etc. NO SPACES!")
-                        source_input = input("Please Enter a tunnel source: ")
-                        tun_source = xml.SubElement(tun_leaf, "source")
-                        tun_source.text = source_input
+                    cleanup_empty_elements(root, dmvpn_file)
+                    view_config_send(dmvpn_file)
+                    break
 
-                        cleanup_empty_elements(root, dmvpn_file)
-                        view_config_send(dmvpn_file)
-                        break
+                elif config_selection == "5":
 
-                    else:
+                    readline.parse_and_bind("tab: complete")
+                    readline.set_completer(int_selection)
 
-                        cleanup_empty_elements(root, dmvpn_file)
-                        view_config_send(dmvpn_file)
-                        break
+                    tun_leaf = xml.SubElement(int_type_leaf, "tunnel")
+                    tun_leaf.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-tunnel")
 
-            if config_selection == "5":
+                    source_input, int_type = input("Please Enter a tunnel source: ").split()
+                    tun_source = xml.SubElement(tun_leaf, "source")
+                    tun_source.text = source_input + " " +  int_type
+
+                    cleanup_empty_elements(root, dmvpn_file)
+                    view_config_send(dmvpn_file)
+                    break
+
+                else:
+
+                    cleanup_empty_elements(root, dmvpn_file)
+                    view_config_send(dmvpn_file)
+                    break
+
+            if config_selection == "2":
                 view_interfaces()
                 break
-            if config_selection == "6":
+            if config_selection == "3":
                 main()
                 break
             else:
@@ -2232,6 +2340,7 @@ def qos_configuration():
 
             if config_selection == "1":
 
+
                 root = xml.Element("config")
                 native_element = xml.Element("native")
                 native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
@@ -2250,6 +2359,9 @@ def qos_configuration():
                 class1_input = input("Please Enter class-map name: ")
                 class_id = xml.SubElement(class_element, "name")
                 class_id.text = class1_input
+
+                readline.parse_and_bind("tab: complete")
+                readline.set_completer(qos_match_selection)
 
                 class1_1_input = input("Please Enter class-map type (match-any/all): ")
                 prematch_element = xml.SubElement(class_element, "prematch")
@@ -2702,9 +2814,7 @@ def prefix_configuration():
 
 
     while True:
-
         try:
-
             while True:
 
                 print("\n")
@@ -2769,6 +2879,10 @@ def prefix_configuration():
                                 print("\n")
                                 print("Invalid Input")
                                 print("\n")
+
+                            else:
+
+                                cleanup_empty_elements(root, prefix_file)
 
 
                 elif config_selection == "2":
