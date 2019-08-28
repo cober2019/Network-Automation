@@ -469,10 +469,10 @@ def send_single_configuration(file):
                 paramiko_login("show run | s snmp\n")
 
             elif "OSPF" in file:
-                paramiko_login("show run | s ospf")
+                paramiko_login("show run | s ospf\n")
 
             elif "Interface" in file:
-                paramiko_login("show run | s interface ")
+                paramiko_login("show run | s interface\n")
 
             elif "QoS" in file:
                 selection = input("Polciy=map or Class-map: ")
