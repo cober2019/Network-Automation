@@ -331,7 +331,6 @@ def view_config_send(file):
 
 ######################################################################
 
-
 def ncc_login(host, port, username, password, device_params): # Log into device via NCC client
 
     #NCCLIENT LOGIN
@@ -444,7 +443,8 @@ def send__multi_configuration(file):
                     cell.fill = fail_fill
                     pass
 
-    ##################################################################################
+##################################################################################
+
 
 def send_single_configuration(file):
 
@@ -472,7 +472,7 @@ def send_single_configuration(file):
                 paramiko_login("show run | s ospf\n")
 
             elif "Interface" in file:
-                paramiko_login("show run | s interface\n")
+                paramiko_login("show run | s interface\n ")
 
             elif "QoS" in file:
                 selection = input("Polciy=map or Class-map: ")
@@ -501,6 +501,153 @@ def send_single_configuration(file):
 
 
 ###########################################################################
+
+def search_credentials():
+
+    search = input("Search Username: ")
+
+    success_fill = PatternFill(start_color='00FF00',
+                                                end_color='00FF00',
+                                                fill_type='solid')
+
+    fail_fill = PatternFill(start_color='FF8080',
+                                                end_color='FF8080',
+                                                fill_type='solid')
+
+    try:
+        wb_file = "C:\Python\Book1.xlsx"
+        workbook = load_workbook(wb_file)
+        active_sheet = workbook.active
+        active_sheet.protection = False
+
+    except BaseException:
+        print("Unknown file error")
+    else:
+        for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=10):
+            for cell in row:
+                print(cell.value)
+
+                if cell.value == 'Null':
+                    print("\n")
+                    print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    time.sleep(2)
+
+                    try:
+                        workbook.save("C:\Python\Book1.xlsx")
+                        workbook.save(wb_file)
+                        main()
+                    except PermissionError:
+                        print(
+                            "Could not write to file. Please ensure the file isnt open and you have write permissions.")
+                        main()
+                else:
+                    try:
+                        m = manager.connect(host=cell.value, port=830, username="cisco", password="cisco", device_params={ 'name': 'csr'})
+
+                        print("\n")
+                        print("Device:", cell.value, "Session ID: ", m.session_id, " Connection: ", m.connected)
+                        print("\n")
+
+                        credential_config = open("C:\Python\XML_Filters\Filter_Config.xml").read()
+                        config_data = m.get(credential_config)
+
+                        config_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
+                        parsed_config = config_details["native"]["username"]
+
+                        for items in parsed_config:
+                            new_items = items
+                            try:
+                                for k, v in new_items.items():
+                                    if v == search:
+                                        cell.fill = success_fill
+                                        print("\n")
+                                        print("Username:" +  search + " " + "Exist")
+                                        print("\n")
+                            except (KeyError, TypeError):
+                                pass
+
+                    except UnicodeError:
+                        print("\n")
+                        print("Invalid IP address. Please try again")
+                        cell.fill = fail_fill
+                        pass
+
+###################################################
+
+def search_snmp():
+
+    # Search config for a given configuration uses SEARCH functions to convert XML to dictionary.It then runs a for loop for the keys and values in the dictionary.
+    #If the  configration option  is in the config it will fill excel cell. It will leave blank if the config doesnt exist.
+
+    search = input("SNMP Comunity: ")
+
+    success_fill = PatternFill(start_color='00FF00',
+                                                end_color='00FF00',
+                                                fill_type='solid')
+
+    fail_fill = PatternFill(start_color='FF8080',
+                                                end_color='FF8080',
+                                                fill_type='solid')
+
+    try:
+        wb_file = "C:\Python\Book1.xlsx"
+        workbook = load_workbook(wb_file)
+        active_sheet = workbook.active
+        active_sheet.protection = False
+
+    except BaseException:
+        print("Unknown file error")
+    else:
+        for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=10):
+            for cell in row:
+                print(cell.value)
+
+                if cell.value == 'Null':
+                    print("\n")
+                    print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    time.sleep(2)
+
+                    try:
+                        workbook.save("C:\Python\Book1.xlsx")
+                        workbook.save(wb_file)
+                        main()
+                    except PermissionError:
+                        print(
+                            "Could not write to file. Please ensure the file isnt open and you have write permissions.")
+                        main()
+                else:
+                    try:
+                        m = manager.connect(host=cell.value, port=830, username="cisco", password="cisco", device_params={ 'name': 'csr'})
+
+                        print("\n")
+                        print("Device:", cell.value, "Session ID: ", m.session_id, " Connection: ", m.connected)
+                        print("\n")
+
+                        credential_config = open("C:\Python\XML_Filters\Filter_Config.xml").read()
+                        config_data = m.get(credential_config)
+
+                        config_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
+                        parsed_config = config_details["native"]["snmp-server"]["community"]
+
+                        for items in parsed_config:
+                            new_items = items
+                            try:
+                                for k, v in new_items.items():
+                                    if v == search:
+                                        cell.fill = success_fill
+                                        print("\n")
+                                        print("Community: " +search + " " + "Exist")
+                                        print("\n")
+                            except (KeyError, TypeError):
+                                pass
+
+                    except UnicodeError:
+                        print("\n")
+                        print("Invalid IP address. Please try again")
+                        cell.fill = fail_fill
+                        pass
+
+#####################################################
 
 def device_admin():
 
@@ -548,7 +695,7 @@ def device_admin():
             elif config_selection == "3":
                 paramiko_login("show run | i user\n")
             elif config_selection == "4":
-                paramiko_login("show run | s interface ")
+                paramiko_login("show run | s interface\n ")
             elif config_selection == "5":
                 selection = input("Policy=map or Class-map: ")
                 paramiko_login(" show run %s\n" % selection)
@@ -572,6 +719,32 @@ def device_admin():
     else:
         device_admin()
 
+def search_configurations():
+
+    config_selection = ' '
+    while config_selection != '3':
+
+        print("\n")
+        print("Configuration Search Menu")
+        print("\n")
+
+        print(" 1: Credentials")
+        print(" 2: SNMP")
+        print(" 3: Main Menu")
+
+        print("\n")
+        config_selection = input("Please select an option:  ")
+
+        if config_selection == "1":
+            search_credentials()
+        if config_selection == "2":
+            search_snmp()
+        elif config_selection == "3":
+            main()
+        else:
+            print("\n")
+            print("Invalid Selections")
+            print("\n")
 
 #############################################################################
 def main():
@@ -594,7 +767,8 @@ def main():
         print(" 8. Prefix-List")
         print(" 9. BGP ")
         print(" 10: Device Admin")
-        print(" 11: FTP Inventory")
+        print(" 11: Search Configurations")
+        print(" 12: FTP Inventory")
         print("[q] (quit)")
 
         print("\n")
@@ -622,6 +796,8 @@ def main():
         elif config_selection == "10":
             device_admin()
         elif config_selection == "11":
+            search_configurations()
+        elif config_selection == "12":
             ftp_files()
         elif config_selection == "q":
             print("Exiting Program")
