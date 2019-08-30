@@ -816,8 +816,8 @@ def search_configurations():
 
         print(" 1: Credentials")
         print(" 2: SNMP")
-        print(" 2: TACACS")
-        print(" 3: Main Menu")
+        print(" 3: TACACS")
+        print(" 4: Main Menu")
 
         print("\n")
         config_selection = input("Please select an option:  ")
