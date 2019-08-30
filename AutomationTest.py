@@ -66,6 +66,10 @@ try:
     import pyang
 except ImportError:
     print("Module pyang not available.")
+try:
+    import sys
+except ImportError:
+    print("Module sys not available.")
 
 
 def disable_paging(remote_conn):
@@ -100,11 +104,42 @@ def paramiko_login(command):
 
         remote_conn.send("\n")
         remote_conn.send(command)
+
+        remote_conn.send(command)
         time.sleep(2)
 
         output = remote_conn.recv(5000)
         output_str = output.decode('utf-8')
         print(output_str)
+
+
+        while True:
+            try:
+
+                repeat_selection = input("Do you want to repeat command? ")
+
+                if repeat_selection == "yes":
+                    remote_conn.send(command)
+                    time.sleep(2)
+
+                    output = remote_conn.recv(5000)
+                    output_str = output.decode('utf-8')
+                    print(output_str)
+                    continue
+
+                elif repeat_selection == "no":
+                    main()
+                    break
+                else:
+                    print("\n")
+                    print("Invalid Selection")
+                    print("\n")
+                    continue
+            except paramiko.ssh_exception:
+                print("\n")
+                print("Connection Unsuccessful")
+                print("\n")
+                main()
     except paramiko.ssh_exception:
         print("\n")
         print("Connection Unsuccessful")
@@ -971,7 +1006,7 @@ def ospf_configuration():
     print("OSPF Configuration:")
 
     config_selection = ' '
-    while   config_selection != '4':
+    while   config_selection != '5':
 
         try:
 
@@ -979,7 +1014,8 @@ def ospf_configuration():
             print("1. Add configuration" )
             print("2. Remove configuration")
             print("3. View OSPF Configuration")
-            print("4. Main menu")
+            print("4. View OSPF Operational Status")
+            print("5. Main menu")
             print("\n")
             print("Press CTRL+C to escape at any time")
             print("\n")
@@ -1190,6 +1226,26 @@ def ospf_configuration():
             elif config_selection == "3":
                 paramiko_login("show run | s ospf")
             elif config_selection == "4":
+
+                print("\n")
+                print("1. OSPF Neighbor")
+                print("2. OSPF Status")
+
+                print("\n")
+                config_selection = input("Please select an option:  ")
+                print("\n")
+
+                while True:
+                    if config_selection == "1":
+                        paramiko_login("show ip ospf neighbor\n")
+                    elif config_selection == "2":
+                        proccess_id = input("OSPF Process: ")
+                        paramiko_login("show ip ospf %s\n" % proccess_id)
+                    else:
+                        print("\n")
+                        print("Invalid Selection")
+                        print("\n")
+            elif config_selection == "5":
                 main()
             else:
                 print("\n")
@@ -2567,6 +2623,7 @@ def bgp_configuration():
                 print("2. Add Network Statement")
                 print("3. Redistribtion")
                 print("4. View Configuration")
+                print("5. View BGP Operstional Status")
                 print("\n")
 
 
@@ -2602,7 +2659,7 @@ def bgp_configuration():
                             view_config_send(bgp_file)
 
 
-                if config_selection == "2":
+                elif config_selection == "2":
                     bgp_network = xml.SubElement(bgp_elem, "network")
 
                     while True:
@@ -2632,7 +2689,7 @@ def bgp_configuration():
                             cleanup_empty_elements(root, bgp_file)
                             view_config_send(bgp_file)
 
-                if config_selection == "3":
+                elif config_selection == "3":
 
                     redis = xml.SubElement(bgp_elem, "redistribute")
 
@@ -2672,8 +2729,28 @@ def bgp_configuration():
                             print("\n")
                             print("Invalid Selection")
                             print("\n")
-                if config_selection == "4":
-                    paramiko_login("show run | s bgp \n")
+                elif config_selection == "4":
+                    paramiko_login("show run | s bgp\n")
+
+                elif config_selection == "5":
+
+                    print("\n")
+                    print("1. Neighbor")
+                    print("2. BGP Table")
+
+                    print("\n")
+                    config_selection = input("Please select an option:  ")
+                    print("\n")
+
+                    while True:
+                        if config_selection == "1":
+                            paramiko_login("show ip bgp summary\n")
+                        elif config_selection == "2":
+                            paramiko_login("show ip bgp\n")
+                        else:
+                            print("\n")
+                            print("Invalid Selection")
+                            print("\n")
             else:
                 print("\n")
                 print("Invalid Selection")
