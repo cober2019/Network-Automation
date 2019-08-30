@@ -649,6 +649,92 @@ def search_snmp():
 
 #####################################################
 
+def search_tacacs():
+
+    # Search config for a given configuration uses SEARCH functions to convert XML to dictionary.It then runs a for loop for the keys and values in the dictionary.
+    #If the  configration option  is in the config it will fill excel cell. It will leave blank if the config doesnt exist.
+
+    search = input("TACACS Group: ")
+
+    success_fill = PatternFill(start_color='00FF00',
+                                                end_color='00FF00',
+                                                fill_type='solid')
+
+    fail_fill = PatternFill(start_color='FF8080',
+                                                end_color='FF8080',
+                                                fill_type='solid')
+
+    try:
+        wb_file = "C:\Python\Book1.xlsx"
+        workbook = load_workbook(wb_file)
+        active_sheet = workbook.active
+        active_sheet.protection = False
+
+    except BaseException:
+        print("Unknown file error")
+    else:
+        for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=10):
+            for cell in row:
+                print(cell.value)
+
+                if cell.value == 'Null':
+                    print("\n")
+                    print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    time.sleep(2)
+
+                    try:
+                        workbook.save("C:\Python\Book1.xlsx")
+                        workbook.save(wb_file)
+                        main()
+                    except PermissionError:
+                        print(
+                            "Could not write to file. Please ensure the file isnt open and you have write permissions.")
+                        main()
+                else:
+                    try:
+                        m = manager.connect(host=cell.value, port=830, username="cisco", password="cisco", device_params={ 'name': 'csr'})
+
+                        print("\n")
+                        print("Device:", cell.value, "Session ID: ", m.session_id, " Connection: ", m.connected)
+                        print("\n")
+
+                        credential_config = open("C:\Python\XML_Filters\Filter_Config.xml").read()
+                        config_data = m.get(credential_config)
+
+                        config_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
+                        parsed_config = config_details["native"]["tacacs"]["server"]
+
+                        for items in parsed_config:
+                            new_items = items
+                            try:
+                                for k, v in new_items.items():
+                                    if v == search:
+                                        cell.fill = success_fill
+                                        print("\n")
+                                        try:
+                                            print("  Group: {} exist".format(new_items["name"]))
+                                        except (KeyError, TypeError):
+                                            pass
+                                        try:
+                                            print("  Server: {}".format(new_items["address"]["ipv4"]))
+                                            print("\n")
+                                        except (KeyError, TypeError):
+                                            pass
+                            except (KeyError, TypeError):
+                                pass
+
+                    except (KeyError, TypeError):
+                        print("Group " + search + " doesnt exist")
+                        print("\n")
+                        pass
+                    except UnicodeError:
+                        print("\n")
+                        print("Invalid IP address. Please try again")
+                        cell.fill = fail_fill
+                        pass
+
+#####################################################
+
 def device_admin():
 
     print("Device Admin Menu")
@@ -722,7 +808,7 @@ def device_admin():
 def search_configurations():
 
     config_selection = ' '
-    while config_selection != '3':
+    while config_selection != '4':
 
         print("\n")
         print("Configuration Search Menu")
@@ -730,6 +816,7 @@ def search_configurations():
 
         print(" 1: Credentials")
         print(" 2: SNMP")
+        print(" 2: TACACS")
         print(" 3: Main Menu")
 
         print("\n")
@@ -739,7 +826,9 @@ def search_configurations():
             search_credentials()
         if config_selection == "2":
             search_snmp()
-        elif config_selection == "3":
+        if config_selection == "3":
+            search_tacacs()
+        elif config_selection == "4":
             main()
         else:
             print("\n")
