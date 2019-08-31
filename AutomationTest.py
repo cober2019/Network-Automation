@@ -164,6 +164,36 @@ def ospf_net_type_selection(text, state):
     else:
         return None
 
+def qos_shape_pol_selection(text, state):
+
+    shape_pol_actions = ["shape", "police"]
+    shape_pol_commands = [cmd for cmd in shape_pol_actions if cmd.startswith(text)]
+
+    if state < len(shape_pol_commands):
+        return shape_pol_commands[state]
+    else:
+        return None
+
+def tunnel_mode_selection(text, state):
+
+    tunnel_actions = ["transport", "tunnel"]
+    tunnel_action_commands = [cmd for cmd in tunnel_actions if cmd.startswith(text)]
+
+    if state < len(tunnel_action_commands):
+        return tunnel_action_commands[state]
+    else:
+        return None
+
+def qos_action_selection(text, state):
+
+    qos_actions = ["bandwidth", "priority"]
+    qos_action_commands = [cmd for cmd in qos_actions if cmd.startswith(text)]
+
+    if state < len(qos_action_commands):
+        return qos_action_commands[state]
+    else:
+        return None
+
 def qos_match_selection(text, state):
 
     match_types = ["match-any", "match-all"]
@@ -284,7 +314,6 @@ def select_configuration_send():
             config_file = open("C:\Python\XML_Filters\Send_Config" + "\\" +  file).read()
             print (dom.parseString(str(config_file)).toprettyxml())
 
-            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
             send_payload = m.edit_config(config_file, target="running")
             save_configuration()
             main()
@@ -371,6 +400,8 @@ def ncc_login(host, port, username, password, device_params): # Log into device 
         print("\n")
 
         try:
+
+            global m
             m = manager.connect(host=device, port=port, username=username, password=password, device_params=device_params)
 
             print("\n")
@@ -955,6 +986,7 @@ def main():
         print(" 10: Device Admin")
         print(" 11: Search Configurations")
         print(" 12: FTP Inventory")
+        print(" 13: Device Model/Serial")
         print("[q] (quit)")
 
         print("\n")
@@ -985,6 +1017,8 @@ def main():
             search_configurations()
         elif config_selection == "12":
             ftp_files()
+        elif config_selection == "13":
+            inventory()
         elif config_selection == "q":
             print("Exiting Program")
             print("\n")
@@ -2023,76 +2057,42 @@ def qos_configuration():
                 policy_map_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-policy")
                 policy_element.append(policy_map_element)
 
+                pol_map_input = input("Please create policy map name: ")
+                pol_map_name = xml.SubElement(policy_map_element, "name")
+                pol_map_name.text = pol_map_input
+
                 print("\n")
                 print("Policy-map Configuration")
                 print("\n")
 
-                config_notice = input("Did you send you last configuration. If not it will be overwritten (yes/no) ")
+                while True:
 
-                if config_notice == "no":
-                    view_config_send(policy_map_file)
-                    break
-
-                elif config_notice == 'yes':
-
-                    pol_map_input = input("Please create policy map name: ")
-                    pol_map_name = xml.SubElement(policy_map_element, "name")
-                    pol_map_name.text = pol_map_input
+                    print("\n")
+                    print("Press CTRL+C to escape at any time")
+                    print("\n")
 
                     pol_class1_element = xml.SubElement(policy_map_element, "class")
 
-                    while config_notice == 'yes':
+                    class_to_queue = input("Please create a  queue: ")
+                    pol_name_1 = xml.SubElement(pol_class1_element, "name")
+                    pol_name_1.text = class_to_queue
 
-                        print("\n")
-                        print("Press CTRL+C to escape at any time")
-                        print("\n")
+                    action_list_element = xml.SubElement(pol_class1_element, "action-list")
 
-                        class_to_queue = input("Please map class to queues: ")
-                        pol_name_1 = xml.SubElement(pol_class1_element, "name")
-                        pol_name_1.text = class_to_queue
+                    readline.parse_and_bind("tab: complete")
+                    readline.set_completer(qos_action_selection)
 
-                        action_list_element = xml.SubElement(pol_class1_element, "action-list")
+                    band_prio = input("Please Enter class-map type (bandwidth/priority): ")
+                    action_type_element = xml.SubElement(action_list_element, "action-type")
+                    action_type_element.text =band_prio
 
-                        while True:
+                    priority_container = xml.SubElement(action_list_element, band_prio)
 
-                            print("\n")
-                            print("1. Bandwidth")
-                            print("2. Priority")
-                            print("\n")
+                    bandwidth_input = input("Please enter bandwith percent: ")
+                    percent_element = xml.SubElement(priority_container, "percent")
+                    percent_element.text = bandwidth_input
 
-                            selection = input("Please select an option: ")
-
-                            if selection == "1" or "2":
-
-                                if selection == "1":
-
-                                    action_type_element = xml.SubElement(action_list_element, "action-type")
-                                    action_type_element.text = "bandwidth"
-
-                                    priority_container = xml.SubElement(action_list_element, "bandwidth")
-
-                                    bandwidth_input = input("Please enter bandwith percent")
-                                    percent_element = xml.SubElement(priority_container, "percent")
-                                    percent_element.text = bandwidth_input
-
-                                    cleanup_empty_elements(root, policy_map_file)
-                                    view_config_send(policy_map_file)
-                                    break
-
-                                if selection == "2":
-
-                                    action_type_element = xml.SubElement(action_list_element, "action-type")
-                                    action_type_element.text = "priority"
-
-                                    priority_container = xml.SubElement(action_list_element, "priority")
-
-                                    bandwidth_input = input("Please enter priority percent")
-                                    percent_element = xml.SubElement(priority_container, "percent")
-                                    percent_element.text = bandwidth_input
-
-                                    cleanup_empty_elements(root, policy_map_file)
-                                    view_config_send(policy_map_file)
-                                    break
+                    cleanup_empty_elements(root, policy_map_file)
 
             if config_selection == "3":
 
@@ -2120,67 +2120,30 @@ def qos_configuration():
 
                 while True:
 
-                    print("\n")
-                    print("1. Shape")
-                    print("2. Police")
-                    print("\n")
+                    readline.parse_and_bind("tab: complete")
+                    readline.set_completer(qos_shape_pol_selection)
 
-                    selection = input("Please select an option: ")
+                    shape_or_police = input("Shape or Police: : ")
+                    action_type_5_element = xml.SubElement(action_list_5_element, "action-type")
+                    action_type_5_element.text = shape_or_police
 
-                    if selection == "1" or "2":
+                    shape_element = xml.SubElement(action_list_5_element, shape_or_police)
+                    average_element = xml.SubElement(shape_element, "average")
 
-                        if selection == "1":
+                    bandwidth_5_input = input("Please enter bandwidth in bits: ")
+                    percent_5_element = xml.SubElement(average_element, "bit-rate")
+                    percent_5_element.text = bandwidth_5_input
 
-                            action_type_5_element = xml.SubElement(action_list_5_element, "action-type")
-                            action_type_5_element.text = "shape"
+                    action_list_element = xml.SubElement(pol_class5_element, "action-list")
+                    action_type_element = xml.SubElement(action_list_element, "action-type")
+                    action_type_element.text = "service-policy"
 
-                            shape_element = xml.SubElement(action_list_5_element, "shape")
-                            average_element = xml.SubElement(shape_element, "average")
+                    child_pol_input = input("Please enter a child policy map: ")
+                    action_list_5 = xml.SubElement(action_list_element, "service-policy")
+                    action_list_5.text = child_pol_input
 
-                            bandwidth_5_input = input("Please enter bandwith in bits: ")
-                            percent_5_element = xml.SubElement(average_element, "bit-rate")
-                            percent_5_element.text = bandwidth_5_input
-
-                            action_list_element = xml.SubElement(pol_class5_element, "action-list")
-                            action_type_element = xml.SubElement(action_list_element, "action-type")
-                            action_type_element.text = "service-policy"
-
-                            parent_pol_input = input("Please enter a child policy map: ")
-                            action_list_5 = xml.SubElement(action_list_element, "service-policy")
-                            action_list_5.text = parent_pol_input
-
-                            cleanup_empty_elements(root, serv_policy_file)
-                            view_config_send(serv_policy_file)
-                            break
-
-                        elif selection == "2":
-
-                            action_type_5_element = xml.SubElement(action_list_5_element, "action-type")
-                            action_type_5_element.text = "police"
-
-                            tar_bit_rate = xml.SubElement(action_list_5_element, "police-target-bitrate")
-                            police = xml.SubElement(tar_bit_rate, "police")
-
-                            bandwidth_5_input = input("Please enter bandwith in bits: ")
-                            percent_5_element = xml.SubElement(police, "bit-rate")
-                            percent_5_element.text = bandwidth_5_input
-
-                            action_list_element = xml.SubElement(pol_class5_element, "action-list")
-                            action_type_element = xml.SubElement(action_list_element, "action-type")
-                            action_type_element.text = "service-policy"
-
-                            parent_pol_input = input("Please enter a child policy map: ")
-                            action_list_5 = xml.SubElement(action_list_element, "service-policy")
-                            action_list_5.text = parent_pol_input
-
-                            cleanup_empty_elements(root, serv_policy_file)
-                            view_config_send(serv_policy_file)
-                            break
-                        else:
-                            print("\n")
-                            print("Invalid Selection")
-                            print("\n")
-
+                    cleanup_empty_elements(root, serv_policy_file)
+                    view_config_send(serv_policy_file)
 
             if config_selection == "4":
 
@@ -2209,7 +2172,7 @@ def qos_configuration():
 
                 cleanup_empty_elements(root, int_policy_map_file)
 
-                view_config_send(int_policy_map_file)  # Call Function
+                view_config_send(int_policy_map_file)
 
             if config_selection == "5":
                 selection = input("Polciy=map or Class-map: ")
@@ -2226,7 +2189,7 @@ def qos_configuration():
             print("\n")
             print("1. Main Menu")
             print("2. Send Class-map Configuration")
-            print("3. Send Policy Configuration")
+            print("3. Send Policy-map Configuration")
             print("4. QoS Configuration Menu")
 
             escape_1 = input("What menu do you want to escape to?")
@@ -2623,7 +2586,7 @@ def bgp_configuration():
                 print("2. Add Network Statement")
                 print("3. Redistribtion")
                 print("4. View Configuration")
-                print("5. View BGP Operstional Status")
+                print("5. View BGP Operational Status")
                 print("\n")
 
 
@@ -2755,6 +2718,134 @@ def bgp_configuration():
                 print("\n")
                 print("Invalid Selection")
                 print("\n")
+
+def inventory():
+
+    #Get serial nuber and model of a device. IT works with with ISR 4331 but not 3850. After reviewing 3850 config i dont see a model listed with xml file.
+
+    filename = "C:\Python\XML_Filters\Serial_Model.xml"
+
+    root = xml.Element("filter")
+    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
+    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
+    native_element = xml.Element("native")
+    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
+    root.append(native_element)
+    license_elem = xml.SubElement(native_element, "license")
+
+    tree = xml.ElementTree(root)
+    with open(filename, "wb") as fh:
+        tree.write(fh)
+
+    print("\n")
+    print("1. Multi-device")
+    print("2. Single device")
+
+    while True:
+        print("\n")
+        config_selection = input("Please select an option:  ")
+        print("\n")
+
+        if config_selection == "1":
+
+            success_fill = PatternFill(start_color='00FF00',
+                                       end_color='00FF00',
+                                       fill_type='solid')
+
+            fail_fill = PatternFill(start_color='FF8080',
+                                    end_color='FF8080',
+                                    fill_type='solid')
+
+            try:
+                wb_file = "C:\Python\Book1.xlsx"
+                workbook = load_workbook(wb_file)
+                active_sheet = workbook.active
+                active_sheet.protection = False
+
+            except BaseException:
+                print("Unknown file error")
+            else:
+                for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=10):
+                    for cell in row:
+                        if cell.value == 'Null':
+                            print("\n")
+                            print(
+                                "Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success",
+                                "No File =  User not Found")
+                            time.sleep(2)
+
+                            try:
+                                workbook.save("C:\Python\Book1.xlsx")
+                                workbook.save(wb_file)
+                                main()
+                            except PermissionError:
+                                print(
+                                    "Could not write to file. Please ensure the file isnt open and you have write permissions.")
+                                main()
+                        else:
+                            try:
+                                global m
+                                m = manager.connect(host=cell.value, port=830, username="cisco", password="cisco",
+                                                    device_params={'name': 'csr'})
+
+                                print("\n")
+                                print("Device:", cell.value, "Session ID: ", m.session_id, " Connection: ", m.connected)
+                                print("\n")
+
+                                serial_path = open("C:\Python\XML_Filters\Serial_Model.xml").read()
+                                serial_get = m.get(serial_path)
+                                lic_details = xmltodict.parse(serial_get.xml)["rpc-reply"]["data"]
+                                lic_config = lic_details["native"]["license"]
+
+                                try:
+                                    print("  Model: {}".format(lic_config["udi"]["pid"]))
+                                except (KeyError, TypeError):
+                                    pass
+                                try:
+                                    print("  Serial: {}".format(lic_config["udi"]["sn"]))
+                                except (KeyError, TypeError):
+                                    print("Unable to get model/serial")
+                                    pass
+                            except (KeyError, TypeError):
+                                print("Unable to get model/serial" )
+                                print("\n")
+                                pass
+                            except UnicodeError:
+                                print("\n")
+                                print("Invalid IP address. Please try again")
+                                cell.fill = fail_fill
+                                pass
+                            except ncclient.NCClientError:
+                                print("\n")
+                                print("Connection Unsuccessful")
+                                cell.fill = fail_fill
+                                pass
+
+        elif config_selection == "2":
+
+            ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+
+            serial_path = open("C:\Python\XML_Filters\Serial_Model.xml").read()
+            serial_get = m.get(serial_path)
+            lic_details = xmltodict.parse(serial_get.xml)["rpc-reply"]["data"]
+            lic_config = lic_details["native"]["license"]
+            print("")
+            print("Device Details:")
+
+            try:
+                print("  Model: {}".format(lic_config["udi"]["pid"]))
+            except (KeyError, TypeError):
+                pass
+            try:
+                print("  Serial: {}".format(lic_config["udi"]["sn"]))
+                break
+            except (KeyError, TypeError):
+                print("Can't find serial")
+                pass
+        else:
+            print("\n")
+            print("Invalid Selection")
+            print("\n")
 
 if __name__ == '__main__':
 
