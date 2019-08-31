@@ -31,6 +31,11 @@ Optional:
 
 1. FTP server to download a copy of the inventory excel file
 
+Notes:
+
+TAB/Autocomplete function is is avaible for some configuration options. This will show the user options minimizing mistakes
+Press ENTER to leave configuration options blank. Example. if you enter and OSPF proccess but dont need to set a router ID press ENTER to leave blank. 
+
 Please reach out to me if you have any questions. All feedback and requests are appreciatied:
 
 Email - cober91130@gmail.com
