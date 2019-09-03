@@ -900,24 +900,33 @@ def device_admin():
             config_selection = input("Please select an option:  ")
 
             if config_selection == "1":
-                paramiko_login("show run | s ospf")
+                paramiko_login("show run | s ospf\n")
+                break
             elif config_selection == "2":
                 paramiko_login("show run | s snmp\n")
+                break
             elif config_selection == "3":
                 paramiko_login("show run | i user\n")
+                break
             elif config_selection == "4":
                 paramiko_login("show run | s interface\n ")
+                break
             elif config_selection == "5":
                 selection = input("Policy=map or Class-map: ")
                 paramiko_login(" show run %s\n" % selection)
+                break
             elif config_selection == "6":
                 paramiko_login("show run | s tacacs\n")
+                break
             elif config_selection == "7":
                 paramiko_login("show ip prefix-list\n")
+                break
             elif config_selection == "8":
                 paramiko_login("show run | s bgp \n")
+                break
             elif config_selection == "9":
                 main()
+                break
             else:
                 print("\n")
                 print("Invalid Selection")
@@ -2223,8 +2232,7 @@ def tacacs_configuration():
             print("3. View TACACS")
             print("4. Main menu")
             print("\n")
-            print("Press CTRL+C to escape at any time")
-            print("\n")
+
 
             config_selection = input("Please select an option:  ")
 
@@ -2252,8 +2260,7 @@ def tacacs_configuration():
 
                     print("\n")
                     print("1. Add/Change TACACS Server")
-                    print("2.Change TACACS Key")
-                    print("3. Main Menu")
+                    print("2. Main Menu")
 
                     config_selection = input("Please select an option: ")
 
@@ -2275,25 +2282,19 @@ def tacacs_configuration():
                                 tac_ipv4 = xml.SubElement(tac_address, "ipv4")
                                 tac_ipv4.text = tac_ipv4_input
 
+                                tac_key_elem = xml.SubElement(tac_server, "key")
+
+                                tac_key_input = input("Please enter a TACACS key: ")
+                                tac_key = xml.SubElement(tac_key_elem, "key")
+                                tac_key.text = tac_key_input
+
                                 cleanup_empty_elements(root, tacacs_file)
                                 view_config_send(tacacs_file)
                                 break
 
-                    elif config_selection == "2":
-
-                        tac_key_elem = xml.SubElement(tac_server, "key")
-
-                        tac_key_input = input("Please enter a TACACS key: ")
-                        tac_key = xml.SubElement(tac_key_elem, "key")
-                        tac_key.text = tac_key_input
-
-                        cleanup_empty_elements(root, tacacs_file)
-                        view_config_send(tacacs_file)
-                        break
-
-                    elif config_selection == "3":
+                    if config_selection == "2":
                         main()
-                        break
+
                     else:
                         print("\n")
                         print("Invalid Selection")
