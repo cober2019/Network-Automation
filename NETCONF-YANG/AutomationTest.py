@@ -1,3 +1,4 @@
+
 try:
     from ncclient import manager
 except ImportError:
@@ -435,6 +436,8 @@ def send__multi_configuration(file):
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
+    status = [ ]
+
     wb_file = "C:\Python\Book1.xlsx"
     workbook = load_workbook(wb_file)
     active_sheet = workbook.active
@@ -446,6 +449,8 @@ def send__multi_configuration(file):
                 print("\n")
                 print("Job complete. Please review inventory sheet for send statuses. Red=Failed, Green=Success")
                 time.sleep(2)
+                for item in status:
+                    print(item)
 
                 try:
                     workbook.save("C:\Python\Book1.xlsx")
@@ -474,26 +479,31 @@ def send__multi_configuration(file):
                     except ValueError:
                         print("\n")
                         print("Configuration Saved")
+                        status.append(cell.value + " - Success")
                         cell.fill = success_fill
                         continue
                     except AttributeError:
                         print("\n")
                         print("Connection Unsucessful")
+                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
                     except RPCError:
                         print("\n")
                         print("Payload Error")
+                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
                 except UnicodeError:
                     print("\n")
                     print("Invalid IP address. Please try again")
+                    status.append(cell.value + " - Failed")
                     cell.fill = fail_fill
                     pass
                 except ncclient.NCClientError:
                     print("\n")
                     print("Please review configuration.")
+                    status.append(cell.value + " - Failed")
                     cell.fill = fail_fill
                     pass
 
@@ -522,17 +532,17 @@ def send_single_configuration(file):
             main()
         except AttributeError:
             print("Connection Unsucessful")
-            pass
+            main()
         except RPCError:
-            # This exception can be triggered but the configuration is successful.
-            print("Please verify configuration succeded")
-            pass
+            print("Something went wrong")
+            main()
 
 
 ###########################################################################
 
 def search_credentials():
 
+    get_file = "C:\Python\XML_Filters\Credentials_Get_Config.xml"
     search = input("Search Username: ")
 
     success_fill = PatternFill(start_color='00FF00',
@@ -543,6 +553,9 @@ def search_credentials():
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
+    status = [ ]
+    key = "name"
+
     try:
         wb_file = "C:\Python\Book1.xlsx"
         workbook = load_workbook(wb_file)
@@ -550,24 +563,27 @@ def search_credentials():
         active_sheet.protection = False
 
     except BaseException:
+        print("\n")
         print("Unknown file error")
+        search_configurations()
     else:
         for row in active_sheet.iter_rows(min_row=1, max_col=1, max_row=10):
             for cell in row:
-                print(cell.value)
-
                 if cell.value == 'Null':
                     print("\n")
                     print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
                     time.sleep(2)
+                    print("\n")
+                    remove_duplicates = (set(status))
+                    for items in remove_duplicates:
+                        print(items)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
                         workbook.save(wb_file)
                         main()
                     except PermissionError:
-                        print(
-                            "Could not write to file. Please ensure the file isnt open and you have write permissions.")
+                        print("Could not write to file. Please ensure the file isnt open and you have write permissions.")
                         main()
                 else:
                     try:
@@ -580,35 +596,15 @@ def search_credentials():
                         credential_config = open("C:\Python\XML_Filters\Filter_Config.xml").read()
                         config_data = m.get(credential_config)
 
-                        config_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
-                        parsed_config = config_details["native"]["username"]
+                        tree = xml.ElementTree("data")  # Writes XML file to share
+                        with open(get_file, "wb") as fh:
+                            tree.write(fh)
 
-                        for items in parsed_config:
-                            new_items = items
-                            try:
-                                for k, v in new_items.items():
-                                    if v == search:
-                                        cell.fill = success_fill
-                                        print("\n")
-                                        print("Username:" +  search + " " + "Exist")
-                                        print("\n")
-                            except (KeyError, TypeError):
-                                print("Username " + search + " doesnt exist")
-                                print("\n")
-                                pass
-                    except (KeyError, TypeError):
-                        print("Username " + search + " doesnt exist")
-                        print("\n")
-                        pass
-                    except UnicodeError:
-                        print("\n")
-                        print("Invalid IP address. Please try again")
-                        cell.fill = fail_fill
-                        pass
                     except ncclient.NCClientError:
                         print("\n")
-                        print("Connection Unsuccessful")
+                        print("Connection Unsuccessful to " +  cell.value)
                         cell.fill = fail_fill
+                        status.append(cell.value + " - Failed")
                         pass
 
 ###################################################
@@ -628,6 +624,8 @@ def search_snmp():
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
+    status = [ ]
+
     try:
         wb_file = "C:\Python\Book1.xlsx"
         workbook = load_workbook(wb_file)
@@ -642,15 +640,17 @@ def search_snmp():
                 if cell.value == 'Null':
                     print("\n")
                     print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    print("\n")
                     time.sleep(2)
+                    for item in status:
+                        print(item)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
                         workbook.save(wb_file)
                         main()
                     except PermissionError:
-                        print(
-                            "Could not write to file. Please ensure the file isnt open and you have write permissions.")
+                        print("Could not write to file. Please ensure the file isnt open and you have write permissions.")
                         main()
                 else:
                     try:
@@ -666,32 +666,29 @@ def search_snmp():
                         parsed_config = config_details["native"]["snmp-server"]["community"]
 
                         for items in parsed_config:
-                            new_items = items
+                            snmp_comm = items
                             try:
-                                for k, v in new_items.items():
-                                    if v == search:
-                                        cell.fill = success_fill
-                                        print("Community: " +search + " " + "Exist")
-                                        print("\n")
+                                if "name" in snmp_comm:
+                                    print("Community: " + search + " exist")
                             except (KeyError, TypeError):
-                                print("Community " + search + " doesnt exist")
-                                print("\n")
                                 pass
                     except (KeyError, TypeError):
-                        print("Community " + search + " doesnt exist")
+                        print("Community: " + search + " doesnt exist")
+                        status.append(cell.value + " - Failed")
                         print("\n")
                         pass
                     except UnicodeError:
                         print("\n")
                         print("Invalid IP address. Please try again")
+                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
                     except ncclient.NCClientError:
                         print("\n")
-                        print("Connection Unsuccessful")
+                        print("Connection unsuccessful to " + cell.value)
                         cell.fill = fail_fill
+                        status.append(cell.value + " - Failed")
                         pass
-
 #####################################################
 
 def search_tacacs():
@@ -709,6 +706,8 @@ def search_tacacs():
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
+    status= [ ]
+
     try:
         wb_file = "C:\Python\Book1.xlsx"
         workbook = load_workbook(wb_file)
@@ -723,7 +722,10 @@ def search_tacacs():
                 if cell.value == 'Null':
                     print("\n")
                     print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    print("\n")
                     time.sleep(2)
+                    for item in status:
+                        print(item)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
@@ -753,6 +755,7 @@ def search_tacacs():
                                 for k, v in new_items.items():
                                     if v == search:
                                         cell.fill = success_fill
+                                        status.append(cell.value + " - Success")
                                         print("\n")
                                         try:
                                             print("  Group: {} exist".format(new_items["name"]))
@@ -764,21 +767,23 @@ def search_tacacs():
                                         except (KeyError, TypeError):
                                             pass
                             except (KeyError, TypeError):
-                                print("Group " + search + " doesnt exist")
+                                status.append(cell.value + " - Failed")
                                 print("\n")
                                 pass
                     except (KeyError, TypeError):
-                        print("Group " + search + " doesnt exist")
+                        status.append(cell.value + " - Failed")
                         print("\n")
                         pass
                     except UnicodeError:
                         print("\n")
                         print("Invalid IP address. Please try again")
+                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
                     except ncclient.NCClientError:
                         print("\n")
                         print("Connection Unsuccessful")
+                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
 
@@ -799,6 +804,8 @@ def search_service_policy():
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
+    status = [ ]
+
     try:
         wb_file = "C:\Python\Book1.xlsx"
         workbook = load_workbook(wb_file)
@@ -814,6 +821,8 @@ def search_service_policy():
                     print("\n")
                     print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
                     time.sleep(2)
+                    for item in status:
+                        print(item)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
@@ -840,19 +849,30 @@ def search_service_policy():
                             try:
                                 for k, v in new_items.items():
                                     if v == search:
+                                        cell.fill = success_fill
+                                        status.append(cell.value + " - Success")
                                         try:
                                             print("  GigabitEthernet: {}".format(new_items["name"]))
                                         except (KeyError, TypeError):
-                                            pass
+                                            print("Service-Policy " + search + " doesnt exist")
+                                            status.append(cell.value + " - Failed")
+                                            cell.fill = fail_fill
+                                            print("\n")
                             except (KeyError, TypeError):
-                                pass
+                                print("Service-Policy " + search + " doesnt exist")
+                                status.append(cell.value + " - Failed")
+                                cell.fill = fail_fill
+                                print("\n")
                     except (KeyError, TypeError):
                         print("Service-Policy " + search + " doesnt exist")
+                        status.append(cell.value + " - Failed")
+                        cell.fill = fail_fill
                         print("\n")
                         pass
                     except UnicodeError:
                         print("\n")
                         print("Invalid IP address. Please try again")
+                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
 
@@ -942,7 +962,7 @@ def device_admin():
 def search_configurations():
 
     config_selection = ' '
-    while config_selection != '4':
+    while config_selection != '5':
 
         print("\n")
         print("Configuration Search Menu")
@@ -2219,7 +2239,6 @@ def qos_configuration():
 def tacacs_configuration():
 
     tacacs_file = "C:\Python\XML_Filters\Send_Config\TACACS_Send_Config.xml"
-    del_tacacs = "C:\Python\XML_Filters\Send_Config\TACACS_Delete_Config.xml"
 
     selection = " "
     while selection != "4":
@@ -2232,7 +2251,8 @@ def tacacs_configuration():
             print("3. View TACACS")
             print("4. Main menu")
             print("\n")
-
+            print("Press CTRL+C to escape at any time")
+            print("\n")
 
             config_selection = input("Please select an option:  ")
 
@@ -2256,49 +2276,48 @@ def tacacs_configuration():
                 tac_name = xml.SubElement(tac_server, "name")
                 tac_name.text = tac_name_input
 
-                while True:
+                print("\n")
+                print("1. Add/Change TACACS Server")
+                print("2. Main Menu")
 
+                config_selection = input("Please select an option: ")
+
+                if config_selection == "1":
+                    while True:
+                        try:
+                            tac_ipv4_input = input("Please enter a TACACS server IP: ")
+                            ipaddress.ip_address(tac_ipv4_input)
+
+                        except ValueError:
+
+                            print("\n")
+                            print("Invalid IP")
+                            print("\n")
+
+                        else:
+
+                            tac_address = xml.SubElement(tac_server, "address")
+                            tac_ipv4 = xml.SubElement(tac_address, "ipv4")
+                            tac_ipv4.text = tac_ipv4_input
+
+                            tac_key_elem = xml.SubElement(tac_server, "key")
+
+                            tac_key_input = input("Please enter a TACACS key: ")
+                            tac_key = xml.SubElement(tac_key_elem, "key")
+                            tac_key.text = tac_key_input
+
+                            cleanup_empty_elements(root, tacacs_file)
+                            view_config_send(tacacs_file)
+                            break
+
+                if config_selection == "2":
+                    main()
+                    break
+
+                else:
                     print("\n")
-                    print("1. Add/Change TACACS Server")
-                    print("2. Main Menu")
-
-                    config_selection = input("Please select an option: ")
-
-                    if config_selection == "1":
-                        while True:
-                            try:
-                                tac_ipv4_input = input("Please enter a TACACS server IP: ")
-                                ipaddress.ip_address(tac_ipv4_input)
-
-                            except ValueError:
-
-                                print("\n")
-                                print("Invalid IP")
-                                print("\n")
-
-                            else:
-
-                                tac_address = xml.SubElement(tac_server, "address")
-                                tac_ipv4 = xml.SubElement(tac_address, "ipv4")
-                                tac_ipv4.text = tac_ipv4_input
-
-                                tac_key_elem = xml.SubElement(tac_server, "key")
-
-                                tac_key_input = input("Please enter a TACACS key: ")
-                                tac_key = xml.SubElement(tac_key_elem, "key")
-                                tac_key.text = tac_key_input
-
-                                cleanup_empty_elements(root, tacacs_file)
-                                view_config_send(tacacs_file)
-                                break
-
-                    if config_selection == "2":
-                        main()
-
-                    else:
-                        print("\n")
-                        print("Invalid Selection")
-                        print("\n")
+                    print("Invalid Selection")
+                    print("\n")
 
             elif config_selection == "2":
 
@@ -2330,6 +2349,7 @@ def tacacs_configuration():
                         tacacs_elem = xml.SubElement(native_element, "tacacs")
                         tac_server = xml.SubElement(tacacs_elem, "server")
                         tac_server.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-aaa")
+                        tac_server.set("xc:operation", "remove")
 
                         tac_name_input = input("Please enter a TACACS group: ")
                         tac_name = xml.SubElement(tac_server, "name")
