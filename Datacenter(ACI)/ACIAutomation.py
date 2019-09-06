@@ -295,8 +295,7 @@ def apic_login():
         """
     global apic
 
-    # apic = input("Please enter an APIC IP: ")
-    apic = "192.168.156.11"
+    apic = input("Please enter an APIC IP: ")
     headers = {'content-type': 'text/xml'}
     uri = "https://%s/api/mo/aaaLogin.xml" % apic
 
