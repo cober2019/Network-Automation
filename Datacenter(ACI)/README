@@ -14,6 +14,8 @@ Modification of file can be done directly from file (open local xml file,) or th
 one must enter ALL config options again until further notice. If modification is done directly from file (open local xml file) that file 
 can be pushed via SEND CONFIG menu option or fro postman.
 
+!!!!!!!!!!1REMEMBER TO ADD YOU OWN CREDENTIALS TO THE "RAW_DATE" VARIABLE FOR APIC LOGIN!!!!!!!!!!!!
+
 Still to come:
 
 ELAM Captures
