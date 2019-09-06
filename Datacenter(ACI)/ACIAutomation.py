@@ -295,7 +295,8 @@ def apic_login():
         """
     global apic
 
-    apic = input("Please enter an APIC IP: ")
+    # apic = input("Please enter an APIC IP: ")
+    apic = "192.168.156.11"
     headers = {'content-type': 'text/xml'}
     uri = "https://%s/api/mo/aaaLogin.xml" % apic
 
@@ -467,6 +468,9 @@ def view_config():
 
 def tenant_configuration():
 
+    print("\n")
+    print("TAB option can be use on some options, this will avoid configuration failures")
+
     view_tenant(get_tenant_file)
 
     root = xml.Element("fvTenant")
@@ -489,6 +493,9 @@ def tenant_configuration():
 ########################################## Displays current app profiles. Reads APIC via URI, saves ouput to file and then iterates file to find Application Profiles
 
 def app_profile_configuration():
+
+    print("\n")
+    print("TAB option can be use on some options, this will avoid configuration failures")
 
     view_tenant(get_tenant_file)
     print("\n")
@@ -568,6 +575,9 @@ def app_profile_configuration():
 
 def bridge_domain_configuration(): ##########################Create Bridge Domain, enable routing, flood unknown unicast
 
+    print("\n")
+    print("TAB option can be use on some options, this will avoid configuration failures")
+
     view_tenant(get_tenant_file)
     print("\n")
 
@@ -643,6 +653,9 @@ def bridge_domain_configuration(): ##########################Create Bridge Domai
             print("\n")
 
 def  contract_configuration():
+
+    print("\n")
+    print("TAB option can be use on some options, this will avoid configuration failures")
 
     contract_file = "C:\Python\ACI\Create_Contract_ACI.xml"
 
