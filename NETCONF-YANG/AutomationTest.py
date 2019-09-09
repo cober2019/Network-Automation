@@ -1,10 +1,9 @@
-
 try:
     from ncclient import manager
 except ImportError:
     print("Module NCC Client not available.")
 try:
-    import  ncclient
+    import ncclient
 except ImportError:
     print("Module NCC Client not available.")
 try:
@@ -74,15 +73,14 @@ except ImportError:
 
 
 def disable_paging(remote_conn):
-
     remote_conn.send("terminal length 0\n")
     time.sleep(1)
 
     output = remote_conn.recv(1000)
     return output
 
-def paramiko_login(command):
 
+def paramiko_login(command):
     try:
         ip = input("Please enter a IP address: ")
         username = 'cisco'
@@ -104,7 +102,6 @@ def paramiko_login(command):
         disable_paging(remote_conn)
 
         remote_conn.send("\n")
-        remote_conn.send(command)
 
         remote_conn.send(command)
         time.sleep(2)
@@ -112,7 +109,6 @@ def paramiko_login(command):
         output = remote_conn.recv(5000)
         output_str = output.decode('utf-8')
         print(output_str)
-
 
         while True:
             try:
@@ -147,16 +143,16 @@ def paramiko_login(command):
         print("\n")
         device_admin()
 
-def permit_deny_selection(text, state):
 
+def permit_deny_selection(text, state):
     permit_deny = ["permit", "deny"]
     perm_deny_commands = [cmd for cmd in permit_deny if cmd.startswith(text)]
 
     if state < len(perm_deny_commands):
         return perm_deny_commands
 
-def ospf_net_type_selection(text, state):
 
+def ospf_net_type_selection(text, state):
     net_types = ["point-to-point", "point-to-multipoint", "broadcast"]
     net_types_commands = [cmd for cmd in net_types if cmd.startswith(text)]
 
@@ -165,8 +161,8 @@ def ospf_net_type_selection(text, state):
     else:
         return None
 
-def qos_shape_pol_selection(text, state):
 
+def qos_shape_pol_selection(text, state):
     shape_pol_actions = ["shape", "police"]
     shape_pol_commands = [cmd for cmd in shape_pol_actions if cmd.startswith(text)]
 
@@ -175,8 +171,8 @@ def qos_shape_pol_selection(text, state):
     else:
         return None
 
-def tunnel_mode_selection(text, state):
 
+def tunnel_mode_selection(text, state):
     tunnel_actions = ["transport", "tunnel"]
     tunnel_action_commands = [cmd for cmd in tunnel_actions if cmd.startswith(text)]
 
@@ -185,8 +181,8 @@ def tunnel_mode_selection(text, state):
     else:
         return None
 
-def qos_action_selection(text, state):
 
+def qos_action_selection(text, state):
     qos_actions = ["bandwidth", "priority"]
     qos_action_commands = [cmd for cmd in qos_actions if cmd.startswith(text)]
 
@@ -195,8 +191,8 @@ def qos_action_selection(text, state):
     else:
         return None
 
-def qos_match_selection(text, state):
 
+def qos_match_selection(text, state):
     match_types = ["match-any", "match-all"]
     match_types_commands = [cmd for cmd in match_types if cmd.startswith(text)]
 
@@ -205,8 +201,8 @@ def qos_match_selection(text, state):
     else:
         return None
 
-def int_type_selection(text, state):
 
+def int_type_selection(text, state):
     int_types = ["0/0/0", "0/0/1", "0/0/2", "0/0/3"]
     int_type_commands = [cmd for cmd in int_types if cmd.startswith(text)]
 
@@ -215,8 +211,8 @@ def int_type_selection(text, state):
     else:
         return None
 
-def int_selection(text, state):
 
+def int_selection(text, state):
     int_options = ["Tunnel", "GigabitEthernet", "FastEthernet", "Loopback"]
     int_opt_commands = [cmd for cmd in int_options if cmd.startswith(text)]
 
@@ -225,8 +221,8 @@ def int_selection(text, state):
     else:
         return None
 
-def cleanup_empty_elements(root_var, file):
 
+def cleanup_empty_elements(root_var, file):
     tree = xml.ElementTree(element=root_var)
     tree.write(file_or_filename=file)
 
@@ -237,13 +233,13 @@ def cleanup_empty_elements(root_var, file):
     tree = xml.ElementTree(element=root)
     tree.write(file_or_filename=file)
 
-def ftp_files():
 
+def ftp_files():
     # DOWNLOADS FILE FROM AN FTP SERVER AND SAVES THEM TO A LOCAL DIRECTORY
 
     filename = "Book1.xlsx"
     dest_file = open("C:\Python" + "\\" + filename, 'wb')
-    dest_path =  "C:\Python" + "\\" + filename
+    dest_path = "C:\Python" + "\\" + filename
 
     print(" 1: FTP Download")
     print(" 2: Main Menu")
@@ -288,10 +284,10 @@ def ftp_files():
         print("Invalid input")
         ftp_files()
 
+
 #################################################################
 
 def select_configuration_send():
-
     # CONFIGURATION FILES CAN BE VIEWED FROM THIS DIRECTORY AND SENT. THIS CAN BE USED TO SEND FILES THAT INTIALLY FAILED
 
     print(" 1: File Select")
@@ -312,8 +308,8 @@ def select_configuration_send():
         file = input("Please enter a filename: ")
 
         try:
-            config_file = open("C:\Python\XML_Filters\Send_Config" + "\\" +  file).read()
-            print (dom.parseString(str(config_file)).toprettyxml())
+            config_file = open("C:\Python\XML_Filters\Send_Config" + "\\" + file).read()
+            print(dom.parseString(str(config_file)).toprettyxml())
 
             send_payload = m.edit_config(config_file, target="running")
             save_configuration()
@@ -330,7 +326,6 @@ def select_configuration_send():
 
 
 def save_configuration():
-
     # SAVES RUNNING CONFIG TO STARTUP CONFIG AFTER CONFIGURATION SEND
 
     save_payload = """
@@ -344,14 +339,14 @@ def save_configuration():
         print("Error")
         main()
 
+
 ########################################################################################
 
 def view_config_send(file):
-
     # DEFINES SINGLE DEVICE CONIFGURATION OR MULTI DEVICE SEND. YOU ARE ALSO ABLE TO CANCLE A SEND AS WELL
 
     print("\n")
-    print ("Configuration: ")
+    print("Configuration: ")
     print("\n")
 
     Interface_config = open(file=file).read()
@@ -384,12 +379,11 @@ def view_config_send(file):
             print("\n")
 
 
-
 ######################################################################
 
-def ncc_login(host, port, username, password, device_params): # Log into device via NCC client
+def ncc_login(host, port, username, password, device_params):  # Log into device via NCC client
 
-    #NCCLIENT LOGIN
+    # NCCLIENT LOGIN
     try:
         global m
         global device
@@ -403,40 +397,42 @@ def ncc_login(host, port, username, password, device_params): # Log into device 
         try:
 
             global m
-            m = manager.connect(host=device, port=port, username=username, password=password, device_params=device_params)
+            m = manager.connect(host=device, port=port, username=username, password=password,
+                                device_params=device_params)
 
             print("\n")
-            print("Device:", device, "Session ID: ", m.session_id, " Connection: ",m.connected)
+            print("Device:", device, "Session ID: ", m.session_id, " Connection: ", m.connected)
             print("\n")
         except UnicodeError:
             print("Invalid IP address. Insure IP format is correct")
             ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+            pass
         except ncclient.NCClientError:
             print("Connection Timeout. Please check connectivity and NETCONF configuration.")
             ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+            pass
         except gaierror:
             print("Invalid IP address. Insure IP format is correct")
             ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+            pass
     except KeyboardInterrupt:
         main()
-
 
 
 ################################################################################
 
 def send__multi_configuration(file):
-
-    #READS DEVICE FROM AND EXCEL SPREAD AND FILLS THE CELL WITH EITHER GREEN OR RED. A GREEN FILLED CELL IS A SUCCESS, RED IS A FAILURE. THESE ARE FILLED BASED ON AN EXCEPTION DURING THE JOB
+    # READS DEVICE FROM AND EXCEL SPREAD AND FILLS THE CELL WITH EITHER GREEN OR RED. A GREEN FILLED CELL IS A SUCCESS, RED IS A FAILURE. THESE ARE FILLED BASED ON AN EXCEPTION DURING THE JOB
 
     success_fill = PatternFill(start_color='00FF00',
-                                                end_color='00FF00',
-                                                fill_type='solid')
+                               end_color='00FF00',
+                               fill_type='solid')
 
     fail_fill = PatternFill(start_color='FF8080',
-                                                end_color='FF8080',
-                                                fill_type='solid')
+                            end_color='FF8080',
+                            fill_type='solid')
 
-    status = [ ]
+    status = []
 
     wb_file = "C:\Python\Book1.xlsx"
     workbook = load_workbook(wb_file)
@@ -507,42 +503,43 @@ def send__multi_configuration(file):
                     cell.fill = fail_fill
                     pass
 
+
 ##################################################################################
 
 
 def send_single_configuration(file):
+    # USED FOR SINGLE DEVICE CONFIGURATION. ONCE CONFIGURATION IS COMPLETE, YOU WILL BE RETURNED TO THE MENU FROM WHERE YOU CONFIGURING. THIS IS BASED OF THE FILENAME OF THE CONFIGURATION
 
-        # USED FOR SINGLE DEVICE CONFIGURATION. ONCE CONFIGURATION IS COMPLETE, YOU WILL BE RETURNED TO THE MENU FROM WHERE YOU CONFIGURING. THIS IS BASED OF THE FILENAME OF THE CONFIGURATION
+    ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
 
-        ncc_login("device", 830, "cisco", "cisco", {'name': 'csr'})
+    try:
+        config_file = open(file=file).read()
+        m.edit_config(config_file, target="running")
+        save_configuration()
 
-        try:
-            config_file = open(file=file).read()
-            send_payload = m.edit_config(config_file, target="running")
-            save_configuration()
+        print("\n")
+        print("Configuration Complete!")
+        print("\n")
+        main()
 
-            print("\n")
-            print("Configuration Complete!")
-            print("\n")
-            main()
-
-        except ValueError:
-            # This exception can be triggered but the configuration is still saved to startup-config
-            print("Configuration Saved")
-            main()
-        except AttributeError:
-            print("Connection Unsucessful")
-            main()
-        except RPCError:
-            print("Something went wrong")
-            main()
+    except ValueError:
+        # This exception can be triggered but the configuration is still saved to startup-config
+        print("Configuration Saved")
+        main()
+    except AttributeError:
+        print("Connection Unsucessful")
+        pass
+        main()
+    except RPCError:
+        print("Connection Unsucessful")
+        pass
+        main()
 
 
 ###########################################################################
 
 def search_credentials():
 
-    get_file = "C:\Python\XML_Filters\Credentials_Get_Config.xml"
     search = input("Search Username: ")
 
     success_fill = PatternFill(start_color='00FF00',
@@ -552,9 +549,6 @@ def search_credentials():
     fail_fill = PatternFill(start_color='FF8080',
                                                 end_color='FF8080',
                                                 fill_type='solid')
-
-    status = [ ]
-    key = "name"
 
     try:
         wb_file = "C:\Python\Book1.xlsx"
@@ -571,12 +565,8 @@ def search_credentials():
             for cell in row:
                 if cell.value == 'Null':
                     print("\n")
-                    print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    print("Scan complete. Please review inventory sheet for send statuses"  + "\n" +  "Red: Failed" + "\n" + " Green: Success"  + "\n" + "No Fill: NotFound")
                     time.sleep(2)
-                    print("\n")
-                    remove_duplicates = (set(status))
-                    for items in remove_duplicates:
-                        print(items)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
@@ -596,15 +586,33 @@ def search_credentials():
                         credential_config = open("C:\Python\XML_Filters\Filter_Config.xml").read()
                         config_data = m.get(credential_config)
 
-                        tree = xml.ElementTree("data")  # Writes XML file to share
-                        with open(get_file, "wb") as fh:
-                            tree.write(fh)
+                        config_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
+                        parsed_config = config_details["native"]["username"]
 
+                        for items in parsed_config:
+                            new_items = items
+                            try:
+                                for k, v in new_items.items():
+                                    if v == search:
+                                        cell.fill = success_fill
+                                        print("\n")
+                            except (KeyError, TypeError):
+                                print("\n")
+                                cell.fill = fail_fill
+                                pass
+                    except (KeyError, TypeError):
+                        print("\n")
+                        cell.fill = fail_fill
+                        pass
+                    except UnicodeError:
+                        print("\n")
+                        print("Invalid IP address. Please try again")
+                        cell.fill = fail_fill
+                        pass
                     except ncclient.NCClientError:
                         print("\n")
-                        print("Connection Unsuccessful to " +  cell.value)
+                        print("Connection unsuccessful to " + cell.value)
                         cell.fill = fail_fill
-                        status.append(cell.value + " - Failed")
                         pass
 
 ###################################################
@@ -624,8 +632,6 @@ def search_snmp():
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
-    status = [ ]
-
     try:
         wb_file = "C:\Python\Book1.xlsx"
         workbook = load_workbook(wb_file)
@@ -639,11 +645,9 @@ def search_snmp():
             for cell in row:
                 if cell.value == 'Null':
                     print("\n")
-                    print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    print("Scan complete. Please review inventory sheet for send statuses"  + "\n" +  "Red: Failed" + "\n" + " Green: Success"  + "\n" + "No Fill: NotFound")
                     print("\n")
                     time.sleep(2)
-                    for item in status:
-                        print(item)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
@@ -666,29 +670,26 @@ def search_snmp():
                         parsed_config = config_details["native"]["snmp-server"]["community"]
 
                         for items in parsed_config:
-                            snmp_comm = items
-                            try:
-                                if "name" in snmp_comm:
-                                    print("Community: " + search + " exist")
-                            except (KeyError, TypeError):
-                                pass
+                            new_items = items
+                            for k, v in new_items.items():
+                                if v == search:
+                                    cell.fill = success_fill
+                                    print("\n")
                     except (KeyError, TypeError):
-                        print("Community: " + search + " doesnt exist")
-                        status.append(cell.value + " - Failed")
                         print("\n")
+                        cell.fill = fail_fill
                         pass
                     except UnicodeError:
                         print("\n")
                         print("Invalid IP address. Please try again")
-                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
                     except ncclient.NCClientError:
                         print("\n")
                         print("Connection unsuccessful to " + cell.value)
                         cell.fill = fail_fill
-                        status.append(cell.value + " - Failed")
                         pass
+
 #####################################################
 
 def search_tacacs():
@@ -706,8 +707,6 @@ def search_tacacs():
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
-    status= [ ]
-
     try:
         wb_file = "C:\Python\Book1.xlsx"
         workbook = load_workbook(wb_file)
@@ -721,11 +720,9 @@ def search_tacacs():
             for cell in row:
                 if cell.value == 'Null':
                     print("\n")
-                    print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    print("Scan complete. Please review inventory sheet for send statuses"  + "\n" +  "Red: Failed" + "\n" + " Green: Success"  + "\n" + "No Fill: NotFound")
                     print("\n")
                     time.sleep(2)
-                    for item in status:
-                        print(item)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
@@ -755,35 +752,24 @@ def search_tacacs():
                                 for k, v in new_items.items():
                                     if v == search:
                                         cell.fill = success_fill
-                                        status.append(cell.value + " - Success")
                                         print("\n")
-                                        try:
-                                            print("  Group: {} exist".format(new_items["name"]))
-                                        except (KeyError, TypeError):
-                                            pass
-                                        try:
-                                            print("  Server: {}".format(new_items["address"]["ipv4"]))
-                                            print("\n")
-                                        except (KeyError, TypeError):
-                                            pass
+                                        print("  Group: {} exist".format(new_items["name"]))
+                                        print("  Server: {}".format(new_items["address"]["ipv4"]))
+                                        print("\n")
                             except (KeyError, TypeError):
-                                status.append(cell.value + " - Failed")
                                 print("\n")
                                 pass
                     except (KeyError, TypeError):
-                        status.append(cell.value + " - Failed")
                         print("\n")
                         pass
                     except UnicodeError:
                         print("\n")
                         print("Invalid IP address. Please try again")
-                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
                     except ncclient.NCClientError:
                         print("\n")
                         print("Connection Unsuccessful")
-                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
 
@@ -804,8 +790,6 @@ def search_service_policy():
                                                 end_color='FF8080',
                                                 fill_type='solid')
 
-    status = [ ]
-
     try:
         wb_file = "C:\Python\Book1.xlsx"
         workbook = load_workbook(wb_file)
@@ -819,10 +803,8 @@ def search_service_policy():
             for cell in row:
                 if cell.value == 'Null':
                     print("\n")
-                    print("Scan complete. Please review inventory sheet for send statuses. Red=Failed Connection, Green=Success", "No File =  User not Found")
+                    print("Scan complete. Please review inventory sheet for send statuses"  + "\n" +  "Red: Failed" + "\n" + " Green: Success"  + "\n" + "No Fill: NotFound")
                     time.sleep(2)
-                    for item in status:
-                        print(item)
 
                     try:
                         workbook.save("C:\Python\Book1.xlsx")
@@ -850,38 +832,28 @@ def search_service_policy():
                                 for k, v in new_items.items():
                                     if v == search:
                                         cell.fill = success_fill
-                                        status.append(cell.value + " - Success")
-                                        try:
-                                            print("  GigabitEthernet: {}".format(new_items["name"]))
-                                        except (KeyError, TypeError):
-                                            print("Service-Policy " + search + " doesnt exist")
-                                            status.append(cell.value + " - Failed")
-                                            cell.fill = fail_fill
-                                            print("\n")
+                                        print("  GigabitEthernet: {}".format(new_items["name"]))
+                                        print("\n")
                             except (KeyError, TypeError):
                                 print("Service-Policy " + search + " doesnt exist")
-                                status.append(cell.value + " - Failed")
                                 cell.fill = fail_fill
                                 print("\n")
                     except (KeyError, TypeError):
                         print("Service-Policy " + search + " doesnt exist")
-                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         print("\n")
                         pass
                     except UnicodeError:
                         print("\n")
                         print("Invalid IP address. Please try again")
-                        status.append(cell.value + " - Failed")
                         cell.fill = fail_fill
                         pass
+
 
 #####################################################
 
 
-
 def device_admin():
-
     print("Device Admin Menu")
 
     print("\n")
@@ -959,8 +931,8 @@ def device_admin():
     else:
         device_admin()
 
-def search_configurations():
 
+def search_configurations():
     config_selection = ' '
     while config_selection != '5':
 
@@ -989,12 +961,12 @@ def search_configurations():
             main()
         else:
             print("\n")
-            print("Invalid Selections")
+            print("Invalid Selection")
             print("\n")
+
 
 #############################################################################
 def main():
-
     config_selection = ' '
     while config_selection != 'q':
 
@@ -1059,22 +1031,22 @@ def main():
     print("Thank you for using the Basic Network Programabiltiy and Automation Program")
     quit()
 
+
 ##############################################################################
 
 def ospf_configuration():
-
     OSPF_file = "C:\Python\XML_Filters\Send_Config\OSPF_Send_Config.xml"
     Delete_Config = "C:\Python\XML_Filters\OSPF_Delete_ConfigTest.xml"
 
     print("OSPF Configuration:")
 
     config_selection = ' '
-    while   config_selection != '5':
+    while config_selection != '5':
 
         try:
 
             print("\n")
-            print("1. Add configuration" )
+            print("1. Add configuration")
             print("2. Remove configuration")
             print("3. View OSPF Configuration")
             print("4. View OSPF Operational Status")
@@ -1126,7 +1098,8 @@ def ospf_configuration():
                     while True:
                         try:
 
-                            network_input, mask_input, area_input = input("Please Enter a  OSPF network and mask: ").split()
+                            network_input, mask_input, area_input = input(
+                                "Please Enter a  OSPF network and mask: ").split()
 
                             ospf_network = network_input + "/" + mask_input
                             ipaddress.IPv4Network(ospf_network)
@@ -1168,9 +1141,8 @@ def ospf_configuration():
                         print("\n")
 
                         if config_selection == "1":
-
-                            conn= xml.SubElement(redis, "ios-ospf:connected")
-                            red_options =  xml.SubElement(conn, "ios-ospf:redist-options")
+                            conn = xml.SubElement(redis, "ios-ospf:connected")
+                            red_options = xml.SubElement(conn, "ios-ospf:redist-options")
                             subnets = xml.SubElement(red_options, "ios-ospf:subnets")
                             subnets_2 = xml.SubElement(subnets, "ios-ospf:subnets")
 
@@ -1202,7 +1174,7 @@ def ospf_configuration():
                                 else:
 
                                     AS_str = str(as_num_input)
-                                    as_num =  xml.SubElement(bgp, "ios-ospf:as-number")
+                                    as_num = xml.SubElement(bgp, "ios-ospf:as-number")
                                     as_num.text = AS_str
 
                                     red_options = xml.SubElement(bgp, "ios-ospf:redist-options")
@@ -1224,8 +1196,8 @@ def ospf_configuration():
 
                         if config_selection == "3":
 
-                            static= xml.SubElement(redis, "ios-ospf:static")
-                            red_options =  xml.SubElement(static, "ios-ospf:redist-options")
+                            static = xml.SubElement(redis, "ios-ospf:static")
+                            red_options = xml.SubElement(static, "ios-ospf:redist-options")
                             subnets = xml.SubElement(red_options, "ios-ospf:subnets")
                             subnets_2 = xml.SubElement(subnets, "ios-ospf:subnets")
 
@@ -1335,8 +1307,8 @@ def ospf_configuration():
 
     ###########################################################################
 
-def snmp_configuration():
 
+def snmp_configuration():
     SNMP_file = "C:\Python\XML_Filters\Send_Config\SNMPv2_Send_Config.xml"
     Delete_Config = "C:\Python\XML_Filters\SNMPv2_Delete_Config.xml"
 
@@ -1438,10 +1410,10 @@ def snmp_configuration():
                 print("Invalid Selection")
                 print("\n")
 
+
 ###########################################################################
 
 def credentials_configuration():
-
     Delete_User_Config = "C:\Python\XML_Filters\Credentials_Delete_Config.xml"
     Cred_Config = "C:\Python\XML_Filters\Send_Config\Credentials_Send_Config.xml"
 
@@ -1498,7 +1470,7 @@ def credentials_configuration():
                         pass_element.text = password_input
 
                         cleanup_empty_elements(root, Cred_Config)
-                        view_config_send(Cred_Config) # Call Function
+                        view_config_send(Cred_Config)  # Call Function
                         break
 
                     elif config_selection == "2":
@@ -1513,7 +1485,6 @@ def credentials_configuration():
                         print("\n")
 
             if config_selection == "2":
-
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -1564,8 +1535,8 @@ def credentials_configuration():
 
     ################################################################################
 
-def interface_configuration():
 
+def interface_configuration():
     int_file = "C:\Python\XML_Filters\Send_Config\Interface_Send_Config.xml"
 
     config_selection = ' '
@@ -1604,7 +1575,7 @@ def interface_configuration():
                     print("\n")
                     int_type = input("Please select an interface: ")
 
-                    if int_type  ==  "GigabitEthernet"  or int_type ==  "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
+                    if int_type == "GigabitEthernet" or int_type == "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
 
                         readline.parse_and_bind("tab: complete")
                         readline.set_completer(int_type_selection)
@@ -1667,7 +1638,6 @@ def interface_configuration():
                     int_type = input("Enter an interface type: ")
 
                     if int_type == "GigabitEthernet" or int_type == "FastEthernet" or int_type == "Loopback" or int_type == "Tunnel":
-
                         readline.parse_and_bind("tab: complete")
                         readline.set_completer(int_type_selection)
 
@@ -1711,10 +1681,10 @@ def interface_configuration():
                 print("Invalid Selection")
                 print("\n")
 
+
 ################################################################################
 
 def dmvpn_configuration():
-
     dmvpn_file = "C:\Python\XML_Filters\Send_Config\DMVPN_Send_Config.xml"
 
     config_selection = ' '
@@ -1841,7 +1811,7 @@ def dmvpn_configuration():
                     while True:
                         try:
 
-                            nhs_ip= input("Please Enter NHRP NHS: ")
+                            nhs_ip = input("Please Enter NHRP NHS: ")
                             ipaddress.IPv4Address(nhs_ip)
 
                         except ipaddress.AddressValueError:
@@ -1865,19 +1835,18 @@ def dmvpn_configuration():
 
                             while True:
                                 if config_selection_2 == "yes":
-
                                     nhrp_pri_el = xml.SubElement(nhs_leaf, "priority")
                                     nhrp_range = xml.SubElement(nhrp_pri_el, "pri-range")
 
-                                    nhrp_prio= input("Please Enter NHS Priority: ")
-                                    nhrp_range= xml.SubElement(nhrp_range, "pri-range")
+                                    nhrp_prio = input("Please Enter NHS Priority: ")
+                                    nhrp_range = xml.SubElement(nhrp_range, "pri-range")
                                     nhrp_range.text = nhrp_prio
 
                                     cleanup_empty_elements(root, dmvpn_file)
                                     view_config_send(dmvpn_file)
                                     break
 
-                                if config_selection_2 =="no":
+                                if config_selection_2 == "no":
 
                                     cleanup_empty_elements(root, dmvpn_file)
                                     view_config_send(dmvpn_file)
@@ -1941,7 +1910,7 @@ def dmvpn_configuration():
 
                     source_input, int_type = input("Please Enter a tunnel source: ").split()
                     tun_source = xml.SubElement(tun_leaf, "source")
-                    tun_source.text = source_input + " " +  int_type
+                    tun_source.text = source_input + " " + int_type
 
                     cleanup_empty_elements(root, dmvpn_file)
                     view_config_send(dmvpn_file)
@@ -1981,10 +1950,10 @@ def dmvpn_configuration():
                 print("Invalid Selection")
                 print("\n")
 
+
 ###################################################################3
 
 def qos_configuration():
-
     classmap_file = "C:\Python\XML_Filters\Send_Config\QoS_Send_Config.xml"
     policy_map_file = "C:\Python\XML_Filters\Send_Config\PolicyMap_Send_Config.xml"
     serv_policy_file = "C:\Python\XML_Filters\Send_Config\PolicyMap_Shape_Send_Config.xml"
@@ -2008,7 +1977,6 @@ def qos_configuration():
             config_selection = input("Please select an option:  ")
 
             if config_selection == "1":
-
 
                 root = xml.Element("config")
                 native_element = xml.Element("native")
@@ -2038,7 +2006,7 @@ def qos_configuration():
 
                 match_element = xml.SubElement(class_element, "match")
 
-                while class1_1_input  not in {'match-all', 'match-any'}:
+                while class1_1_input not in {'match-all', 'match-any'}:
                     class1_1_input = input("Please Enter class-map type (match-any/all): ")
 
                 else:
@@ -2049,10 +2017,12 @@ def qos_configuration():
                             print("Press CTRL+C to escape at any time")
                             print("\n")
 
-                            tag_input, tag_value= str(input("Please Enter tag type: ")),  int(input("Please enter a tag value: "))
+                            tag_input, tag_value = str(input("Please Enter tag type: ")), int(
+                                input("Please enter a tag value: "))
 
                             COS_range = range(1, 7)
-                            DSCP_range = (0,10, 12, 14, 18, 20, 22, 26, 28, 30, 24, 26, 38, 8, 16, 34, 24, 32, 40, 40, 56, 46)
+                            DSCP_range = (
+                            0, 10, 12, 14, 18, 20, 22, 26, 28, 30, 24, 26, 38, 8, 16, 34, 24, 32, 40, 40, 56, 46)
                             AF_range = (21, 22, 23, 31, 32, 33, 41, 42, 43)
 
                             if tag_input == "cs" and tag_value in COS_range or tag_input == "dscp" and tag_value in DSCP_range or tag_input == "af" \
@@ -2072,7 +2042,6 @@ def qos_configuration():
                         print("\n")
                         print("Invalid Input")
                         print("\n")
-
 
             if config_selection == "2":
 
@@ -2095,7 +2064,6 @@ def qos_configuration():
                 print("\n")
 
                 while True:
-
                     print("\n")
                     print("Press CTRL+C to escape at any time")
                     print("\n")
@@ -2113,7 +2081,7 @@ def qos_configuration():
 
                     band_prio = input("Please Enter class-map type (bandwidth/priority): ")
                     action_type_element = xml.SubElement(action_list_element, "action-type")
-                    action_type_element.text =band_prio
+                    action_type_element.text = band_prio
 
                     priority_container = xml.SubElement(action_list_element, band_prio)
 
@@ -2148,7 +2116,6 @@ def qos_configuration():
                 action_list_5_element = xml.SubElement(pol_class5_element, "action-list")
 
                 while True:
-
                     readline.parse_and_bind("tab: complete")
                     readline.set_completer(qos_shape_pol_selection)
 
@@ -2175,7 +2142,6 @@ def qos_configuration():
                     view_config_send(serv_policy_file)
 
             if config_selection == "4":
-
                 root = xml.Element("config")
                 root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
                 root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -2186,7 +2152,7 @@ def qos_configuration():
                 int_element = xml.SubElement(native_element, "interface")
 
                 int_type = input("Please enter interface type: ")
-                int_type_element= xml.SubElement(int_element, int_type)
+                int_type_element = xml.SubElement(int_element, int_type)
 
                 int_num = input("Please enter interface number:")
                 int_num_element = xml.SubElement(int_type_element, "name")
@@ -2236,8 +2202,8 @@ def qos_configuration():
                 print("Invalid Selection")
                 print("\n")
 
-def tacacs_configuration():
 
+def tacacs_configuration():
     tacacs_file = "C:\Python\XML_Filters\Send_Config\TACACS_Send_Config.xml"
 
     selection = " "
@@ -2381,26 +2347,25 @@ def tacacs_configuration():
 
         except KeyboardInterrupt:
 
-                    print("\n")
-                    print("1. Main Menu")
-                    print("2. TACACS Configuration Menu")
+            print("\n")
+            print("1. Main Menu")
+            print("2. TACACS Configuration Menu")
 
-                    escape_1 = input("What menu do you want to escape to?")
+            escape_1 = input("What menu do you want to escape to?")
 
-                    if escape_1 == "1":
-                        main()
-                    if escape_1 == "2":
-                        tacacs_configuration()
-                    else:
-                        print("\n")
-                        print("Invalid Selection")
-                        print("\n")
+            if escape_1 == "1":
+                main()
+            if escape_1 == "2":
+                tacacs_configuration()
+            else:
+                print("\n")
+                print("Invalid Selection")
+                print("\n")
+
 
 def prefix_configuration():
-
     prefix_file = "C:\Python\XML_Filters\Send_Config\Prefix_Send_Config.xml"
     prefix_del = "C:\Python\XML_Filters\Prefix_Delete_Config.xml"
-
 
     while True:
         try:
@@ -2446,7 +2411,6 @@ def prefix_configuration():
                                 # The configuration will through an expcetion when sent to the device.
 
                                 for i in range(5, 1000, 5):
-
                                     seq_input = i
 
                                     seq = xml.SubElement(prefixes, "seq")
@@ -2502,7 +2466,6 @@ def prefix_configuration():
                         config_selection = input("Please select an option:  ")
 
                         if config_selection == "1":
-
                             prefix_name_input = input("Please enter a prefix-list name: ")
                             prefix_name = xml.SubElement(prefixes, "name")
                             prefix_name.text = prefix_name_input
@@ -2569,9 +2532,8 @@ def prefix_configuration():
                 print("Invalid Selection")
                 print("\n")
 
+
 def bgp_configuration():
-
-
     bgp_file = "C:\Python\XML_Filters\Send_Config\BGP_Send_Config.xml"
     bgp_del = "C:\Python\XML_Filters\BGP_Delete_Config.xml"
 
@@ -2595,7 +2557,8 @@ def bgp_configuration():
 
         else:
 
-            AS_str = str(AS_input) # CONVERTS INTIGER TO STRING TO WIRTE TO XML TREE. FUNCTION WONT WRITE INTIGERS TO ELEEMENTS
+            AS_str = str(
+                AS_input)  # CONVERTS INTIGER TO STRING TO WIRTE TO XML TREE. FUNCTION WONT WRITE INTIGERS TO ELEEMENTS
             AS_id = xml.SubElement(bgp_elem, "id")
             AS_id.text = AS_str
             cleanup_empty_elements(root, bgp_file)
@@ -2610,14 +2573,13 @@ def bgp_configuration():
                 print("5. View BGP Operational Status")
                 print("\n")
 
-
                 config_selection = input("Please select an option:  ")
 
-                if config_selection =="1":
+                if config_selection == "1":
 
                     bgp_neigh = xml.SubElement(bgp_elem, "neighbor")
 
-                    neigh_id= input("Please enter a neighbor: ")
+                    neigh_id = input("Please enter a neighbor: ")
                     id = xml.SubElement(bgp_neigh, "id")
                     id.text = neigh_id
 
@@ -2631,7 +2593,8 @@ def bgp_configuration():
 
                         else:
 
-                            AS_str = str(neigh_AS) # CONVERTS INTIGER TO STRING TO WIRTE TO XML TREE. FUNCTION WONT WRITE INTIGERS TO ELEEMENTS
+                            AS_str = str(
+                                neigh_AS)  # CONVERTS INTIGER TO STRING TO WIRTE TO XML TREE. FUNCTION WONT WRITE INTIGERS TO ELEEMENTS
                             AS_id = xml.SubElement(bgp_neigh, "remote-as")
                             AS_id.text = AS_str
                             cleanup_empty_elements(root, bgp_file)
@@ -2651,7 +2614,7 @@ def bgp_configuration():
                             bgp_net_input = input("Please enter a network: ")
                             ipaddress.IPv4Network(bgp_net_input)
 
-                            bgp_mask_input= input("Please enter network mask: ")
+                            bgp_mask_input = input("Please enter network mask: ")
                             ipaddress.IPv4Network(bgp_mask_input)
 
                         except ValueError:
@@ -2688,11 +2651,10 @@ def bgp_configuration():
                         print("\n")
 
                         if config_selection == "1":
-
                             redis = xml.SubElement(redis, "connected")
 
                             red_map = input("Please enter a route-map: ")
-                            route_map= xml.SubElement(redis, "route-map")
+                            route_map = xml.SubElement(redis, "route-map")
                             route_map.text = red_map
                             cleanup_empty_elements(root, bgp_file)
                             view_config_send(bgp_file)
@@ -2740,9 +2702,9 @@ def bgp_configuration():
                 print("Invalid Selection")
                 print("\n")
 
-def inventory():
 
-    #Get serial nuber and model of a device. IT works with with ISR 4331 but not 3850. After reviewing 3850 config i dont see a model listed with xml file.
+def inventory():
+    # Get serial nuber and model of a device. IT works with with ISR 4331 but not 3850. After reviewing 3850 config i dont see a model listed with xml file.
 
     filename = "C:\Python\XML_Filters\Serial_Model.xml"
 
@@ -2828,7 +2790,7 @@ def inventory():
                                     print("Unable to get model/serial")
                                     pass
                             except (KeyError, TypeError):
-                                print("Unable to get model/serial" )
+                                print("Unable to get model/serial")
                                 print("\n")
                                 pass
                             except UnicodeError:
@@ -2868,7 +2830,6 @@ def inventory():
             print("Invalid Selection")
             print("\n")
 
+
 if __name__ == '__main__':
-
     main()
-
