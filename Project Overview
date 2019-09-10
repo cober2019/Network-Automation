@@ -1,0 +1,29 @@
+Network Automation Repositories:
+
+This is my open source programabilty and automation project. All source code is open to EVERYONE. All source code has tested within
+a live network, not simulation/DevNet environment.I will be updating my code a few times a week so come back or clone daily.
+
+What will you find in these repositories?
+
+1. NETCONF/YANG source code - Although NETCONFIG/YANG has been around for a few years, Cisco has started to push progrmability and automation. 
+   I've not been able to find many examples beyond interface confugrations and statistics on the internet. This is the big reason I chose to dive into this further.
+   The source code will show you more that the basic tasks mentioned above. Please view the README in the NETCONF/YANG folder for the full prgram 
+   description.
+   
+2. Cisco ACI source code - Cisco ACI programabilty/automation has been around a while so im sure these programs are nothing new. In my case I usually use the 
+    REST interface with XML to push my configuration but wanted to explore other options to do common task. Please view the README in the DataCenter(ACI) folder 
+    for the full program description.
+   
+3. Meraki SDWAN source code (Coming Soon)
+
+Background:
+
+Im the Senior Engineer for a large global company which you can find by navigating to my linkedIn. I design and maintain a very large network
+which consist of latest technologies (ACI, SDWAN, NextGen Firewalls etc.)
+
+Please send me a message or connect via LinkedIn.
+
+https://www.linkedin.com/in/chris-oberdalhoff-43292b56/
+Email: cober91130@gmail.com
+
+
