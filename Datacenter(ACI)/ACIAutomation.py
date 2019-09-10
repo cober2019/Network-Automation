@@ -979,7 +979,6 @@ def bridge_domain_configuration(): ##########################Create Bridge Domai
     root.append(bd)
     print("\n")
     bd_input = input("Please enter a bridge domain: ")
-    bd_options.append(bd_input)
     bd.set("name", bd_input)
 
     readline.parse_and_bind("tab: complete")
