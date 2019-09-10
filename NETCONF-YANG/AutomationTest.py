@@ -372,6 +372,7 @@ def view_config_send(file):
             print("\n")
             print("Configuration Canceled")
             print("\n")
+            main()
             break
         else:
             print("\n")
@@ -525,6 +526,7 @@ def send_single_configuration(file):
     except ValueError:
         # This exception can be triggered but the configuration is still saved to startup-config
         print("Configuration Saved")
+        pass
         main()
     except AttributeError:
         print("Connection Unsucessful")
@@ -886,7 +888,8 @@ def device_admin():
             print(" 6: TACACS")
             print(" 7: Prefix-List")
             print(" 8: BGP")
-            print(" 9: Main Menu")
+            print(" 9: HSRP")
+            print(" 10: Main Menu")
 
             print("\n")
             config_selection = input("Please select an option:  ")
@@ -917,6 +920,7 @@ def device_admin():
                 paramiko_login("show run | s bgp \n")
                 break
             elif config_selection == "9":
+                paramiko_login("show standby\n")
                 main()
                 break
             else:
@@ -984,10 +988,11 @@ def main():
         print(" 7. TACACS (multi device)")
         print(" 8. Prefix-List")
         print(" 9. BGP ")
-        print(" 10: Device Admin")
-        print(" 11: Search Configurations")
-        print(" 12: FTP Inventory")
-        print(" 13: Device Model/Serial")
+        print(" 10. HSRP ")
+        print(" 11: Device Admin")
+        print(" 12: Search Configurations")
+        print(" 13: FTP Inventory")
+        print(" 14: Device Model/Serial")
         print("[q] (quit)")
 
         print("\n")
@@ -1013,12 +1018,14 @@ def main():
         elif config_selection == "9":
             bgp_configuration()
         elif config_selection == "10":
-            device_admin()
+            redundancy()
         elif config_selection == "11":
-            search_configurations()
+            device_admin()
         elif config_selection == "12":
-            ftp_files()
+            search_configurations()
         elif config_selection == "13":
+            ftp_files()
+        elif config_selection == "14":
             inventory()
         elif config_selection == "q":
             print("Exiting Program")
@@ -1714,7 +1721,7 @@ def dmvpn_configuration():
 
                 int_type_leaf = xml.SubElement(int_element, "Tunnel")
 
-                interface_name = input("Please Enter An Interface: Tunnel: ")
+                interface_name = input("Please Enter a Interface: Tunnel: ")
                 int_name = xml.SubElement(int_type_leaf, "name")
                 int_name.text = interface_name
 
@@ -2722,7 +2729,7 @@ def inventory():
 
     print("\n")
     print("1. Multi-device")
-    print("2. Single device")
+    print("2.Single device")
 
     while True:
         print("\n")
@@ -2781,11 +2788,11 @@ def inventory():
                                 lic_config = lic_details["native"]["license"]
 
                                 try:
-                                    print("  Model: {}".format(lic_config["udi"]["pid"]))
+                                    print(" Model: {}".format(lic_config["udi"]["pid"]))
                                 except (KeyError, TypeError):
                                     pass
                                 try:
-                                    print("  Serial: {}".format(lic_config["udi"]["sn"]))
+                                    print(" Serial: {}".format(lic_config["udi"]["sn"]))
                                 except (KeyError, TypeError):
                                     print("Unable to get model/serial")
                                     pass
@@ -2820,7 +2827,7 @@ def inventory():
             except (KeyError, TypeError):
                 pass
             try:
-                print("  Serial: {}".format(lic_config["udi"]["sn"]))
+                print(" Serial: {}".format(lic_config["udi"]["sn"]))
                 break
             except (KeyError, TypeError):
                 print("Can't find serial")
@@ -2830,6 +2837,89 @@ def inventory():
             print("Invalid Selection")
             print("\n")
 
+def redundancy():
+
+    hsrp_file = "C:\Python\XML_Filters\Send_Config\HSRP_Send_Config.xml"
+
+    root = xml.Element("config")
+    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
+    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
+    native_element = xml.Element("native")
+    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
+    root.append(native_element)
+    int_element = xml.SubElement(native_element, "interface")
+
+    vlan_element = xml.SubElement(native_element, "vlan")
+    vlan_list = xml.SubElement(vlan_element, "vlan-list")
+    vlan_list.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-vlan")
+
+    int_type_leaf = xml.SubElement(int_element, "Vlan")
+
+    interface_number = input("Please enter a VLAN: :  ")
+    int_name = xml.SubElement(int_type_leaf, "name")
+    int_name.text = interface_number
+
+    vl_id = xml.SubElement(vlan_list, "id") ### Creates vlan based off SVI VLAN
+    vl_id.text = interface_number
+
+    int_choice_1 = input("Please enter a description: ")
+    int_descrp = xml.SubElement(int_type_leaf, "description")
+    int_descrp.text = int_choice_1
+
+    ip_input, mask_input = input("Please Enter A IP address and mask:  ").split()
+
+    ip_leaf = xml.SubElement(int_type_leaf, "ip")
+    address_leaf = xml.SubElement(ip_leaf, "address")
+    primary_leaf = xml.SubElement(address_leaf, "primary")
+
+    address = xml.SubElement(primary_leaf, "address")
+    address.text = ip_input
+
+    mask = xml.SubElement(primary_leaf, "mask")
+    mask.text = mask_input
+
+    standby = xml.SubElement(int_type_leaf, "standby")
+
+    stand_ver_input= input("Please enter HSRP version:  ")
+    standby_ver = xml.SubElement(standby, "version")
+    standby_ver.text = stand_ver_input
+
+    mac_refresh_input= input("Please enter MAC refresh timer:  ")
+    mac_refresh = xml.SubElement(standby, "mac-refresh")
+    mac_refresh.text = mac_refresh_input
+
+    standby_list = xml.SubElement(standby, "standby-list")
+
+    standby_group_input= input("Please enter standby group:  ")
+    standby_group = xml.SubElement(standby_list, "group-number")
+    standby_group.text = standby_group_input
+
+    authentication = xml.SubElement(standby_list, "authentication")
+
+    auth_input= input("Please enter authentication string: ")
+    auth = xml.SubElement(authentication, "text")
+    auth.text = auth_input
+
+    ip = xml.SubElement(standby_list, "ip")
+
+    standby_ip_input= input("Please enter a standby IP: ")
+    standby_ip = xml.SubElement(ip, "address")
+    standby_ip.text = standby_ip_input
+
+    priority_input= input("Please enter a priority: ")
+    priority = xml.SubElement(standby_list, "priority")
+    priority.text = priority_input
+
+    preempt = xml.SubElement(standby_list, "preempt")
+    preempt_delay = xml.SubElement(preempt, "delay")
+
+    pre_min_input= input("Please enter preempt delay: ")
+    pre_min = xml.SubElement(preempt_delay, "minimum")
+    pre_min.text = pre_min_input
+
+    cleanup_empty_elements(root, hsrp_file)
+    view_config_send(hsrp_file)
 
 if __name__ == '__main__':
+
     main()
