@@ -129,11 +129,17 @@ def paramiko_login(command):
                 print("Connection Unsuccessful")
                 print("\n")
                 main()
+            except paramiko.ssh_exception.NoValidConnectionsError:
+                pass
+                main()
     except paramiko.ssh_exception:
         print("\n")
         print("Connection Unsuccessful")
         print("\n")
         device_admin()
+    except paramiko.ssh_exception.NoValidConnectionsError:
+        pass
+        main()
 
 #################################################################
 
@@ -206,7 +212,6 @@ def enpoint_tracker():
 
             for fvRsCEpToPathEp in root.iter("fvRsCEpToPathEp"):
                 endp_path = fvRsCEpToPathEp.get("tDn")
-
                 print("Path: %s" % endp_path)
 
     except UnboundLocalError:
@@ -239,7 +244,6 @@ def view_tenant():
         print("\n")
         for fvTenant in root.iter("fvTenant"):
             tenant = fvTenant.get("name")
-            tenants = [tenant]
             print(tenant)
 
     except UnboundLocalError:
@@ -610,8 +614,7 @@ def view_epgs(tenant_input, app_input):
         print("\n")
         print("Unknown Error. Relogging into APIC")
         apic_login()
-
-#####################################################################
+ ######################################################
 
 def view_int_profiles():
 
@@ -920,8 +923,10 @@ def troubleshooting():
             troubleshooting()
         elif config_selection == "2":
             enpoint_tracker()
+            main()
         elif config_selection == "3":
             find_subnet()
+            main()
         elif config_selection == "4":
             main()
 
@@ -978,7 +983,7 @@ def tenant_configuration():
     print("\n")
     print("TAB option can be use on some options, this will avoid configuration failures")
 
-    view_tenant(get_tenant_file)
+    view_tenant()
 
     root = xml.Element("fvTenant")
 
