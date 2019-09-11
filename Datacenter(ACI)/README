@@ -10,6 +10,8 @@ Create Bridge Domains
 Create Contracts
 View Configurations
 View Fabirc devices/serial/model/node-id
+Endpoint Locator
+Find Subnet Bridge Domains Association
 
 Configurations are created and saved to local file. Once saved,these configuration files can be copied into to postman and sent if desired.
 Modification of file can be done directly from file (open local xml file,) or through the program. If modication via program is diesired, 
