@@ -1,4 +1,4 @@
-All testing is done with my network which runs ACI in multiple Datacenters, not test lab evniroments! This program was built from my postmans
+All testing is done with my network which runs ACI in multiple Datacenters, not test lab evniroments! This program was built from my postman
 collection which also has been verifed in Production, not test labs enviroments.
 
 This program is for basic Cisco ACI configuration.In this program you will be able to do the following:
