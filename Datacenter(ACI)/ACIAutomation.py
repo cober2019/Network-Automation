@@ -34,7 +34,7 @@ except ImportError:
 try:
     import paramiko
 except ImportError:
-    print("Module IPADDRESS is  not available.")
+    print("Module PARAMIKO is  not available.")
     pass
 try:
     import readline
