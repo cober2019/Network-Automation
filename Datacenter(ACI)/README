@@ -8,13 +8,15 @@ Create Application Profiles
 Create Endpoint Groups
 Create Bridge Domains
 Create Contracts
+View Configurations
+View Fabirc devices/serial/model/node-id
 
 Configurations are created and saved to local file. Once saved,these configuration files can be copied into to postman and sent if desired.
 Modification of file can be done directly from file (open local xml file,) or through the program. If modication via program is diesired, 
 one must enter ALL config options again until further notice. If modification is done directly from file (open local xml file) that file 
 can be pushed via SEND CONFIG menu option or fro postman.
 
-!!!!!!!!!!1REMEMBER TO ADD YOU OWN CREDENTIALS TO THE "RAW_DATE" VARIABLE FOR APIC LOGIN!!!!!!!!!!!!
+!!!!!!!!!! REMEMBER TO ADD YOUR OWN CREDENTIALS TO THE "RAW_DATA" VARIABLE FOR APIC LOGIN. ALSO ADD TO PARAMIKO LOGIN!!!!!!!!!!!!
 
 Still to come:
 
