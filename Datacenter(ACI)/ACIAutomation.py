@@ -62,12 +62,7 @@ except ImportError:
     print("Module TIME not available.")
     pass
 
-
-
-
 ##################################################################
-
-
 
 def disable_paging(remote_conn):
 
@@ -180,6 +175,50 @@ def select_configuration_file():
 ################################
 #Gets configured Tenant on currentAPIC
 ################################
+def enpoint_tracker():
+
+    endpoint = input("Please enter an endpoint: ")
+    headers = {'content-type': 'text/xml'}
+    uri = "https://%s" % apic + "/api/node/class/fvCEp.xml?rsp-subtree=full&rsp-subtree-class=fvCEp,fvRsCEpToPathEp,fvIp,fvRsHyper,fvRsToNic,fvRsToVm&query-target-filter=eq(fvCEp.mac," + "\"%s\"" % endpoint
+
+    try:
+        r = session.get(uri,verify=False, headers=headers)
+        print("\n")
+
+        file= open(get_file, 'w')
+        file.write(r.text)
+        file.close()
+
+        tree = ET.parse('C:\Python\ACI\Get_ACI.xml')
+        root = tree.getroot()
+
+        print("Endpoint: %s " % endpoint)
+        print("\n")
+        for fvCEp in root.iter("fvCEp"):
+            ep_name = fvCEp.get("name")
+            ep_mac = fvCEp.get("mac")
+            encap = fvCEp.get("encap")
+            ep_loc = fvCEp.get("dn")
+            ep_ip = fvCEp.get("ip")
+
+            print("Name: {0:20} EP MAC: {1:<20} Encapsulation: {2:<20} Location: {3:<20} IP: {4:<20}".format(ep_name, ep_mac, encap, ep_loc, ep_ip))
+            print("\n")
+
+            for fvRsCEpToPathEp in root.iter("fvRsCEpToPathEp"):
+                endp_path = fvRsCEpToPathEp.get("tDn")
+
+                print("Path: %s" % endp_path)
+
+    except UnboundLocalError:
+        print("403 Forbidden - Please log into APIC to vew or push configurations")
+        print("\n")
+        apic_login()
+    except NameError:
+        print("403 Forbidden - Please log into APIC to vew or push configurations")
+        print("\n")
+        apic_login()
+
+
 def view_tenant():
 
     headers = {'content-type': 'text/xml'}
@@ -200,7 +239,6 @@ def view_tenant():
         print("\n")
         for fvTenant in root.iter("fvTenant"):
             tenant = fvTenant.get("name")
-            global  tenants
             tenants = [tenant]
             print(tenant)
 
@@ -285,6 +323,114 @@ def infr():
         print("403 Forbidden - Please log into APIC to vew or push configurations")
         print("\n")
         print("Unknown Error. Relogging into APIC")
+        apic_login()
+
+def infr_2():
+
+    headers = {'content-type': 'text/xml'}
+    uri = "https://%s/api/node/mo/uni/infra.xml?query-target=subtree" % apic
+
+    try:
+        r = session.get(uri,verify=False, headers=headers)
+        print("\n")
+
+        file= open(get_file, 'w')
+        file.write(r.text)
+        file.close()
+
+        tree = ET.parse('C:\Python\ACI\Get_ACI.xml')
+        root = tree.getroot()
+
+        print("Fabric Ports %s: " % apic)
+        print("\n")
+        for infraAccPortP in root.iter("infraAccPortP"):
+            leaf_pro = infraAccPortP.get("name")
+            for infraHPortS in root.iter("infraHPortS"):
+                assign_ints = infraHPortS.get("name")
+                port_range = infraHPortS.get("name")
+                print(leaf_pro, port_range)
+
+    except UnboundLocalError:
+        print("403 Forbidden - Please log into APIC to vew or push configurations")
+        print("\n")
+        apic_login()
+    except NameError:
+        print("403 Forbidden - Please log into APIC to vew or push configurations")
+        print("\n")
+        print("Unknown Error. Relogging into APIC")
+        apic_login()
+
+def find_subnet():
+
+    headers = {'content-type': 'text/xml'}
+    uri_1 = "https://%s/api/class/fvBD.xml?query-target=subtree" % apic
+
+    try:
+        r = session.get(uri_1,verify=False, headers=headers)
+
+        file = open(get_file, 'w')
+        file.write(r.text)
+        file.close()
+
+        tree = ET.parse('C:\Python\ACI\Get_ACI.xml')
+        root = tree.getroot()
+
+        line = 5
+        subnet_array = []
+
+        for fvSubnet in root.iter("fvSubnet"):
+            subnets = fvSubnet.get("ip")
+            subnet_array.append(subnets)
+            print("Gateway: : %s" % subnets)
+
+    except UnboundLocalError:
+        print("\n")
+        print("403 Forbidden - Please log into APIC to vew or push configurations")
+        print("\n")
+        apic_login()
+    except NameError:
+        print("\n")
+        print("Unknown Error. Relogging into APIC")
+        print("\n")
+        apic_login()
+
+    print("\n")
+    print("Enter gateway IP plus prefix length (ex. 1.1.1.1/24)")
+    subnet_id = input("Please enter a gateway IP: ")
+
+    headers = {'content-type': 'text/xml'}
+    uri_2 = "https://%s/api/class/fvBD.xml?query-target=subtree" % apic
+
+    try:
+        r = session.get(uri_2,verify=False, headers=headers)
+
+        file = open(get_file, 'w')
+        file.write(r.text)
+        file.close()
+
+        tree = ET.parse('C:\Python\ACI\Get_ACI.xml')
+        root = tree.getroot()
+
+        for fvSubnet in root.iter("fvSubnet"):
+            location = fvSubnet.get("dn")
+            ip = fvSubnet.get("ip")
+            if subnet_id in ip:
+                print("\n")
+                print (location)
+
+    ##########################################################
+    # The follwing two exceptions will be thrown in you dont log in to the APIC
+    ######################################### ################
+
+    except UnboundLocalError:
+        print("\n")
+        print("403 Forbidden - Please log into APIC to vew or push configurations")
+        print("\n")
+        apic_login()
+    except NameError:
+        print("\n")
+        print("Unknown Error. Relogging into APIC")
+        print("\n")
         apic_login()
 
 def view_bd(tenant_input):
@@ -650,6 +796,16 @@ def contract_filter_entry(text, state):
     else:
         return None
 
+def tenant_array(text, state):
+
+    tenant = [tenants]
+    tenant_commands = [cmd for cmd in tenant if cmd.startswith(text)]
+
+    if state < len(tenant_commands):
+        return tenant_commands[state]
+    else:
+        return None
+
 def flood_scope(text, state):
 
     unk_flood_scope = ["proxy", "flood"]
@@ -667,16 +823,6 @@ def contract_scopes(text, state):
 
     if state < len(contract_scope_commands):
         return contract_scope_commands[state]
-    else:
-        return None
-
-def tenant_array(text, state):
-
-    tenant_list = view_tenant()
-    tenant_list_selection = [cmd for cmd in tenant_list if cmd.startswith(text)]
-
-    if state < len(tenant_list_selection):
-        return tenant_list_selection[state]
     else:
         return None
 
@@ -752,7 +898,9 @@ def troubleshooting():
 
         print("\n")
         print(" 1: Zoning (Contracts:)")
-        print(" 2: Main")
+        print(" 2: Endpoint Tracker")
+        print(" 3: Subnet Finder")
+        print(" 4: Main")
 
         print("\n")
 
@@ -770,8 +918,11 @@ def troubleshooting():
             pcTag = input("Please select a pcTag: ")
             paramiko_login("show zoning-rule src-epg %s\n" % pcTag)
             troubleshooting()
-
         elif config_selection == "2":
+            enpoint_tracker()
+        elif config_selection == "3":
+            find_subnet()
+        elif config_selection == "4":
             main()
 
         else:
@@ -791,7 +942,7 @@ def view_config():
     print(" 4: VLAN Pools")
     print(" 5: Interface Profiles")
     print(" 6: Contracts")
-    print(" 7: APIC Login")
+    print(" 7: Infrastructure")
 
     config_selection = input("Please select an option: ")
 
@@ -818,6 +969,8 @@ def view_config():
         view_tenant()
         tenant_input = input("Please select a Tenant: ")
         view_contracts(tenant_input)
+    elif config_selection == "7":
+        infr_2()
 
 
 def tenant_configuration():
@@ -901,8 +1054,7 @@ def app_profile_configuration():
 
     ########################################## Add contracts to EPG
 
-    view_contracts(tenant_input
-                   )
+    view_contracts(tenant_input)
     epg_con_prov = xml.Element("fvRsCons")
     epg.append(epg_con_prov)
 
@@ -964,9 +1116,9 @@ def bridge_domain_configuration(): ##########################Create Bridge Domai
 
     print("\n")
     print("TAB option can be use on some options, this will avoid configuration failures")
+    print("\n")
 
     view_tenant()
-    print("\n")
 
     tenant_input = input("Please enter a Tenant: ")
 
