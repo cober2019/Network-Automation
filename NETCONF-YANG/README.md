@@ -4,7 +4,7 @@ Utilizing NETCONF/YANG, this program allows for automation of network configurat
 
 Recomendations:
 
-1. Use YANG EXPLORER to see how XML trees are strucutred
+1. Use YANG EXPLORER to see how XML trees are structured
 2. Send configurations via command line, then use the get-config to see how XML elements are tagged/structured and what  namepsaces are used etc. From this you will be able to build your program with configration options of your choice.
 3. Learn Python (DISCLAIMER, IM NOT A PYTHON EXPERT)
 
