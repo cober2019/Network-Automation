@@ -1,5 +1,3 @@
-
-
 Network Deployment Program:
 
 The purpose of this program is to deploy access and core layer while keeping design best practices in mind. The goals was to be able to the configuration with
@@ -28,30 +26,37 @@ Program Flow:
 	
    The flow for interface creation is as follows:
   
-	Root ports are applied to interfaces between core switches if "core" is found in the interface description
+	Root ports are applied to interfaces between core switches if "core" is found in the interface description.
+	If you just need to add device IPs for later usage, you dont need need enter port-channels or physical interfaces. Use CTRL + C to skip through the menu. 
+	This will not overwrite your configurations if they've been built already.
 
-	Core Switch IP
+	Channel-group mode (TAB Usage)
+
+	Core Switch IP -- *Saved to dictionary as a key with value being a unique filepath
+
 		Port-Channel
-			Description
-			Physical Interface
+			Description (TAB Usage)
+			Physical Interface 
 			Physical Interface
 			CTRL + C
 		Port-Channel
-			Description
+			Description (TAB Usage)
 			Physical Interface
 			Physical Interface
 			CTRL + C
 		Keep repeating for desired amount of port-channels or:
 		Port-channel
 		CTRL + C
-	Core Switch IP
+
+	Core Switch IP -- *Saved to dictionary as a key with value being a unique filepath
+
 			Port-Channel
-			Description
+			Description (TAB Usage)
 			Physical Interface
 			Physical Interface
 			CTRL + C
 		Port-Channel
-			Description
+			Description (TAB Usage)
 			Physical Interface
 			Physical Interface
 			CTRL + C
@@ -62,28 +67,31 @@ Program Flow:
 	Core Switch IP
 	CTRL + C
 	
-	Access Switch IP
+	Access Switch IP -- *Saved to dictionary as a key with value being a unique filepath
+
 		Port-Channel
-			Description
+			Description (TAB Usage)
 			Physical Interface
 			Physical Interface
 			CTRL + C
 		Port-Channel
-			Description
+			Description (TAB Usage)
 			Physical Interface
 			Physical Interface
 			CTRL + C
 		Keep repeating for desired amount of port-channels or:
 		Port-channel
 		CTRL + C
-	Access Switch IP
+
+	Access Switch IP -- *Saved to dictionary as a key with value being a unique filepath
+
 		Port-Channel
-			Description
+			Description (TAB Usage)
 			Physical Interface
 			Physical Interface
 			CTRL + C
 		Port-Channel
-			Description
+			Description (TAB Usage)
 			Physical Interface
 			Physical Interface
 			CTRL + C
@@ -92,16 +100,17 @@ Program Flow:
 		CTRL + C
 
 	Main()
+		(1) VLAN
+
+		Spanning Tree mode (TAB Usage)
 		UplinkFast and Loopguard will be applied to all Access and Core devices automaticly
 		
-		(1) VLAN	
-			Spanning Tree mode (TAB) will auto input
+		VLAN	
 			VLAN ID
 			VLAN Name
 			VLAN Priority
 			*Saved to dictionary
 		VLAN	
-			Spanning Tree mode (TAB) will auto input
 			VLAN ID
 			VLAN Name
 			VLAN Priority
@@ -141,6 +150,10 @@ Program Flow:
 		Display Topology()
 	
 		(4) Send Topology
+
+			To send topology to work, at minimum you must build the topology with the device IPs. This can be dont via option (2) in
+			Main, or during the intial prgram launch.
+
 			Send configrations to devices based of 2 dictionaries, Core_dict and Access_dict. As configurations are applied a status
 			will be provided. Each Core device has 3 config pushes, HSRP, VLAN, Interfaces. Access devices have 2 config pushes, VLAN
 			and Interface:
