@@ -30,7 +30,7 @@ Program Flow:
 	If you just need to add device IPs for later usage, you dont need need enter port-channels or physical interfaces. Use CTRL + C to skip through the menu. 
 	This will not overwrite your configurations if they've been built already.
 
-	Channel-group mode (TAB Usage)
+	Channel-group mode (TAB Usage, Only enetered once)
 
 	Core Switch IP -- *Saved to dictionary as a key with value being a unique filepath
 
@@ -46,7 +46,7 @@ Program Flow:
 			CTRL + C
 		Keep repeating for desired amount of port-channels or:
 		Port-channel
-		CTRL + C
+		CTRL + C to move to access switches
 
 	Core Switch IP -- *Saved to dictionary as a key with value being a unique filepath
 
@@ -65,7 +65,7 @@ Program Flow:
 		CTRL + C
 	Keep repeating for desired amount of Core Switches or:
 	Core Switch IP
-	CTRL + C
+	CTRL + C to move to access switches
 	
 	Access Switch IP -- *Saved to dictionary as a key with value being a unique filepath
 
@@ -95,10 +95,13 @@ Program Flow:
 			Physical Interface
 			Physical Interface
 			CTRL + C
-		Keep repeating for desired amount of Access Switches or:
+		Keep repeating for desired amount of port-channels or:
 		Port-channel
 		CTRL + C
-
+	Keep repeating for desired amount of Access Switches or:
+	Access Switch IP
+	CTRL + C to move to main menu
+		
 	Main()
 		(1) VLAN
 
