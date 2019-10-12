@@ -1,3 +1,6 @@
+IM GOING TO BEGIN UPDATING THIS CODE. THE MODULES WILL BE SPLIT INTO INDIVIDUAL PROGRAMS AND EXPANDED WJERE POSSIBLE !!!
+
+
 Project Description:
 
 Utilizing NETCONF/YANG, this program allows for automation of network configurations. The goal was to build XML files within the program without having to use static XML payloads. Static payloads are an option and can be sent from the desired directory. Network Engineers should fit the program to their own needs as this program only shows the capabilities of what can be done with python and NETCONF/YANG.
