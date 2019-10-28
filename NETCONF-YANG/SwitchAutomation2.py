@@ -1,4 +1,4 @@
-import sys
+
 try:
     from ncclient import manager
 except ImportError:
@@ -43,10 +43,54 @@ try:
     import readline
 except ImportError:
     print("Module readline not available.")
-try:
-    from termcolor import colored, cprint
-except ImportError:
-    print("Module termcolor not available.")
+
+int_config = "C:\Python\XML_Filters\Send_Config\Interface_Config.xml"
+hsrp_file = "C:\Python\XML_Filters\Send_Config\HSRP_Send_Config.xml"
+hsrp2_file = "C:\Python\XML_Filters\Send_Config\HSRP2_Send_Config.xml"
+Core_1_file = "C:\Python\XML_Filters\Send_Config\VLAN_Send_Config.xml"
+hsrp_file = "C:\Python\XML_Filters\Send_Config\HSRP_Send_Config.xml"
+hsrp2_file = "C:\Python\XML_Filters\Send_Config\HSRP2_Send_Config.xml"
+vlan_file = "C:\Python\XML_Filters\Send_Config\VLAN_Send_Config.xml"
+vlan2_file = "C:\Python\XML_Filters\Send_Config\VLAN_2_Send_Config.xml"
+vlan_acc_file = "C:\Python\XML_Filters\Send_Config\VLAN_Access_Send_Config.xml"
+trunk_file = "C:\Python\XML_Filters\Send_Config\Trunk_Send_Config.xml"
+Core_1_file = "C:\Python\XML_Filters\Send_Config\VLAN_Send_Config.xml"
+Core_2_file = "C:\Python\XML_Filters\Send_Config\VLAN_2_Send_Config.xml"
+acc_switch_file = "C:\Python\XML_Filters\Send_Config\VLAN_Access_Send_Config.xml"
+
+root = xml.Element("config")
+root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
+root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
+native_element = xml.Element("native")
+native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
+root.append(native_element)
+int_element = xml.SubElement(native_element, "interface")
+
+config = """  <filter>
+<native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+</native>
+</filter>
+"""
+global_bpdu = """  
+<config>
+<native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+<spanning-tree>
+<portfast xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-spanning-tree">
+<bdpu>bpduguard</bdpu>
+<default/>
+</portfast>
+</spanning-tree>
+</native>
+</config>"""
+
+
+int32 = numpy.dtype(numpy.int32)
+status_dict = dict()
+core_dict = dict()
+access_dict = dict()
+hsrp_subnets = dict()
+vlan_dict = dict()
+device_dict = dict()
 
 def int_descrptions(text, state):
     int_descrp = ["core_to_core", "access_sw_1", "access_sw_2", "access_sw_3", "access_sw_4"]
@@ -97,12 +141,6 @@ def cleanup_empty_elements(root_var, file):
     tree.write(file_or_filename=file)
 
 def search_vlan():
-
-    config = """  <filter>
-      <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
-      </native>
-    </filter>
-    """
 
     for device in core_dict.keys():
 
@@ -221,24 +259,86 @@ def search_vlan():
             print("Connection unsuccessful to " + device)
             pass
 
-###########################################################################
+def core_interfaces():
 
+
+    int_dict = dict()
+    config_data = m.get(config)
+
+    config_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
+    int_details = config_details["native"]["interface"]["GigabitEthernet"]
+
+    for items in int_details:
+        if "channel-group" not in items:
+            int_dict["GigabitEthernet"] = items
+            for k, v in int_dict.items():
+                if "name" in v and v["name"] != "0/0":
+
+                    int_type = xml.SubElement(int_element, "GigabitEthernet")
+                    int_phy = xml.SubElement(int_type, "name")
+                    int_phy.text = v["name"]
+                    span_element = xml.SubElement(int_type, "spanning-tree")
+                    span_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-spanning-tree" )
+                    port_fast_element = xml.SubElement(span_element, "portfast")
+                    shutdown = xml.SubElement(int_type, "shutdown")
+
+                    tree = xml.ElementTree(root)
+                    with open("C:\Python\XML_Filters\Send_Config\Interface_Config.xml" ,"wb") as fh:
+                        tree.write(fh)
+            try:
+                config_file = open(int_config).read()
+                m.edit_config(config_file, target="running")
+                m.edit_config(global_bpdu, target="running")
+            except ncclient.operations.RPCError:
+                pass
+            except (KeyError, TypeError):
+                pass
+
+def access_interfaces():
+
+    int_dict = dict()
+    config_data = m.get(config)
+
+    config_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
+    int_details = config_details["native"]["interface"]["GigabitEthernet"]
+
+    for items in int_details:
+        if "channel-group" not in items:
+            int_dict["GigabitEthernet"] = items
+            for k, v in int_dict.items():
+                if "name" in v and v["name"] != "0/0":
+                    interface = v["name"]
+
+                    int_type = xml.SubElement(int_element, "GigabitEthernet")
+                    int_phy = xml.SubElement(int_type, "name")
+                    int_phy.text = v["name"]
+                    span_element = xml.SubElement(int_type, "spanning-tree")
+                    span_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-spanning-tree")
+                    port_fast_element = xml.SubElement(span_element, "portfast")
+                    shutdown = xml.SubElement(int_type, "shutdown")
+
+                    tree = xml.ElementTree(root)
+                    with open("C:\Python\XML_Filters\Send_Config\Interface_Config.xml", "wb") as fh:
+                        tree.write(fh)
+
+            try:
+                config_file = open(int_config).read()
+                m.edit_config(config_file, target="running")
+                m.edit_config(global_bpdu, target="running")
+            except ncclient.operations.RPCError:
+                pass
+            except (KeyError, TypeError):
+                pass
 
 def topology_deploy():
-
-    hsrp_file = "C:\Python\XML_Filters\Send_Config\HSRP_Send_Config.xml"
-    hsrp2_file = "C:\Python\XML_Filters\Send_Config\HSRP2_Send_Config.xml"
-    vlan_file = "C:\Python\XML_Filters\Send_Config\VLAN_Send_Config.xml"
-    vlan2_file = "C:\Python\XML_Filters\Send_Config\VLAN_2_Send_Config.xml"
-    vlan_acc_file = "C:\Python\XML_Filters\Send_Config\VLAN_Access_Send_Config.xml"
-    trunk_file = "C:\Python\XML_Filters\Send_Config\Trunk_Send_Config.xml"
 
     ################################################################################ Send Configuration to Core Switches
 
     global  status_dict
+    int_dict = dict()
+    status_dict = dict()
 
     for k, file in core_dict.items():
-        status_dict = dict()
         if "Core_1" in file:
             try:
                 global m
@@ -255,7 +355,9 @@ def topology_deploy():
                     config_file = open(hsrp_file).read()
                     m.edit_config(config_file, target="running")
                     status_dict["HSRP "] = "Configuration Successful"
-
+                except FileNotFoundError:
+                    print("\n")
+                    status_dict["File "] = "File not found"
                 except ncclient.NCClientError:
                     status_dict["HSRP "] = "Configuration Failed"
                     pass
@@ -267,7 +369,9 @@ def topology_deploy():
                     config_file = open(vlan_file).read()
                     m.edit_config(config_file, target="running")
                     status_dict["VLAN"] = "Configuration Successful"
-
+                except FileNotFoundError:
+                    print("\n")
+                    status_dict["File "] = "File not found"
                 except ncclient.NCClientError:
                     status_dict["VLAN"] = "Configuration Failed"
                     pass
@@ -276,17 +380,18 @@ def topology_deploy():
                     pass
 
                 try:
-                    config_file = open(file).read()
+                    config_file = open(v).read()
                     m.edit_config(config_file, target="running")
                     status_dict["Interface"] = "Configuration Successful"
-
+                except FileNotFoundError:
+                    print("\n")
+                    status_dict["File "] = "File not found"
                 except ncclient.NCClientError:
                     status_dict["Interface"] = "Configuration Failed"
                     pass
                 except SyntaxError:
                     status_dict["Interface"] = "Invalid XMLTree. Configuration Failed"
                     pass
-
             except AttributeError:
                 status_dict[k] = "Connection Unsucessful"
                 pass
@@ -294,6 +399,7 @@ def topology_deploy():
 
             for k, v in status_dict.items():
                 print("{:<15} {:<30}".format(k, v))
+
 
         elif"Core_2" in file:
             status_dict = dict()
@@ -305,12 +411,18 @@ def topology_deploy():
                 print("%s: Sending configuration... " % k )
                 print("\n")
 
+                print("\n")
+                print("{:15} {:30} ".format("Config", "Status"))
+                print("\n")
+
                 try:
 
                     config_file = open(hsrp2_file).read()
                     m.edit_config(config_file, target="running")
                     status_dict["HSRP"] = "Configuration Successful"
-
+                except FileNotFoundError:
+                    print("\n")
+                    status_dict["File "] = "File not found"
                 except ncclient.NCClientError:
                     status_dict["HSRP"] = "Configuration Failed"
                     pass
@@ -322,7 +434,9 @@ def topology_deploy():
                     config_file = open(vlan2_file).read()
                     m.edit_config(config_file, target="running")
                     status_dict["VLAN"] = "Configuration Successful"
-
+                except FileNotFoundError:
+                    print("\n")
+                    status_dict["File "] = "File not found"
                 except ncclient.NCClientError:
                     status_dict["VLAN"] = "Configuration Failed"
                     pass
@@ -331,17 +445,18 @@ def topology_deploy():
                     pass
 
                 try:
-                    config_file = open(file).read()
+                    config_file = open(v).read()
                     m.edit_config(config_file, target="running")
                     status_dict["Interface"] = "Configuration Successful"
-
+                except FileNotFoundError:
+                    print("\n")
+                    status_dict["File "] = "File not found"
                 except ncclient.NCClientError:
                     status_dict["Interface"] = "Configuration Failed"
                     pass
                 except SyntaxError:
                     status_dict["xml"] = "Invalid XMLTree. Configuration Failed"
                     pass
-
             except AttributeError:
                 status_dict[k] = "Connection Unsucessful"
                 pass
@@ -349,6 +464,7 @@ def topology_deploy():
 
             for k, v in status_dict.items():
                 print("{:<15} {:<30}".format(k, v))
+
 
     ################################################################################ Send Configuration to Access Switches
 
@@ -366,11 +482,17 @@ def topology_deploy():
         print("%s: Sending configuration... " % k)
         print("\n")
 
+        print("\n")
+        print("{:15} {:30} ".format("Config", "Status"))
+        print("\n")
+
         try:
             config_file = open(vlan_acc_file).read()
             m.edit_config(config_file, target="running")
             status_dict["VLAN"] = "Configuration Successful"
-
+        except FileNotFoundError:
+            print("\n")
+            status_dict["File "] = "File not found"
         except ncclient.NCClientError:
             status_dict["VLAN"] = "Configuration Failed"
             pass
@@ -382,7 +504,9 @@ def topology_deploy():
             config_file = open(v).read()
             m.edit_config(config_file, target="running")
             status_dict["Interface"] = "Configuration Successful"
-
+        except FileNotFoundError:
+            print("\n")
+            status_dict["File "] = "File not found"
         except ncclient.NCClientError:
             status_dict["Interface"] = "Configuration Failed"
             pass
@@ -394,12 +518,21 @@ def topology_deploy():
             print("{:<15} {:<30}".format(k, v))
 
     save_configuration()
+    print("\n")
+    print("#####################################################################|")
+    print("#Applying portfast, BPDU-guard, and shutting down unused ports ...###|")
+    print("#####################################################################|")
+    core_interfaces()
+    access_interfaces()
+    save_configuration()
+    main()
+    print("\n")
 
 def save_configuration():
 
     print("\n")
     print("Saving configuration takes 40 seconds due to local database sync. Please stand by...")
-    time.sleep(40)
+    time.sleep(50)
     print("\n")
 
     for k in core_dict.keys():
@@ -417,7 +550,6 @@ def save_configuration():
                 pass
                 break
             except NameError:
-                print("Something we wrong, please wait...")
                 m = manager.connect(host=k, port=830, username="cisco", password="cisco", device_params={'name': 'csr'})
                 print("\n")
             except KeyboardInterrupt:
@@ -440,7 +572,6 @@ def save_configuration():
                 pass
                 break
             except NameError:
-                print("Something went wrong, please wait...")
                 m = manager.connect(host=k, port=830, username="cisco", password="cisco", device_params={'name': 'csr'})
                 continue
                 print("\n")
@@ -448,9 +579,6 @@ def save_configuration():
                 pass
                 main()
                 break
-
-    print("\n")
-    main()
 
 def topology():
 
@@ -480,6 +608,7 @@ def build_topology():
     core_dict = dict()
     global  access_dict
     access_dict = dict()
+    core_config_dict =dict()
 
     print("\n")
     print("Topology Build")
@@ -494,16 +623,7 @@ def build_topology():
 
     while True:
         try:
-
             int = int + 1
-            root = xml.Element("config")
-            root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-            root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-            native_element = xml.Element("native")
-            native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-            root.append(native_element)
-            int_element = xml.SubElement(native_element, "interface")
-
             device_input = input("Core Switch: ")
             print("#######################")
             print("\n")
@@ -542,6 +662,7 @@ def build_topology():
                         while True:
                             try:
                                 device_int_input = input("Interface Name: ")
+                                core_config_dict[po_int_input] = device_int_input
 
                                 int_type = xml.SubElement(int_element, "GigabitEthernet")
 
@@ -626,16 +747,8 @@ def build_topology():
     print("\n")
 
     while True:
+        int = int + 1
         try:
-
-            root = xml.Element("config")
-            root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-            root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-            native_element = xml.Element("native")
-            native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-            root.append(native_element)
-            int_element = xml.SubElement(native_element, "interface")
-
             device_input = input("Access Switch: ")
             print("#########################")
             print("\n")
@@ -718,6 +831,8 @@ def build_topology():
 
 def main():
 
+    print(core_dict)
+    print()
     topology()
 
     config_selection = ' '
@@ -729,10 +844,11 @@ def main():
 
         print("\n")
         print(" 1: L2/L3 Setup")
-        print(" 2: Build Topology")
-        print(" 3. Send Topology")
-        print(" 4. Save Configuration")
-        print(" 5. View Config")
+        print(" 2: L2 Edge Ports")
+        print(" 3: Build Topology")
+        print(" 4. Send Topology")
+        print(" 5. Save Configuration")
+        print(" 6. View Config")
 
         print("[q] (quit)")
 
@@ -743,12 +859,16 @@ def main():
         if config_selection == "1":
             vlans()
         elif config_selection == "2":
-            build_topology()
-        elif config_selection == "3":
-            topology_deploy()
-        elif config_selection == "4":
+            core_interfaces()
+            access_interfaces()
             save_configuration()
+        elif config_selection == "3":
+            build_topology()
+        elif config_selection == "4":
+            topology_deploy()
         elif config_selection == "5":
+            save_configuration()
+        elif config_selection == "6":
             search_vlan()
 
 ##############################################################################
@@ -762,10 +882,6 @@ def vlans():
     vlan_prio_array = [4096, 8192, 12288, 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248, 57344, 61440]
     vlan_array_int32 = numpy.array(vlan_prio_array, dtype=int32)
     vlan_range = range(1, 4097)
-
-    Core_1_file = "C:\Python\XML_Filters\Send_Config\VLAN_Send_Config.xml"
-    Core_2_file = "C:\Python\XML_Filters\Send_Config\VLAN_2_Send_Config.xml"
-    acc_switch_file = "C:\Python\XML_Filters\Send_Config\VLAN_Access_Send_Config.xml"
 
     root = xml.Element("config")
     root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
@@ -888,6 +1004,7 @@ def vlans():
             for priority in root.iter('priority'):
                 priority.text = "61440"
 
+
                 tree = xml.ElementTree(root)
                 with open(acc_switch_file, "wb") as fh:
                     tree.write(fh)
@@ -905,17 +1022,6 @@ def vlans():
 
 def redundancy():
 
-    hsrp_file = "C:\Python\XML_Filters\Send_Config\HSRP_Send_Config.xml"
-    hsrp2_file = "C:\Python\XML_Filters\Send_Config\HSRP2_Send_Config.xml"
-    Core_1_file = "C:\Python\XML_Filters\Send_Config\VLAN_Send_Config.xml"
-
-    root = xml.Element("config")
-    root.set("xmlns", "urn:ietf:params:xml:ns:netconf:base:1.0")
-    root.set("xmlns:xc", "urn:ietf:params:xml:ns:netconf:base:1.0")
-    native_element = xml.Element("native")
-    native_element.set("xmlns", "http://cisco.com/ns/yang/Cisco-IOS-XE-native")
-    root.append(native_element)
-    int_element = xml.SubElement(native_element, "interface")
 
     vlan_element = xml.SubElement(native_element, "vlan")
     vlan_list = xml.SubElement(vlan_element, "vlan-list")
@@ -1097,14 +1203,5 @@ def redundancy():
 
 if __name__ == '__main__':
 
-    int32 = numpy.dtype(numpy.int32)
-    status_dict = dict()
-    core_dict = dict()
-    access_dict = dict()
-    hsrp_subnets = dict()
-    vlan_dict = dict()
-    device_dict = dict()
-
     build_topology()
-
     main()
