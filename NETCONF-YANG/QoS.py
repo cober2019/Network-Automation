@@ -191,6 +191,10 @@ def disable_paging(remote_conn):
 
 def paramiko_login():                                                                                   # Paramiko login with output.
                                                                                                                           # User_Option
+
+    global device_ip
+    device_ip = input("Please enter device IP: ")
+
     try:
         command1 = "show run class-map \n"
         command2 = "show run policy-map \n"
@@ -199,7 +203,7 @@ def paramiko_login():                                                           
 
         remote_conn_pre = paramiko.SSHClient()
         remote_conn_pre.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        remote_conn_pre.connect("10.48.1.130", username=username, password=password, look_for_keys=False, allow_agent=False)
+        remote_conn_pre.connect(device_ip, username=username, password=password, look_for_keys=False, allow_agent=False)
         remote_conn = remote_conn_pre.invoke_shell()
         disable_paging(remote_conn)
 
@@ -309,7 +313,7 @@ def save_configuration():
 
 def device_connect():                                                                                      # Netconf Login # User_Option
 
-    device_input = "10.48.1.130"
+    device_input = input("Please enter device IP: ")
     loop_count = 0
     while loop_count != 3:
         try:
@@ -532,9 +536,9 @@ def view_config_send(file):
 
     while True:
 
+        print("\n")
         print(" 1: Send Single Device Configuration")
-        print(" 2: Send Multi  Device Configuration")
-        print(" 3: Cancel Configuration Send")
+        print(" 2: Cancel Configuration Send")
 
         print("\n")
         question_1 = input("Please select an option: ")
@@ -544,9 +548,6 @@ def view_config_send(file):
             send_config_file(file=file)
             break
         if question_1 == "2":
-            send_config_file(file=file)
-            break
-        if question_1 == "3":
             print("\n")
             print("Configuration Canceled")
             print("\n")
@@ -1192,7 +1193,7 @@ def main():
         elif config_selection == "6":
             search_dicts()
         elif config_selection == "7":
-            send_config_file(classmap_file)
+            view_config_send(classmap_file)
         elif config_selection == "8":
             paramiko_login()
 
