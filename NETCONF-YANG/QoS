@@ -48,4 +48,6 @@ The purpose of the program is desing to create QoS polcies with NETCONF/YANG. Sh
 8. Get Configuration
   
   Get current configuration via Paramiko. 
-[q] (quit)
+
+
+!!!! Is the source code, search for "User_Option" to find arbitrary device credential changes !!!!!
