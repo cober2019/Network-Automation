@@ -13,9 +13,9 @@ The purpose of the program is desing to create QoS polcies with NETCONF/YANG. Sh
   Configure child polices. Apply options such as WRED (DSCP, Precidence based, ) Queue-limts, bandwidth/priority options. 
   Uses class map dictnary to automaticlly map queues to class-map names. Builds a child policy dictionary to be used elsewhere.
   
-3. Confgure Policy-map (shaping)
+3. Configure Policy-map (shaping)
   
-  Confgure parent policies. Apply options such as shape/police (Bits, ) nested class, and automaticlly maps child policy via child policy dictionaries
+  Configure parent policies. Apply options such as shape/police (Bits, ) nested class, and automaticlly maps child policy via child policy dictionaries
   
 4. Interface Selection
 
