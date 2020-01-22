@@ -1,0 +1,51 @@
+QoS Program:
+
+The purpose of the program is desing to create QoS polcies with NETCONF/YANG. Shownbelow are the options available with in the program
+
+
+1. Configure Class-map
+
+  Configure class-maps. Apply options such as match-any/all, tags (CS, DSCP, and AF). All configurations are mapped to a dictionary which will
+  be during other parts of the programs.
+  
+2. Configure Policy-map
+
+  Configure child polices. Apply options such as WRED (DSCP, Precidence based, ) Queue-limts, bandwidth/priority options. 
+  Uses class map dictnary to automaticlly map queues to class-map names. Builds a child policy dictionary to be used elsewhere.
+  
+3. Confgure Policy-map (shaping)
+  
+  Confgure parent policies. Apply options such as shape/police (Bits, ) nested class, and automaticlly maps child policy via child policy dictionaries
+  
+4. Interface Selection
+
+  Apply Parent policy to an interface
+  
+5. Build Policy File
+  
+  After options 1 - 4 are completed, the program will use the dictionaries created in those options to build your configration file.
+  
+6. Modify Dicts
+
+  Dictionaries built in options 1 - 4 can be modified in this option. Use the far left which are dictionary keys to make you selection
+  
+  Example:
+  
+  Class:          test1
+  _____
+
+
+  Prematch:       match-any
+  Tag_1:          cs1
+  Tag_2:          cs2
+  
+  If i want to modify cs1, I would enter "Tag_1" or change match-any to match-all, I would selct "Prematch"
+
+7. Send Configuration
+
+  Send QoS policy
+  
+8. Get Configuration
+  
+  Get current configuration via Paramiko. 
+[q] (quit)
