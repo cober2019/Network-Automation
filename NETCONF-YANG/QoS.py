@@ -192,7 +192,7 @@ def disable_paging(remote_conn):
 def paramiko_login():                                                                                   # Paramiko login with output.
                                                                                                                           # User_Option
 
-    global device_ip
+    global  device_ip
     device_ip = input("Please enter device IP: ")
 
     try:
@@ -239,7 +239,7 @@ def nested_dict_breakdown():
         temp_dict["Queue_%s" % int_1 ] = v["Name"]
         nested_dict_array.append(v["Name"])
 
-def send_config_file(file):
+def send_config_file():
 
     device_connect()
 
@@ -247,7 +247,7 @@ def send_config_file(file):
     while loop_count != 3:
         try:
 
-            config_file = open(file).read()
+            config_file = open(classmap_file).read()
             m.edit_config(config_file, target="running")
             status_dict["Great"] = "Configuration Successful"
             save_configuration()
@@ -534,9 +534,12 @@ def view_config_send(file):
     Interface_config = open(file=file).read()
     print(dom.parseString(str(Interface_config)).toprettyxml())
 
+    view_class_maps()
+    view_child_policy()
+    view_parent_policy()
+
     while True:
 
-        print("\n")
         print(" 1: Send Single Device Configuration")
         print(" 2: Cancel Configuration Send")
 
@@ -1193,7 +1196,7 @@ def main():
         elif config_selection == "6":
             search_dicts()
         elif config_selection == "7":
-            view_config_send(classmap_file)
+            send_config_file()
         elif config_selection == "8":
             paramiko_login()
 
