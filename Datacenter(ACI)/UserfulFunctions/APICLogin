@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
     warnings.filterwarnings("ignore")
     apic = " "
-    apic_login()
+    apic_login() # Ensure apic_login function is in main fo the apic ip can be used through the program
     
 def apic_login():
 
