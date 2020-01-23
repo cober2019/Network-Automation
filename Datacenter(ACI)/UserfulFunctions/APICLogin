@@ -4,6 +4,13 @@ except ImportError:
     print("Module REQUESTS not available.")
     pass
 
+if __name__ == '__main__':
+
+
+    warnings.filterwarnings("ignore")
+    apic = " "
+    apic_login()
+    
 def apic_login():
 
     #########################################################
