@@ -1,3 +1,9 @@
+try:
+    import readline
+except ImportError:
+    print("Module readline not available.")
+    
+
 # This function allow for TAB completion
 # When using TAB, the function will read from an arrary of options
 
