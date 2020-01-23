@@ -2,6 +2,13 @@
 # you want to find and it will let you know where it is.
 # Of cource you will need to be logged in to apic via apic_login function that runs in MAIN. PLEASE SEE THE APIC LOGIN file.
 
+  
+try:
+    import requests
+except ImportError:
+    print("Module REQUESTS not available.")
+    pass
+    
 def find_subnet():
 
     headers = {'content-type': 'text/xml'}
