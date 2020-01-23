@@ -1,0 +1,38 @@
+  try:
+    import numpy
+  except ImportError:
+    print("Module numpy not available.")
+    
+  
+  
+# During development I noticed that python would not accept a number more than 9999 when using "int, "  
+# so I was not able to create higher bridge priority values. Once the "int" check is complete, I
+# re-wrote the "int" as a string for XML interpretation
+
+
+
+int32 = numpy.dtype(numpy.int32)
+vlan_prio_array = [4096, 8192, 12288, 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248, 57344, 61440]
+vlan_array_int32 = numpy.array(vlan_prio_array, dtype=int32)
+
+while True:
+
+    vl_bd_prio_input = int(input("Bridge priority: "))
+    int_vlan_prio = int(vl_bd_prio_input)
+
+    if vl_bd_prio_input in vlan_array_int32:
+
+        vl_bd_prio = xml.SubElement(span_vlan_element, "priority")
+        vl_bd_prio.text = str(vl_bd_prio_input)
+
+        vlan_dict[vl_id_input] = vl_bd_prio_input
+        vlan_array.append(vl_bd_prio_input)
+
+        cleanup_empty_elements(root, Core_1_file)
+        break
+
+    else:
+        print("\n")
+        print("Invalid Bridge ID (0-61440,) increments of 4096.")
+        print("\n")
+        continue
