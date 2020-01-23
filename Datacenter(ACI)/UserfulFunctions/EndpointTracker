@@ -1,6 +1,13 @@
 # Find endpoints within the fabric. This works much quicker that APIC GUI. You will need to be logged into the apic first via
 # the APIC_Login functions.
 
+  
+try:
+    import requests
+except ImportError:
+    print("Module REQUESTS not available.")
+    pass
+    
 def enpoint_tracker():
     
     get_file= "C:\Python\ACI\Get_ACI.xml" # writed all GET request to this file for searching and outputing
