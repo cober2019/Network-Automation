@@ -1,0 +1,37 @@
+This program creates a local SQL Lite database utilizing the sqllite3 python module. Although you can use this code to create any
+database you want, I created it as a logging location for network automation jobs. The datebase is stored locally in the folder of
+the .py file.
+
+As the program is an example of possabilitites, I used the capabilities option to test NETCONF connectivity and enablement. Once 
+the capabilities operation is complete the DB entry will be added if not already there, or updateded with the automation protocol,
+date, time, model, and serial. NOTE* if you trying to a part id and serial from cisco switch, it doesn't, router works fine. 
+
+Import devices via excel spreadsheet. The posted program only reads one hundred rows, and two columns (You can adjust.) My testing
+was with IP in column one, location is column two. Example database shown below after import.
+
+
+
+          IP                 Protocol      Location         Status              Date             Time              Model           Serial
+         ____                 ________      ________         ______             ____            ______             ______          ______
+
+       10.1.1.130             Unknown         BAL            New            2020-02-20         14:27:23           Unknown         Unknown
+       10.1.1.131             Unknown         BAL            New            2020-02-20         14:10:57           Unknown         Unknown
+       10.1.1.132             Unknown         BAL            New            2020-02-20         14:10:57           Unknown         Unknown
+ 
+ 
+Example of database after the capabilities job:
+
+
+          IP                 Protocol      Location         Status              Date             Time              Model           Serial
+         ____                 ________      ________         ______             ____            ______             ______          ______
+
+
+       10.1.1.130            NET/YANG         POC           Pass            2020-02-20         14:46:28        ISR4331/K9     FDO185019DF
+       10.1.1.131            NET/YANG         POC           Pass            2020-02-20         14:46:34           Unknown         Unknown
+       10.1.1.132             Unknown         POC           Fail            2020-02-20         14:46:38           Unknown         Unknown
+
+
+Filter through the database using serial, location, ip, and status. Status with be New for imported, failed for failingthe last job,
+and Pass for passing the last job.
+
+Enjoy
