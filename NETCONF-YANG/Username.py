@@ -10,7 +10,6 @@ try:
     from socket import gaierror
 except ImportError:
     print("Module socket not available.")
-
 try:
     import xmltodict
 except ImportError:
@@ -80,13 +79,10 @@ def device_connect(host):
                                             device_params={'name': 'csr'})
 
         except ncclient.NCClientError:
-            global_status = status_2
             pass
         except AttributeError:
-            global_status = status_2
             pass
         except gaierror:
-            global_status = status_2
             db_conn.start()
             pass
 
