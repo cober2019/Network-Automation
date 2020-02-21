@@ -10,7 +10,6 @@ try:
     from socket import gaierror
 except ImportError:
     print("Module socket not available.")
-
 try:
     import xmltodict
 except ImportError:
@@ -77,7 +76,6 @@ def device_connect(host):
 
     # NETCONF login
 
-    global global_status
     try:
 
         global m
