@@ -85,17 +85,10 @@ def device_connect(host):
                             device_params={'name': 'csr'})
 
     except ncclient.NCClientError:
-        global_status = status_2
-        db_update(host, status_2, "Unknown", " Unknown", "Unknown")
         pass
     except AttributeError:
-        global_status = status_2
-        db_update(host, status_2, "Unknown", " Unknown", "Unknown")
         pass
     except gaierror:
-        global_status = status_2
-        db_update(host, status_2, "Unknown", " Unknown", "Unknown")
-        db_conn.start()
         pass
 
 if __name__ == '__main__':
