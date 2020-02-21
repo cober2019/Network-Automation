@@ -83,7 +83,6 @@ def device_connect(host):
         except AttributeError:
             pass
         except gaierror:
-            db_conn.start()
             pass
 
 
