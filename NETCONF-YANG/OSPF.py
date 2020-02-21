@@ -71,7 +71,10 @@ def get_ospf():
                 print("  Wildcard: {}".format(item["network"]["mask"]))
             if "network" in item:
                 print("  Area: {}".format(item["network"]["area"]))
-
+                
+    print("\n")        
+    get_ospf()
+    
 def device_connect(host):
 
     # NETCONF login
