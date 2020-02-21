@@ -68,6 +68,9 @@ def get_usernames():
             if "secret" in item:
                 print("  Password: {}".format(item["secret"]["secret"]))
 
+     print("\n")
+     get_usernames()
+           
 def device_connect(host):
 
         # NETCONF login
