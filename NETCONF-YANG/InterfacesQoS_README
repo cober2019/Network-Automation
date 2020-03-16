@@ -1,0 +1,20 @@
+
+Using IETF-Interface YANG Model, this program allows you to capture interface queue traffic. The different types of data will come 
+from each job you run, current queue traffic, hostorical queue traffic (last polled, ) and 10 second polling queue traffic. Once 
+traffic is capture and calculatedyou will be presented with two different charts
+
+Chart 1#
+
+Current queue data w/ historical differences. There difference are not totals, but instead 1 seconds differences. Totals can be
+calculated my multipling the column date by the total seconds between polls. Last poll daye & converted time (seconds) is located
+above the interface chart.
+
+Chart 2#
+
+Estimated queue traffic per seconds. This traffic is calculated with the data collected before and after the polling time and 
+divided by the polling time.
+
+
+All data is stored in a local SQL Lite database. Please do not modify the python SQL code or the program will not work correctly
+
+Enjoy!
