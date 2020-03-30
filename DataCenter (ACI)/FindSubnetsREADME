@@ -1,0 +1,37 @@
+This program allows you to find subnets within ACI. Along with find the subnets, you can see what Tenants, Bridge Domains they belong as
+well as the vrf and vrf scope configured. As you search for subnets, they will be stored and viewed during beofre every query. TAB
+functionality is also available to sort through subnets if needed.
+
+Screenshot below:
+
+--------------------------------------|
+ACI Subnet Finder---------------------|
+--------------------------------------|
+
+
+Total Fabric Subnets: 76
+
+
+Previous Lookups:
+
+ Subnet 192.168.1.1 is located in CustomerOne Tenant, Bridge Domain BD-DataBase-Servers
+
+ Vrf: DB-Servers
+ Routing Enabled: yes
+ Scope: public,shared
+
+ Subnet 10.1.1.1/24 is located in CustomerTwo Tenant, Bridge Domain BD-Web-Servers
+
+ Vrf: Web-Servers
+ Routing Enabled: yes
+ Scope: public,shared
+
+
+
+
+
+Enter gateway IP plus prefix length (ex. 1.1.1.1/24)
+
+
+Please enter a gateway IP: 
+
