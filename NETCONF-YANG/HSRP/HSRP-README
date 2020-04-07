@@ -2,6 +2,8 @@ This program is designed to speed up adding new HSRP gateways and vlans to curre
 a whole topology with minimal effort. Just enter the core switches and access switches at the begging of the program, configure 
 one vlan, one gateway and the program does the rest.
 
+Only one requirement, create a file path for C:\\Python
+
 Sample Ouput:
 
 Device:10.10.10.10-------------------------------------
