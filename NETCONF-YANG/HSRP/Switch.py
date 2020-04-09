@@ -113,6 +113,7 @@ def log_devices():
 
     print("\n")
     print("Press CTRL+C to return to the main menu\n")
+    print("Enter desired active gateway first")
 
     print("\n")
     print("|-Core Switches-------------------|")
