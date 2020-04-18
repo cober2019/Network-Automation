@@ -136,23 +136,22 @@ def enpoint_tracker():
             ep_domain = fvCEp.get("lcC")
 
         try:
-
-            with open(get_file_2) as json_file:       # Open JSON file create in file_operation_2 funtion Line 248.
+            with open(get_file_2) as json_file:  # Open JSON file create in file_operation_2 funtion Line 248.
                 endpoint_data = json.load(json_file)
 
+                total_count = int(endpoint_data["totalCount"])
                 index = 0
-                try:
-                    # Iterate through INT range 0,20 and find all Leaf Nodes associated with the endpoint. Store to leaf_array for later use. An Index
-                    # error will occur due to the index variable being out of range for the dictionary lookup. 20 may come first if you have more
-                    # thank 20 Leaf nodes.
 
-                    for i in range(0, 20):
-                        report_node = endpoint_data["imdata"][0]["fvCEp"]["children"][0]["fvIp"]["children"][index]["fvReportingNode"]["attributes"]["id"]
-                        index = index + 1
-                        leaf_array.append(report_node)
+                try:
+                    for i in range(0, total_count):
+                        leaf_array.clear()
+                        for i in range(0, total_count):
+                            report_node = endpoint_data["imdata"][0]["fvCEp"]["children"][0]["fvIp"]["children"][index]["fvReportingNode"]["attributes"]["id"]
+                            index = index + 1
+                            leaf_array.append(report_node)
                 except IndexError:
                     pass
-        except (TypeError): # A type error will occure the endpoint is not found or the JSON files is empty
+        except (TypeError):  # A type error will occure the endpoint is not found or the JSON files is empty
             pass
 
     except ipaddress.AddressValueError: # IF the endpoint is not an IP, the IP Address check will throw a value error. In turn we will use a different URI to
@@ -180,8 +179,6 @@ def enpoint_tracker():
             ep_ip = fvCEp.get("ip")
             ep_domain = fvCEp.get("lcC")
 
-        try:
-
             with open(get_file_2) as json_file:         # Open JSON file create in file_operation_2 funtion Line 238.
                 endpoint_data = json.load(json_file)
 
@@ -198,16 +195,28 @@ def enpoint_tracker():
                         index = index + 1
                         leaf_array.append(report_node)
 
-                    except KeyError: # A key error will be thrown if the dictionary path doesnt match Line 199. If exception is thrown, we will access the value a different way
 
                         report_node = endpoint_data["imdata"][0]["fvCEp"]["children"][0]["fvRsToVm"]["children"][index]["fvReportingNode"]["attributes"]["id"]
                         index = index + 1
                         leaf_array.append(report_node)
 
+                    except KeyError: # A key error will be thrown if the dictionary path doesnt match Line 199. If exception is thrown, we will access the value a different way
+                        pass
+
+                    try:
+                        report_node = endpoint_data["imdata"][0]["fvCEp"]["children"][0]["fvRsCEpToPathEp"]["children"][index]["fvReportingNode"]["attributes"]["id"]
+                        index = index + 1
+                        leaf_array.append(report_node)
+
+                        report_node = endpoint_data["imdata"][0]["fvCEp"]["children"][0]["fvRsCEpToPathEp"]["children"][index]["fvReportingNode"]["attributes"]["id"]
+                        index = index + 1
+                        leaf_array.append(report_node)
+                    except KeyError as error:
+                        print(error)
+                        pass
+
             except IndexError:
                 pass
-        except (TypeError): # A type error will occure the endpoint is not found or the JSON files is empty
-            pass
 
     try:
 
