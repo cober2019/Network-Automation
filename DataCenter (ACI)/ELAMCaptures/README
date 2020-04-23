@@ -1,1 +1,34 @@
-Placeholder
+ELAM Capture Program:
+
+This program streamlines ELAM capture setup, status checking, and reading the ELAM report. This program require to modules to run.
+First being my Endpoint Tracker module. This vaidates both source and destination EP before running the ELAM capture module. Second
+is the ELAM capture setup and status/report viewing.
+
+All information is gathered for both source and destination to give better visibilty to the whole fabric path on all slected leafs
+, not just the destination.
+
+Lastly, if the ELAM is triggered the report will be read and all relative information will be in the [ ] under the triggered leaf
+line. A final output is shown below
+
+Endpoints:
+
+ Query:                10.1.1.15                       Query:                10.1.2.13
+ Reverse Lookup:       00:50:56:A0:4C:47               Reverse Lookup:       00:50:56:A3:7F:A4
+ Tenant:               Customer-1                      Tenant:               Customer-1
+ App Prof:             ANP-VL303                       App Prof:             ANP-VL209
+ EPG:                  EPG-VL303                       EPG:                  EPG-VL209
+ Learned From:         learned,vmm                     Learned From:         learned,vmm
+ Encap:                vlan-303                        Encap:                vlan-209
+ Reporting Leafs:      100 , 101                       Reporting Leafs:      100 , 101
+
+
+ Source Endpoint Fabric Information:
+
+   Leaf : 192.168.128.4      Infra_vl : 225       vrf: common:Customer-1        EP DB Port: Po9      EP hw BD: BD-224     LearningPort: po9           Phys Port: Eth1/15, Eth1/16
+   Leaf : 192.168.128.5      Infra_vl : 221       vrf: common:Customer-1        EP DB Port: Po9      EP hw BD: BD-87      LearningPort: po9           Phys Port: Eth1/15, Eth1/16
+
+ IP (Leaf): 192.168.128.4 Status: Triggered ####
+
+ Infra_vl: 239     vrf: common:common:Customer-1     EP hw BD: BD-238     EP DB Fw: Po9    [LearningPort: po9    Phys Port: Eth1/17, Eth1/16   Ovec Port: Eth1/17]
+
+Capture Complete   
