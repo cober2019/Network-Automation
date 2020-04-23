@@ -3,6 +3,13 @@ ELAM Capture Program:
 !Requires 2 modules both stored in folder!
 !The program is for for L3 same leaf, L2 leaf to Leaf!
 
+File Paths/variables used:
+
+get_file_1 = "C:\Python\ACI\Get_ACI.txt"
+get_file_2 = "C:\Python\ACI\Get_ACI_2.txt"
+get_file_3 = "C:\Python\ACI\Get_ACI_3.txt"
+
+
 This program streamlines ELAM capture setup, status checking, and reading the ELAM report. This program require to modules to run.
 First being my Endpoint Tracker module. This vaidates both source and destination EP before running the ELAM capture module. Second
 is the ELAM capture setup and status/report viewing.
