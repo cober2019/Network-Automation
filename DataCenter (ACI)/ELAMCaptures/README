@@ -34,10 +34,10 @@ Endpoints:
 
  Source Endpoint Fabric Information:
 
-   Leaf : 192.168.128.4      Infra_vl : 225       vrf: common:Customer-1        EP DB Port: Po9      EP hw BD: BD-224     LearningPort: po9           Phys Port: Eth1/15, Eth1/16
-   Leaf : 192.168.128.5      Infra_vl : 221       vrf: common:Customer-1        EP DB Port: Po9      EP hw BD: BD-87      LearningPort: po9           Phys Port: Eth1/15, Eth1/16
+   Leaf : 192.168.1.1     Infra_vl : 225       vrf: common:Customer-1        EP DB Port: Po9      EP hw BD: BD-224     LearningPort: po9           Phys Port: Eth1/15, Eth1/16
+   Leaf : 192.168.1.2      Infra_vl : 221       vrf: common:Customer-1        EP DB Port: Po9      EP hw BD: BD-87      LearningPort: po9           Phys Port: Eth1/15, Eth1/16
 
- IP (Leaf): 192.168.128.4 Status: Triggered ####
+ IP (Leaf): 192.168.1.1 Status: Triggered ####
 
  Infra_vl: 239     vrf: common:common:Customer-1     EP hw BD: BD-238     EP DB Fw: Po9    [LearningPort: po9    Phys Port: Eth1/17, Eth1/16   Ovec Port: Eth1/17]
 
