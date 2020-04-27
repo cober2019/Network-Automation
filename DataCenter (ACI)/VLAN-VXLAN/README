@@ -1,1 +1,2 @@
-Placeholder
+This program allows you to validate vlan to vxlan mappings in your fabric. If there is a mismatched mapping the program will 
+ouput the leaf perspective mapping, plus all other leafs that have the vlan assigned.
