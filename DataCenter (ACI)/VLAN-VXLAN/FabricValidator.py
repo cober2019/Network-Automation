@@ -177,7 +177,7 @@ def body():
                     print("---------------------------------------------------------------------------------")
                     print("\n")
 
-    except UnboundLocalError:
+    except (UnboundLocalError,OSError):
         print("Something Went Wrong. Please Verify Connectivity and Credentials\n")
         pass
 
