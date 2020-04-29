@@ -1,1 +1,53 @@
-Placeholder
+This program is a continuation of my FabricValidator program which checked for vlan-to-vxlanc mismatches. 
+This version runs with a vlanPooll module. When running vlan to vxlan validation, the mismatched vlan will be carried
+over to the vlanPools module and the vlan pools will be searced for the mismatched vlan. The vlanPool module then
+returns all vlan pools that the vlan is assocaited eith.
+
+As you can see in the ouput below, vlan pools are now added:
+ 
+ 
+Fabric VLAN to VXLAN Mapping                                    *Leaf Perspective
+---------------------------------------------------------------------------------
+ * Leaf IP: 192.168.1.2    |    VLAN: 100      |   VXLAN ID: 11692              |
+   Leaf IP: 192.168.1.3    |    VLAN: 100      |   VXLAN ID: 11692              |
+   Leaf IP: 192.168.1.4    |    VLAN: 100      |   VXLAN ID: 9669               |
+   Leaf IP: 192.168.1.5    |    VLAN: 100      |   VXLAN ID: 9669               |
+---------------------------------------------------------------------------------
+   VLAN Pools: Intenral-Transit , Extenral-Transit
+---------------------------------------------------------------------------------
+
+
+Fabric VLAN to VXLAN Mapping                                    *Leaf Perspective
+---------------------------------------------------------------------------------
+ * Leaf IP: 192.168.1.2    |    VLAN: 3000     |   VXLAN ID: 11792              |
+   Leaf IP: 192.168.1.3    |    VLAN: 3000     |   VXLAN ID: 11792              |
+   Leaf IP: 192.168.1.4    |    VLAN: 3000     |   VXLAN ID: 11492              |
+   Leaf IP: 192.168.1.5    |    VLAN: 3000     |   VXLAN ID: 11492              |
+---------------------------------------------------------------------------------
+   VLAN Pools: Intenral-Transit , Extenral-Transit
+---------------------------------------------------------------------------------
+
+
+Fabric VLAN to VXLAN Mapping                                    *Leaf Perspective
+---------------------------------------------------------------------------------
+ * Leaf IP: 192.168.1.3    |    VLAN: 100      |   VXLAN ID: 11692              |
+   Leaf IP: 192.168.1.2    |    VLAN: 100      |   VXLAN ID: 11692              |
+   Leaf IP: 192.168.1.4    |    VLAN: 100      |   VXLAN ID: 9669               |
+   Leaf IP: 192.168.1.5    |    VLAN: 100      |   VXLAN ID: 9669               |
+---------------------------------------------------------------------------------
+   VLAN Pools: Intenral-Transit , Extenral-Transit
+---------------------------------------------------------------------------------
+
+
+Fabric VLAN to VXLAN Mapping                                    *Leaf Perspective
+---------------------------------------------------------------------------------
+ * Leaf IP: 192.168.1.3    |    VLAN: 3000     |   VXLAN ID: 11792              |
+   Leaf IP: 192.168.1.2    |    VLAN: 3000     |   VXLAN ID: 11792              |
+   Leaf IP: 192.168.1.4    |    VLAN: 3000     |   VXLAN ID: 11492              |
+   Leaf IP: 192.168.1.5    |    VLAN: 3000     |   VXLAN ID: 11492              |
+---------------------------------------------------------------------------------
+   VLAN Pools: Intenral-Transit , Extenral-Transit
+---------------------------------------------------------------------------------
+
+
+Program Ended
