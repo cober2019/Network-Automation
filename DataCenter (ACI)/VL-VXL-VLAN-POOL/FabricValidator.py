@@ -36,7 +36,10 @@ try:
 except ImportError:
     module_array.append("warnings")
     pass
-
+try:
+    import collections
+except ImportError:
+    pass
 
 ###################################################################
 #### File Used to read/write during runtime
@@ -73,7 +76,7 @@ def apic_login():
 
     print("Fabric Credentials:\n")
     apic = input("APIC: ")
-    username = input("Username: ")                                  # Enter fabric username
+    username = input("Username: ")                              # Enter fabric username
     password = input("Password: ")
 
     uri = "https://%s/api/mo/aaaLogin.xml" % apic
@@ -100,14 +103,15 @@ def apic_login():
             print("\n")
             apic_login()
         else:
-            vlanPool.body(session, apic)
-            body(username, password)
+            vlanPool.aci_gets.vlan_pools(session, apic)
+            vlanPool.aci_gets.phys_domains(session, apic)
+            body(session, apic,username, password)
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL): # If APIC IP is incorrect which makes the URI
         print("Login Failed, please verify APIC IP")                              # Invalid, this exception will be thrown.
         print("\n")
         apic_login()
 
-def body(username, password):
+def body(session, apic, username, password):
 
 
     leaf_array = [ ]
@@ -117,9 +121,11 @@ def body(username, password):
     vxlan_array = [ ]
     wrong_dict = { }
     correct_dict = { }
-    wrong_array = [ ]
-    correct_array = [ ]
-    vlan_pool = { }
+    vlan_pool = collections.defaultdict(list)
+    phys_doms = collections.defaultdict(list)
+    aaeps = collections.defaultdict(list)
+    location = collections.defaultdict(list)
+    path = collections.defaultdict(list)
 
     time.sleep(1)
     clear()                                                         # Clear terminal
@@ -155,6 +161,7 @@ def body(username, password):
             vlan_vxlan_array = [ ]
             vxlan_array = [ ]
             vlans_array = [ ]
+            wrong_vlans = [ ]
 
             credentials = {                                             # Netmiko credential dictionary
                 'device_type': 'cisco_ios',
@@ -165,8 +172,7 @@ def body(username, password):
 
             try:
                 device_connect = ConnectHandler(**credentials)          # Connect to device/leaf using crdential dictionary
-            except (ValueError, ssh_exception.AuthenticationException,  # Catch netmiko exceptions
-                    ssh_exception.NetmikoTimeoutException) as error:
+            except (ValueError, ssh_exception.AuthenticationException, ssh_exception.NetmikoTimeoutException) as error:
                 print(error)                                            # Print error
                 pass
 
@@ -201,8 +207,6 @@ def body(username, password):
 
                 leaf_dict[leaf] = vlan_vxlan_array                                      # Store list in dictionaries. Keys being leaf IPs
 
-                # The following variables will be used for conditional statements by gathering vlans/vxlans in the fabric, not where there are assigned currently. That wil be checked later
-
                 remove_duplicates_vlans = list(dict.fromkeys(vlans_array))              # Clear of duplicates in list. This allows us to have all assigned vlans across the fabric
                 remove_duplicates_vxlans = list(dict.fromkeys(vxlan_array))             # Clear of duplicates in list. This allows us to have all assigned vxlans across the fabric
 
@@ -213,47 +217,72 @@ def body(username, password):
                     wrong_array = []                                                    # List will be reset every k interation
                     correct_array = []                                                  # List will be reset every k interation
                     for v in v:
-                        for vlan, vxlan in zip(remove_duplicates_vlans, remove_duplicates_vxlans): # Iterate through both list we create on line 133, 134
-                            if vlan == v[0] and vxlan == v[1]:                                     # Check see if the variables vlan/vxlan are == to values in the dictionary
-                                correct_array.append(" Leaf IP: " + k + "    |    VLAN: {:7} |   VXLAN ID: {:15}   |".format(vlan, vxlan)) # Store value if true
-                            if vlan == v[0] and vxlan != v[1]:                              # Check see if the variables vlan is == to value but vxlan is not
-                                pools = vlanPool.find_duplicatee_vlan(vlan)                 # Call the vlanPool find duplicates functions module to see what pools this vlan is associated with
-                                vlan_pool[k] = pools                                        # vlanPool module will return the vlan pools in an array, store to local dictionary
-                                wrong_array.append(" Leaf IP: " + k + "    |    VLAN: {:7} |   VXLAN ID: {:15}   |".format(v[0], v[1]))    # Store value if false
+                        for vlan, vxlan in zip(remove_duplicates_vlans, remove_duplicates_vxlans):
+
+                            if vlan == v[0] and vxlan == v[1]:
+                                correct_array.append(" Leaf IP: " + k + "    |    VLAN: {:7} |   VXLAN ID: {:15}   ".format(vlan, vxlan))
+                            if vlan == v[0] and vxlan != v[1]:
+                                wrong_vlans.append(vlan)
+                                wrong_array.append(" Leaf IP: " + k + "    |    VLAN: {:7} |   VXLAN ID: {:15}   ".format(v[0], v[1]))
                             else:
                                 pass
-                    if len(wrong_array) == 0:                                               # If list length == to 0, or if mapping are correct store to dictionary
+                    if len(wrong_array) == 0:
                         correct_dict[k] = correct_array
-                    else:                                                                   # if list > 1 then a mapping wasnt correct, store to dictionary
+                    else:
                         wrong_dict[k] = wrong_array
 
-        for key_1, v in wrong_dict.items():                                                                                 # unpack k, v pairs
-            if not v:                                                                                                   # If the key has no value, continue at the top of the loop
+
+        remove_dups = list(dict.fromkeys(wrong_vlans))
+        for vlan in remove_dups:
+            pools = vlanPool.aci_gets.find_duplicatee_vlan(session, apic,vlan)
+            vlan_pool[vlan].append(pools[0])
+            phys_doms[vlan].append(pools[1])
+            aaeps[vlan].append(pools[2])
+            location[vlan].append(pools[3])
+            path[vlan].append(pools[4])
+
+        for key_1, v in wrong_dict.items():  # unpack k, v pairs
+            if not v:  # If the key has no value, continue at the top of the loop
                 continue
             else:
-                for string in v:                                                                                        # Else, unpack v (string) from v. This is needed because the v is a list of v(vlan, to vxlan mappings
-                    vlan_1 = re.search(r'\bVL.*?[0-9]\b', string)                                                   # Grab the first occurnece of and int, whihc would be the vlan
-                    print("Fabric VLAN to VXLAN Mapping                                    *Leaf Perspective")
-                    print("---------------------------------------------------------------------------------")
-                    print(" *" + string)                                                                            # Print the value stored in wrong array, or incorrect mapping
-                    for key_2, v in correct_dict.items():                                                               # Next unpack the correct mappings
-                        for string_2 in v:                                                                          # Get the value in the value, or list in the list
-                            vlan_2 = re.search(r'\bVL.*?[0-9]\b', string_2)                                         # Store the value
+                for string in v:
+                    vlan_1 = re.search(r'(?<=VLAN:\s).*?[0-9]\b', string)
+                    print("   Fabric VLAN to VXLAN Mapping                               *Leaf Perspective")
+                    print("--------------------------------------------------------------------------------\n")
+                    print("   *" + string)
+                    for key_2, v in correct_dict.items():
+                        for string_2 in v:
+                            vlan_2 = re.search(r'(?<=VLAN:\s).*?[0-9]\b', string_2)
                             try:
-                                if vlan_1.group(0) == vlan_2.group(0):                                              # Compare the to variables for correct and incorrect
-                                    if string == string_2:                                                          # If they're equal each other, check if the string in each dict == each other.
-                                        pass                                                                        # If they are, dont print since it was printed in the first unpacking
+                                if vlan_1.group(0) == vlan_2.group(0):
+                                    if string == string_2:
+                                        pass
                                     else:
-                                        print("  " + string_2)                                                      # ELSE, print the string
+                                        print("    " + string_2)
                                 else:
                                     pass
                             except AttributeError:
                                 pass
-                    print("---------------------------------------------------------------------------------")
-                    unpacked_vlan_pools = [ v for key_3,v in vlan_pool.items() if key_3 == key_1 for v in v]       # If the two keys match, Unpack vlan pools values from dictionary key, or leaf
-                    print("   VLAN Pools: " + " , ".join(unpacked_vlan_pools))                                    # join list entries and print accross
-                    print("---------------------------------------------------------------------------------")
+
+                    unpacked_vlan_pools = [v for k, v in vlan_pool.items() if vlan_1.group(0) == k for v in v for v in v]
+                    unpacked_phys_doms = [v for k, v in phys_doms.items() if vlan_1.group(0) == k for v in v for v in v ]
+                    unpacked_aaep = [v for k, v in aaeps.items() if vlan_1.group(0) == k for v in v for v in v ]
+                    unpacked_location = [v for k, v in location.items() if vlan_1.group(0) == k for v in v for v in v ]
+                    unpacked_path = [v for k, v in path.items() if vlan_1.group(0) == k for v in v for v in v]
+
                     print("\n")
+                    print("   Access Policy Details:\n")
+                    print("     VLAN Pool(s): " + "\n                   ".join(unpacked_vlan_pools))
+                    print("\n")
+                    print("     Phys Dom(s):  " + "\n                   ".join(unpacked_phys_doms))
+                    print("\n")
+                    print("     AAEP(s):      " + "\n                   ".join(unpacked_aaep))
+                    print("\n")
+                    print("     Encap Loc.:   " + "\n                   ".join(unpacked_location))
+                    print("\n")
+                    print("     Path Attach:  " + "\n                   ".join(unpacked_path))
+                    print("\n")
+
 
     except (UnboundLocalError,OSError):
         print("Something Went Wrong. Please Verify Connectivity and Credentials\n")
