@@ -3,7 +3,8 @@ information about any vlan. Everything from access policies to location will be 
 
 * All of my outputs are modifed for confedentiality. Output is still exact other than wording.
 
-Both py files are needed to run this program.
+*Both py files are needed to run this program.
+*One file is needed to run the program:  "C:\Python\ACI\Get_ACI.xml"
 
 Ouput:
 
