@@ -28,6 +28,6 @@ Enter you desired range as - 192.168.128.1-10. All ips between one and ten will 
                                            '192.168.128.35']
   
   
-  Once the list have been unpacked, they are return to the calling function/module to be iterated through
+  Once the list has been unpacked, they are returned to the calling function/module to be iterated through
   
   
