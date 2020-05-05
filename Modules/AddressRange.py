@@ -18,7 +18,7 @@ def ip_ranges():
 
     try:
         try:
-            ip_address, ip_range = input("Address Range:  ").split("-")
+            ip_address, ip_range = input("IP address:  ").split("-")
         except ValueError as error:
             pass
 
@@ -29,6 +29,9 @@ def ip_ranges():
         # Strip the IP address of the last octet. Used later
 
         strip_last_octet = re.findall(r'^.*?[0-9]\..*?[0-9]\..*?[0-9]\.', ip_address)
+
+        whole_ip_1 = re.findall(r'(?<=,).[0-9]*?[0-9]\..*?[0-9]\..*?[0-9]\..[0-9]*' , ip_range)
+        unpack_ips = [ip_list.append(ip) for ip in whole_ip_1]
 
         # Find the last octet whether its 1/2/3 integers. Store the integer to variable
 
