@@ -8,26 +8,34 @@ I need to scan or login multiple devices at once and entering every IP is time c
 
 How it works:
 
-Enter you desired range as - 192.168.128.1-10. All ips between one and ten will be unpacked and stored to a list
+Enter you desired range as - 
+
+                              IP Range: 192.168.128.1-10
 
                                 Returns: ['192.168.128.1', '192.168.128.2', '192.168.128.3', '192.168.128.4', 
                                           '192.168.128.5', '192.168.128.6', '192.168.128.7', '192.168.128.8', 
                                           '192.168.128.9', '192.168.128.10']
 
-                             192.168.128.1-10,11,15,100. All ips will be unpacked and stored to a list
+                             IP Range: 192.168.128.1-10,11,15,100
                              
                                 Returns ['192.168.128.1', '192.168.128.2', '192.168.128.3', '192.168.128.4', 
                                          '192.168.128.5', '192.168.128.6', '192.168.128.7', '192.168.128.8', 
                                          '192.168.128.9', '192.168.128.10', '192.168.128.11', '192.168.128.15',
                                          '192.168.128.100']
-
-                             192.168.128.1-1,10,20,30,35. Since "-" is the split and we need all single ips, 
-                             we just close the range using 1-1
+                             
+                             *Since "-" is the split and we need all single ips, we just close the range using 1-1. Line 27
+                             
+                             IP Range:  192.168.128.1-1,10,20,30,35. 
                              
                                   Returns: ['192.168.128.1', '192.168.128.10', '192.168.128.20', '192.168.128.30',
                                            '192.168.128.35']
   
-  
+                             IP Range: 10.1.1.1-10,192.168.128.2,172.16.1.24,192.168.128.45,100,192.168.123.123,235,192.168.2.23
+                            
+                                   Returns: ['10.1.1.1', '192.168.128.2', '172.16.1.24', '192.168.128.45', '192.168.123.123',
+                                            '192.168.2.23','10.1.1.2', '10.1.1.3', '10.1.1.4', '10.1.1.5', '10.1.1.6', '10.1.1.7', 
+                                            '10.1.1.8', '10.1.1.9', '10.1.1.10', '10.1.1.100', '10.1.1.235']
+                            
   Once the list has been unpacked, they are returned to the calling function/module to be iterated through
   
   
