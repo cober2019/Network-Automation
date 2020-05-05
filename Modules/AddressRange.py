@@ -18,7 +18,7 @@ def ip_ranges():
 
     try:
         try:
-            ip_address, ip_range = input("IP address:  ").split("-")
+            ip_address, ip_range = input("Address Range:  ").split("-")
         except ValueError as error:
             pass
 
