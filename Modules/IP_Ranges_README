@@ -1,0 +1,31 @@
+IP_Ranges Module
+
+This module allows you to enter IP ranges, and individual IPs on the same line. Only support class C right now
+
+Use Case:
+
+I need to scan or login multiple devices at once and entering every IP is time consuming. 
+
+How it works:
+
+Enter you desired range as - 192.168.128.1-10. All ips between one and ten will be unpacked and stored to a list
+
+                                Returns: ['192.168.128.1', '192.168.128.2', '192.168.128.3', '192.168.128.4', 
+                                          '192.168.128.5', '192.168.128.6', '192.168.128.7', '192.168.128.8', 
+                                          '192.168.128.9', '192.168.128.10']
+
+                             192.168.128.1-10,11,15,100. All ips will be unpacked and stored to a list
+                             
+                                Returns ['192.168.128.1', '192.168.128.2', '192.168.128.3', '192.168.128.4', 
+                                         '192.168.128.5', '192.168.128.6', '192.168.128.7', '192.168.128.8', 
+                                         '192.168.128.9', '192.168.128.10', '192.168.128.11', '192.168.128.15',
+                                         '192.168.128.100']
+
+                             192.168.128.1-1,10,20,30,35. Since "-" is the split and we need all single ips, 
+                             we just close the range using 1-1
+                             
+                                  Returns: ['192.168.128.1', '192.168.128.10', '192.168.128.20', '192.168.128.30',
+                                           '192.168.128.35']
+  
+  
+  Once the list have been unpacked, the list are return to the calling function/module to be iterated through
