@@ -143,8 +143,11 @@ class aci_gets():
 
         r_1 = session.get(uri, verify=False, headers=headers)
         aci_gets.file_operation_1(r_1)
-
+        
         if "\"0\"" in r_1.text:
+            print("Encap not Found")
+            FindEncap.body(session, apic)
+        elif "error code" in r_1.text:
             print("Encap not Found")
             FindEncap.body(session, apic)
         else:
@@ -191,7 +194,6 @@ class aci_gets():
                             continue
 
             dup_pools = list(dict.fromkeys(pools))
-            dup_epg = list(dict.fromkeys(epg))
             dup_location = list(dict.fromkeys(location))
             dup_aaep = list(dict.fromkeys(aaep))
 
