@@ -146,7 +146,7 @@ class aci_gets():
 
         if "\"0\"" in r_1.text:
             print("Encap not Found")
-            FindEncap.body(session, apic, username, password)
+            FindEncap.body(session, apic)
         else:
 
             tree = ET.parse('C:\Python\ACI\Get_ACI.xml')
