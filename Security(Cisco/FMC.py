@@ -72,7 +72,7 @@ if __name__ == '__main__':
     for i in range(0, count):
 
             print(access_pol["items"][i]["name"] +": " + access_pol["items"][i]["id"])
-            uri = access_pol["items"][i]["links"]["self"] + "/accessrules?offset=1000&limit=1000"
+            uri = access_pol["items"][i]["links"]["self"] + "/accessrules?offset=0&limit=1000"
             r = session.get(uri, verify=False, headers=headers, auth=(username, password))
             try:
                 access_rule = r.json()
