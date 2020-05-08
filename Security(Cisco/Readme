@@ -1,1 +1,5 @@
-Placeholder
+Cisco FMC Project.
+
+Currently its functional code from a viewing perspective. You can view source/destination networks and source/destination protocols.
+I've caught some most exception thus far. When ran it will just loops throught you rules and output, no stopping. Give it a run and let
+me know if you come across issues. This code is nowhere near complete.
