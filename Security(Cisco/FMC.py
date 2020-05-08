@@ -18,9 +18,6 @@ except ImportError:
     module_array.append("time")
 
 
-file = open("C:\\Python\\fmc.txt")
-open_file = file.read()
-print(open_file)
 
 ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 username = input("Username: ")
