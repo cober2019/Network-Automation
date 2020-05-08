@@ -96,7 +96,7 @@ if __name__ == '__main__':
                 except (KeyError, json.JSONDecodeError):
                     continue
                 except IndexError:
-                    pass
+                    continue
 
     # Heres where we convert the object names to values. They key items are  needed for conversion are object types, object id, and domain UUID
     # They're all components of the URI which is needed to convert the objects
