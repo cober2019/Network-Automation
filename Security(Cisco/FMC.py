@@ -322,5 +322,6 @@ if __name__ == '__main__':
 
                     rule = rule + 1
 
-            except (json.JSONDecodeError, IndexError):
+            except (json.JSONDecodeError, IndexError, KeyError):
                 pass
+            program_end = input("Press Enter to Close Windows")
