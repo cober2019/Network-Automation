@@ -324,4 +324,4 @@ if __name__ == '__main__':
 
             except (json.JSONDecodeError, IndexError):
                 pass
-            program_end = input("Press Enter to Close Windows")
+          
