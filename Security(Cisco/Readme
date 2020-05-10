@@ -1,6 +1,6 @@
 Cisco FMC Project (5/9/2020)
 
-Added DB and DB tables. I removed all print statement and andded DB write/update statement. Current wll write:
+Added DB and DB tables. I removed all print statements and and added DB write/update statement. Current wll write:
 
 1. Source Network
 2. Destination Networks
