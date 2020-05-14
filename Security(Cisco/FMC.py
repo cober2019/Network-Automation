@@ -24,17 +24,12 @@ except ImportError:
 
 
 ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS request')
-
 fmc_ip = input("FMC IP: ")
 username = input("Username: ")
 password = input("Password: ")
-
-mydb = sqlite3.connect("FMC")                                       # Create local DB name FMC
-c = mydb.cursor()                                                   # Cusors used to write to DB
+mydb = sqlite3.connect("FMC")
+c = mydb.cursor()
 d = mydb.cursor()
-e = mydb.cursor()
-f = mydb.cursor()
-g = mydb.cursor()
 null = ""
 
 def get_fmc_tokens():
@@ -46,7 +41,6 @@ def get_fmc_tokens():
 
     session = requests.Session()
     r = session.post(uri, verify=False, auth=(username, password))
-    print(r.headers)
     get_access_token = r.headers["X-auth-access-token"]
     get_refresh_token = r.headers["X-auth-refresh-token"]
     domain_uuid = r.headers["DOMAIN_UUID"]
@@ -65,13 +59,114 @@ def objects(dom_uidd, type, id):
     r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
 
     try:
+        nested_objects = [ ]
         object = r.json()
-        insert_object(object["id"])
-        print(object)
+
+        # Lines 71- 83 gets nested objects. The i variable represents each list within the list. We will save targeted k/v pairs to list return it to caller
+        # Process
+
+        # This block of code is for nested objects
+        # The host object will return as they dont need anymore inspection. for group we need to loop again. Using GET
+        # Get the type in lower for the URI requirement
+        # Use the UUID and object ID
+        # Convert reponse to dict r.json()
+        # Store the value to list and return it to caller nested_objects()
+        # The process is the same down to line 142
+
+        try:
+            for i in object["objects"]:
+
+                try:
+                    insert_object(i["id"])
+                    nested_objects.append(i["port"])
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(i["type"], i["name"], i["value"], i["id"],))
+                    mydb.commit()
+                except KeyError as error:
+                    pass
+
+                try:
+                    insert_object(i["id"])
+                    nested_objects.append("ICMP" + "-" + i["icmpType"])
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?", (i["type"], i["name"], i["value"], i["id"],))
+                    mydb.commit()
+                except KeyError as error:
+                    pass
+        except KeyError as error:
+            pass
+
+        # Write any interface objects to th DB if they are nested
+
+        try:
+            for objects in object["interfaces"]:
+                try:
+                    insert_object(object["id"])
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(object["type"], object["name"], object["name"],  object["id"],))
+                    mydb.commit()
+                except KeyError:
+                    pass
+        except KeyError:
+            pass
+
+        try:
+            for i in object["objects"]:
+
+                obj_type = str(i["type"] + "s").lower()
+                time.sleep(.5)
+
+                uri = "https://" + fmc_ip + "/api/fmc_config/v1/domain/" + fmc_access[2] + "/object/" + obj_type + "/" + i["id"] + ""
+                r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
+                nested_object = r.json()
+
+                try:
+                    nested_objects.append(nested_object["value"])
+                except KeyError:
+                    pass
+        except KeyError:
+            pass
+
+        try:
+            for i in object["objects"]:
+
+                obj_type = str(i["type"] + "s").lower()
+                time.sleep(.5)
+
+                uri = "https://" + fmc_ip + "/api/fmc_config/v1/domain/" + fmc_access[2] + "/object/" + obj_type + "/" + i["id"] + ""
+                r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
+                nested_object = r.json()
+
+                try:
+                    insert_object(object["id"])
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(object["type"], object["name"], object["value"], object["id"],))
+                    mydb.commit()
+                    nested_objects.append(nested_object["value"])
+                except KeyError:
+                    pass
+
+        except KeyError:
+            pass
+
+        # Write any icmp objects to th DB if they aren't nested
+
+        try:
+            insert_object(object["id"])
+            c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(object["type"], object["icmpType"], object["name"], object["id"],))
+            mydb.commit()
+        except KeyError as error:
+            pass
+
+        # Write any protocol/port objects to th DB if they aren't nested
+
+        try:
+            insert_object(object["id"])
+            c.execute("UPDATE Object_Used  SET type=?, name=?, value=?, protocol=? WHERE id=?",(object["type"], object["name"], object["port"], object["protocol"], object["id"],))
+            mydb.commit()
+        except KeyError:
+            pass
 
         # Update the Object_Used table. Set column attributes to the values stored in the object dictionary
 
         try:
+            insert_object(object["id"])
             c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?", (object["type"],object["name"], object["value"], object["id"],))
             mydb.commit()
         except KeyError:
@@ -81,29 +176,40 @@ def objects(dom_uidd, type, id):
         object = "Error"
         pass
 
-    return object # Return the object to the caller si ut can be update/stored in the database
+    cleanup_db()                    # This will cleant duplcate entries from out DB. To reduce conditional code in the latter code.
+    return object, nested_objects   # Return the object to the caller si ut can be update/stored in the database
 
 def create_fw_table():
 
     # Create a table within the DB. Add four columns, can be nore if needed.
 
     try:
-        d.execute('''CREATE TABLE FMC_Rules  (RuleNumber, Name,  SrcInt, dstInt, srcNet, dstNet, srcPort_1,  
-                                              vlanTags, users, apps, srcPort, dstPort, URLS, iseAtts, action)''')
+        d.execute('''CREATE TABLE FMC_Rules  (Name,  SrcInt, dstInt, srcNet, dstNet, vlanTags, users, apps, srcPort, dstPort, URLS, iseAtts, action)''')
         mydb.commit()
     except sqlite3.OperationalError:
         pass
 
-def insert_firewall(ruleNumber):
+def insert_firewall(ruleName):
 
     # Insert the row in the DB. Takes one argument which is the rule ID. The null will be filled in during program runtime. This has to match the number of comlumns
     # when the tabe is created.
 
     try:
-        d.execute("INSERT INTO FMC_Rules VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',"
-                                                "'%s', '%s')" %(ruleNumber, null, null, null, null, null, null, null, null, null, null, null, null, null, null))
+        d.execute("INSERT INTO FMC_Rules VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
+                  (ruleName,  null, null, null, null, null, null, null, null, null, null, null, null))
         mydb.commit()
-    except sqlite3.OperationalError :
+    except sqlite3.OperationalError as error:
+        pass
+
+def cleanup_db():
+
+    # Cleanup any duplicate DB entries, keeping the most old (min)
+
+    try:
+        for row in c.execute('SELECT * FROM Object_Used'): # Cleanup any database duplicates
+                c.execute('DELETE FROM Object_Used WHERE rowid not in (SELECT min(rowid) FROM Object_Used GROUP BY id)')
+                mydb.commit()
+    except sqlite3.OperationalError:
         pass
 
 def create_obj_used_table():
@@ -111,7 +217,7 @@ def create_obj_used_table():
     # Create a table within the DB. Add four columns, can be nore if needed.
 
     try:
-        d.execute('''CREATE TABLE Object_Used  (id, type,  name, value)''')
+        d.execute('''CREATE TABLE Object_Used  (id, type,  name, value, protocol)''')
         mydb.commit()
     except sqlite3.OperationalError:
         pass
@@ -121,7 +227,7 @@ def insert_object(objectid):
     # Insert the row in the DB. Takes one argument which is the object ID. The null will be filled in during program runtime
 
     try:
-        d.execute("INSERT INTO Object_Used VALUES ('%s', '%s', '%s', '%s')" % (objectid, null, null, null))
+        d.execute("INSERT INTO Object_Used VALUES ('%s', '%s', '%s', '%s', '%s')" % (objectid, null, null, null, null))
         mydb.commit()
     except sqlite3.OperationalError:
         pass
@@ -160,7 +266,7 @@ if __name__ == '__main__':
 
     for i in range(0, count):
 
-            uri = access_pol["items"][i]["links"]["self"] + "/accessrules?offset=1&limit=1000"
+            uri = access_pol["items"][i]["links"]["self"] + "/accessrules?offset=1&limit=1000"                          # offset is rule 2, limit is 100 rules per page. 1000 is max
             r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
             access_rule = r.json()
 
@@ -168,52 +274,57 @@ if __name__ == '__main__':
             # We will uses the range command to iterate through 1000 rules. You may not have tha many or more. Its an arbitrary number
 
             rule = 0
+            paging_number = 0
+
             try:
-                for rule in range(0,5000):
-                    print(str(rule))
+                for i in range(0,5000):
+
+                    if rule == int(access_rule["paging"]["limit"]):                                                     # Check to see if we reached our paging limit use K/V pairs
+                        try:
+                            rule = 0                                                                                    # If so, reset the rule or index to 0 since we will go to next page/ruleset
+                            uri = access_rule["paging"]["next"][0]                                                      # Get the next ruleset by using the next k/v pair, storing it as out URI
+                            r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))  # Request the next page/rule set
+                            access_rule = r.json()                                                                      # Save response to dictionary
+                        except IndexError as error:
+                            pass
+                    else:                                                                                               # If we haven't reached our paging limit, pass, continue will current page/ruleset
+                        pass
+
+                    # Using the self key/value in the the access_rule dict we can get the URI of the particular rule.
+                    # Once we've access the rule we will create another dictionary from the REST response. string() is the dictionary in this case
+
+                    uri = access_rule["items"][rule]["links"]["self"]
+                    r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
+
+                    try:
+                        string = r.json()
+                    except json.JSONDecodeError:
+                        pass
+
                     try:
 
-                        # Using the self key/value in the the access_rule dict we can get the URI of the particular rule.
-                        # Once we've access the rule we will create another dictionary from the REST response. string() is the dictionary in this case
-
-                        uri = access_rule["items"][rule]["links"]["self"]
+                        string["error"]["messages"][0]["description"] == "Access token invalid."
+                        time.sleep(10)
+                        fmc_access = get_fmc_tokens()
                         r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
+                        string = r.json()
 
-                        try:
-                            string = r.json()
-                        except json.JSONDecodeError:
-                            pass
-
-                        try:
-
-                            string["error"]["messages"][0]["description"] == "Access token invalid."
-                            time.sleep(10)
-                            fmc_access = get_fmc_tokens()
-                            r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
-                            string = r.json()
-
-                        except KeyError as error:
-                            pass
-                    except IndexError:
-                        continue
+                    except KeyError as error:
+                        pass
 
                     # Heres where we convert the object names to values. They key items are  needed for conversion are object types, object id, and domain UUID
                     # They're all components of the URI which is needed to convert the objects
 
                     try:
                         print(string["name"])
+                        rule_name = string["name"]
                     except KeyError as error:
                         pass
-
-                    insert_firewall(rule)
-
-                    try:
-                        update_db("FMC_Rules", "action", "RuleNumber", string["action"], str(rule))                     # Write rule action and number to db using update_db() function
-                    except (KeyError, TypeError):
-                        pass
+                    
+                    insert_firewall(rule_name)
 
                     try:
-                        update_db("FMC_Rules", "Name", "RuleNumber", string["name"], str(rule))                         # Write rule name and number to db using update_db() function
+                        update_db("FMC_Rules", "action", "Name", string["action"], rule_name)                           # Write rule action and number to db using update_db() function
                     except (KeyError, TypeError):
                         pass
 
@@ -223,14 +334,20 @@ if __name__ == '__main__':
                         for i in string["sourceNetworks"]["objects"]:                                                   # Access the sourceNetwork, object list of dictionaries, notice iteration
 
                             type = str(i["type"] + "s").lower()                                                         # Grab i[type], i is a dictionary and set it to lower. URI requirement
-                            get_object_value = objects(fmc_access[2], type, i["id"])                                    # Call the get_object_value funtions and send required URI components
-                            src_net.append(get_object_value["value"])                                                   # Append list returned from objects
+                            get_object_value = objects(fmc_access[2], type, i["id"])                                    # Call the get_object_value[0] funtions and send required URI components
+
+                            try:
+                                src_net.append(get_object_value[0]["value"])                                            # Append list returned from objects
+                            except KeyError:
+                                pass
+
+                            nested_list = [src_net.append(i) for i in get_object_value[1]]
 
                         src_list = [ i for i in src_net]                                                                # List can't be stored to db so we convert it to string using join()
-                        update_db("FMC_Rules", "srcNet", "RuleNumber", ",".join(src_list), str(rule))                   # Call the update DB function, send name, column variables
+                        update_db("FMC_Rules", "srcNet", "Name", ",".join(src_list), rule_name)                         # Call the update DB function, send name, column variables
 
                     except (KeyError, TypeError) as error:                                                              # You will recive a Keyerror if the rule is set to ANY. FMC does'nt return src - ANY
-                        update_db("FMC_Rules", "srcNet", "RuleNumber", "Any", str(rule))                                # Call the update DB function, send name, column variables
+                        update_db("FMC_Rules", "srcNet", "Name", "Any", rule_name)                                      # Call the update DB function, send name, column variables
                         pass
 
                     try:
@@ -239,74 +356,106 @@ if __name__ == '__main__':
                         for i in string["destinationNetworks"]["objects"]:
                             type = str(i["type"] + "s").lower()
                             get_object_value = objects(fmc_access[2], type, i["id"])
-                            dst_net.append(get_object_value["value"])
-
-                        dst_list = [i for i in dst_net]
-                        update_db("FMC_Rules", "dstNet", "RuleNumber", ",".join(dst_list), str(rule))
-
-                    except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "dstNet", "RuleNumber", "Any", str(rule))                                # If keyError occurs, write "Any" into DB
-                        pass
-
-                    try:
-
-                        src_ports = [ ]                                                                                 # Use comments for destination ports section
-                        for i in string["sourcePorts"]["objects"]:                                                      # Access the sourcePorts, object list of dictionaries, notice iteration
-                            type = str(i["type"] + "s").lower()                                                         # Grab i[type], i is a dictionary and set it to lower. URI requirement
-                            get_object_value = objects(fmc_access[2], type, i["id"])                                    # Call the get_object_value funtions and send reuqired URI components
 
                             try:
-                                src_ports.append(get_object_value["protocol"] + "-" + get_object_value["port"])
+                                dst_net.append(get_object_value[0]["value"])
+                            except KeyError:
+                                pass
+
+                            nested_list = [dst_net.append(i) for i in get_object_value[1]]                              # Unpack nested objects and store to a list. Objects are second variable
+                                                                                                                        # returned from the get_objects_ function
+                        dst_list = [i for i in dst_net]
+                        update_db("FMC_Rules", "dstNet", "Name", ",".join(dst_list), rule_name)
+
+                    except (KeyError, TypeError) as error:
+                        update_db("FMC_Rules", "dstNet", "Name", "Any", rule_name)                                      # If keyError occurs, write "Any" into DB
+                        pass
+
+
+
+                    src_ports = [ ]
+                    try:
+                        for i in string["sourcePorts"]["literals"]:                                                    # These are type literal. Which means they dont have an object associaited
+                            try:
+                                dst_ports.append(i["protocol"] + "-" + i["port"])
+                            except (KeyError, TypeError):
+                                pass
+                    except (KeyError, TypeError):
+                        pass
+
+                    try:                                                                                                # Use comments for destination ports section
+                        for i in string["sourcePorts"]["objects"]:                                                      # Access the sourcePorts, object list of dictionaries, notice iteration
+                            type = str(i["type"] + "s").lower()                                                         # Grab i[type], i is a dictionary and set it to lower. URI requirement
+                            get_object_value = objects(fmc_access[2], type, i["id"])                                    # Call the get_object_value[0] funtions and send reuqired URI components
+                            nest_objects = [src_ports.append(i) for i in get_object_value[1]]                           # Iterate through list of nested ports from parent. Store to list
+
+                            try:
+                                src_ports.append(get_object_value[0]["protocol"] + "-" + get_object_value[0]["port"])   # Get single objects which aren't nested. Store to list
                             except (KeyError, TypeError):
                                 pass
 
                             try:
-                                for i in get_object_value["objects"]:
+                                for i in get_object_value[0]["objects"]:                                                # Iterate list of objects. No parent
                                     src_ports.append(i["protocol"] + "-" + i["port"])
                             except (KeyError, TypeError):
                                 pass
 
                         src_port_list = [i for i in src_ports]                                                          # List can't be stored to db so we convert it to string using join()
-                        update_db("FMC_Rules", "srcPort", "RuleNumber", ",".join(src_port_list), str(rule))             # Call the update DB function, send name, column variables
+                        update_db("FMC_Rules", "srcPort", "Name", ",".join(src_port_list), rule_name)                   # Call the update DB function, send name, column variables
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "srcPort", "RuleNumber", "Any", str(rule))                               # If keyError occurs, write "Any" into DB
+                        update_db("FMC_Rules", "srcPort", "Name", "Any", rule_name)                                     # If keyError occurs, write "Any" into DB
+                        pass
+
+
+
+
+                    dst_ports = [ ]
+                    try:
+                        for i in string["destinationPorts"]["literals"]:
+                            try:
+                                dst_ports.append(i["protocol"] + "-" + i["port"])
+                            except (KeyError, TypeError):
+                                pass
+                    except (KeyError, TypeError):
                         pass
 
                     try:
-
-                        dst_ports = [ ]
                         for i in string["destinationPorts"]["objects"]:
+
                             type = str(i["type"] + "s").lower()
                             get_object_value = objects(fmc_access[2], type, i["id"])
+                            nest_objects = [dst_ports.append(i) for i in get_object_value[1]]
 
                             try:
-                                dst_ports.append(get_object_value["protocol"] + "-" + get_object_value["port"])
-                            except KeyError:
+                                dst_ports.append(get_object_value[0]["protocol"] + "-" + get_object_value[0]["port"])
+                            except (KeyError, TypeError):
                                 pass
 
                             try:
-                                for i in get_object_value["objects"]:
+                                for i in get_object_value[0]["objects"]:
                                     dst_ports.append(i["protocol"] + "-" + i["port"])
                             except (KeyError, TypeError):
                                 pass
 
                         dst_port_list = [i for i in dst_ports]
-                        update_db("FMC_Rules", "dstPort", "RuleNumber", ",".join(dst_port_list), str(rule))
+                        update_db("FMC_Rules", "dstPort", "Name", ",".join(dst_port_list), rule_name)
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "dstPort", "RuleNumber", "Any", str(rule))
+                        update_db("FMC_Rules", "dstPort", "Name", "Any", rule_name)
                         pass
+
+
 
                     try:
                                                                                                                         # Use coments for destination zones section
                         for i in string["sourceZones"]["objects"]:                                                      # Access the sourcePorts, object list of dictionaries, notice iteration
                             type = str(i["type"] + "s").lower()                                                         # Grab i[type], i is a dictionary and set it to lower. URI requirement
                             get_object_value = objects(fmc_access[2], type, i["id"])
-                            update_db("FMC_Rules", "srcInt", "RuleNumber", get_object_value["name"], str(rule))         # Call the update DB function, send name, column variables
+                            update_db("FMC_Rules", "srcInt", "Name", get_object_value[0]["name"], rule_name)            # Call the update DB function, send name, column variables
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "srcInt", "RuleNumber", "Any", str(rule))                                # If keyError occurs, write "Any" into DB
+                        update_db("FMC_Rules", "srcInt", "Name", "Any", rule_name)                                      # If keyError occurs, write "Any" into DB
                         pass
 
                     try:
@@ -314,14 +463,14 @@ if __name__ == '__main__':
                         for i in string["destinationZones"]["objects"]:
                             type = str(i["type"] + "s").lower()
                             get_object_value = objects(fmc_access[2], type, i["id"])
-                            update_db("FMC_Rules", "dstInt", "RuleNumber",get_object_value["name"], str(rule))
+                            update_db("FMC_Rules", "dstInt", "Name",get_object_value[0]["name"], rule_name)
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "dstInt", "RuleNumber", "Any", str(rule))
+                        update_db("FMC_Rules", "dstInt", "Name", "Any", rule_name)
                         pass
 
                     rule = rule + 1
+                    paging_number = paging_number + 1
 
-            except (json.JSONDecodeError, IndexError):
+            except (json.JSONDecodeError,KeyError, IndexError) as error:
                 pass
-          
