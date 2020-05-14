@@ -1,4 +1,17 @@
-Cisco FMC Project (5/9/2020)
+Cisco FMC Project (5/14/2020)
+
+Program Update:
+
+The program is somewhat slow due to FMC request restrictions. There is plans to resolve that in the future. 
+You can start the DB backup and use the query the new query to tool to search id desired.
+
+Requirement:
+
+1. Delete old DB file if you have used the prgram before
+or
+Create another DB file by changing the following code:
+
+mydb = sqlite3.connect("FMC") # Change FMC to something else, Line 30
 
 Added DB and DB tables. I removed all print statements and and added DB write/update statement. Current wll write:
 
@@ -9,9 +22,57 @@ Added DB and DB tables. I removed all print statements and and added DB write/up
 5. Source Zone
 6. Destination Zone
 
-The program will also log all objects used in another table. This code will need to some more work to write nest objects.
-For now it will write top level objects.
+Al working on data validation but i believe a got most.
 
-If you want to make a test run on your FMC you can use the following link to view your DB
+Ive update the prgram with a tool to view your DB. Just select an option and input.
 
-https://inloop.github.io/sqlite-viewer/
+Query Tool Ouput:
+
+FMC Query Tool
+
+1. Rule Name
+2. Source Network
+3. Dest Network
+4. Source Port
+5. Dest Port
+6. Action
+7. Objects
+
+ Selection: 5
+
+
+Dest Port: 443
+ Name:            Rule 1
+ Source Int:      Any
+ Dest Int:        Any
+ Source Net:      Any
+ Dest Net:        10.1.1.0/24
+ Source Port:     Any
+ Dest Port:       TCP-8443
+ Action:          ALLOW
+
+
+ Name:            Rule 2
+ Source Int:      Any
+ Dest Int:        Any
+ Source Net:      10.10.10.0/24
+ Dest Net:        192.168.1.53
+ Source Port:     Any
+ Dest Port:       TCP-8443
+ Action:          ALLOW
+
+
+ Name:            TO-DMZ
+ Source Int:      Any
+ Dest Int:        Any
+ Source Net:      172.20.16.5
+                  172.20.16.11
+ Dest Net:        192.168.10.22
+                  192.168.10.23
+                  192.168.10.24
+                  192.168.10.25
+                  192.168.10.26
+ Source Port:     Any
+ Dest Port:       TCP-80
+                  TCP-443
+ Action:          ALLOW
