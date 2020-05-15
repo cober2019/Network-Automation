@@ -61,7 +61,7 @@ def objects(dom_uidd, type, id):
     try:
         nested_objects = [ ]
         object = r.json()
-        print(object)
+        
 
         # Lines 71- 83 gets nested objects. The i variable represents each list within the list. We will save targeted k/v pairs to list return it to caller
         # Process
