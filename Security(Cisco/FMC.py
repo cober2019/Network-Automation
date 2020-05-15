@@ -27,7 +27,7 @@ ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS req
 fmc_ip = input("FMC IP: ")
 username = input("Username: ")
 password = input("Password: ")
-mydb = sqlite3.connect("FMC_9")
+mydb = sqlite3.connect("FMC")
 c = mydb.cursor()
 d = mydb.cursor()
 null = ""
