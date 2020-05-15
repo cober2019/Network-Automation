@@ -27,7 +27,7 @@ ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS req
 fmc_ip = input("FMC IP: ")
 username = input("Username: ")
 password = input("Password: ")
-mydb = sqlite3.connect("FMC_8")
+mydb = sqlite3.connect("FMC_9")
 c = mydb.cursor()
 d = mydb.cursor()
 null = ""
@@ -61,7 +61,7 @@ def objects(dom_uidd, type, id):
     try:
         nested_objects = [ ]
         object = r.json()
-        
+        print(object)
 
         # Lines 71- 83 gets nested objects. The i variable represents each list within the list. We will save targeted k/v pairs to list return it to caller
         # Process
@@ -164,23 +164,23 @@ def objects(dom_uidd, type, id):
     cleanup_db()                    # This will cleant duplcate entries from out DB. To reduce conditional code in the latter code.
     return object, nested_objects   # Return the object to the caller si ut can be update/stored in the database
 
-def create_fw_table():
+def create_fw_table(table):
 
     # Create a table within the DB. Add four columns, can be nore if needed.
 
     try:
-        d.execute('''CREATE TABLE FMC_Rules  (Name,  SrcInt, dstInt, srcNet, dstNet, vlanTags, users, apps, srcPort, dstPort, URLS, iseAtts, action)''')
+        d.execute('''CREATE TABLE ''' + table + '''  (Name,  SrcInt, dstInt, srcNet, dstNet, vlanTags, users, apps, srcPort, dstPort, URLS, iseAtts, action)''')
         mydb.commit()
     except sqlite3.OperationalError:
         pass
 
-def insert_firewall(ruleName):
+def insert_firewall(ruleset, ruleName):
 
     # Insert the row in the DB. Takes one argument which is the rule ID. The null will be filled in during program runtime. This has to match the number of comlumns
     # when the tabe is created.
 
     try:
-        d.execute("INSERT INTO FMC_Rules VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
+        d.execute("INSERT INTO " + rule_set + " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
                   (ruleName,  null, null, null, null, null, null, null, null, null, null, null, null))
         mydb.commit()
     except sqlite3.OperationalError as error:
@@ -232,7 +232,6 @@ def update_db(table, column, where_1, list, where_2):
 
 if __name__ == '__main__':
 
-    create_fw_table()                                                                                           # Create the fw table in the DB
     create_obj_used_table()                                                                                     # Creates the objected used table in the DB
     fmc_access = get_fmc_tokens()                                                                               # Get FMC access tokens
 
@@ -251,9 +250,11 @@ if __name__ == '__main__':
 
     for i in range(0, count):
 
+            rule_set = access_pol["items"][i]["name"].replace("-", "_")
             uri = access_pol["items"][i]["links"]["self"] + "/accessrules?offset=1&limit=1000"                          # offset is rule 2, limit is 100 rules per page. 1000 is max
             r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
             access_rule = r.json()
+            create_fw_table(rule_set)
 
             # Now that we have our access_rule dictionary, we will need to dig another layer into the rule. Why? Because FMC only give us object names, not object values
             # We will uses the range command to iterate through 1000 rules. You may not have tha many or more. Its an arbitrary number
@@ -306,10 +307,10 @@ if __name__ == '__main__':
                     except KeyError as error:
                         pass
                     
-                    insert_firewall(rule_name)
+                    insert_firewall(rule_set, rule_name)
 
                     try:
-                        update_db("FMC_Rules", "action", "Name", string["action"], rule_name)                           # Write rule action and number to db using update_db() function
+                        update_db(rule_set, "action", "Name", string["action"], rule_name)                           # Write rule action and number to db using update_db() function
                     except (KeyError, TypeError):
                         pass
 
@@ -329,10 +330,10 @@ if __name__ == '__main__':
                             nested_list = [src_net.append(i) for i in get_object_value[1]]
 
                         src_list = [ i for i in src_net]                                                                # List can't be stored to db so we convert it to string using join()
-                        update_db("FMC_Rules", "srcNet", "Name", ",".join(src_list), rule_name)                         # Call the update DB function, send name, column variables
+                        update_db(rule_set, "srcNet", "Name", ",".join(src_list), rule_name)                         # Call the update DB function, send name, column variables
 
                     except (KeyError, TypeError) as error:                                                              # You will recive a Keyerror if the rule is set to ANY. FMC does'nt return src - ANY
-                        update_db("FMC_Rules", "srcNet", "Name", "Any", rule_name)                                      # Call the update DB function, send name, column variables
+                        update_db(rule_set, "srcNet", "Name", "Any", rule_name)                                      # Call the update DB function, send name, column variables
                         pass
 
                     try:
@@ -350,10 +351,10 @@ if __name__ == '__main__':
                             nested_list = [dst_net.append(i) for i in get_object_value[1]]                              # Unpack nested objects and store to a list. Objects are second variable
                                                                                                                         # returned from the get_objects_ function
                         dst_list = [i for i in dst_net]
-                        update_db("FMC_Rules", "dstNet", "Name", ",".join(dst_list), rule_name)
+                        update_db(rule_set, "dstNet", "Name", ",".join(dst_list), rule_name)
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "dstNet", "Name", "Any", rule_name)                                      # If keyError occurs, write "Any" into DB
+                        update_db(rule_set, "dstNet", "Name", "Any", rule_name)                                      # If keyError occurs, write "Any" into DB
                         pass
 
 
@@ -386,10 +387,10 @@ if __name__ == '__main__':
                                 pass
 
                         src_port_list = [i for i in src_ports]                                                          # List can't be stored to db so we convert it to string using join()
-                        update_db("FMC_Rules", "srcPort", "Name", ",".join(src_port_list), rule_name)                   # Call the update DB function, send name, column variables
+                        update_db(rule_set, "srcPort", "Name", ",".join(src_port_list), rule_name)                   # Call the update DB function, send name, column variables
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "srcPort", "Name", "Any", rule_name)                                     # If keyError occurs, write "Any" into DB
+                        update_db(rule_set, "srcPort", "Name", "Any", rule_name)                                     # If keyError occurs, write "Any" into DB
                         pass
 
 
@@ -424,10 +425,10 @@ if __name__ == '__main__':
                                 pass
 
                         dst_port_list = [i for i in dst_ports]
-                        update_db("FMC_Rules", "dstPort", "Name", ",".join(dst_port_list), rule_name)
+                        update_db(rule_set, "dstPort", "Name", ",".join(dst_port_list), rule_name)
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "dstPort", "Name", "Any", rule_name)
+                        update_db(rule_set, "dstPort", "Name", "Any", rule_name)
                         pass
 
 
@@ -437,10 +438,10 @@ if __name__ == '__main__':
                         for i in string["sourceZones"]["objects"]:                                                      # Access the sourcePorts, object list of dictionaries, notice iteration
                             type = str(i["type"] + "s").lower()                                                         # Grab i[type], i is a dictionary and set it to lower. URI requirement
                             get_object_value = objects(fmc_access[2], type, i["id"])
-                            update_db("FMC_Rules", "srcInt", "Name", get_object_value[0]["name"], rule_name)            # Call the update DB function, send name, column variables
+                            update_db(rule_set, "srcInt", "Name", get_object_value[0]["name"], rule_name)            # Call the update DB function, send name, column variables
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "srcInt", "Name", "Any", rule_name)                                      # If keyError occurs, write "Any" into DB
+                        update_db(rule_set, "srcInt", "Name", "Any", rule_name)                                      # If keyError occurs, write "Any" into DB
                         pass
 
                     try:
@@ -448,10 +449,10 @@ if __name__ == '__main__':
                         for i in string["destinationZones"]["objects"]:
                             type = str(i["type"] + "s").lower()
                             get_object_value = objects(fmc_access[2], type, i["id"])
-                            update_db("FMC_Rules", "dstInt", "Name",get_object_value[0]["name"], rule_name)
+                            update_db(rule_set, "dstInt", "Name",get_object_value[0]["name"], rule_name)
 
                     except (KeyError, TypeError) as error:
-                        update_db("FMC_Rules", "dstInt", "Name", "Any", rule_name)
+                        update_db(rule_set, "dstInt", "Name", "Any", rule_name)
                         pass
 
                     rule = rule + 1
