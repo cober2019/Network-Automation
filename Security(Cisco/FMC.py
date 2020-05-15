@@ -27,7 +27,7 @@ ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS req
 fmc_ip = input("FMC IP: ")
 username = input("Username: ")
 password = input("Password: ")
-mydb = sqlite3.connect("FMC")
+mydb = sqlite3.connect("FMC_8")
 c = mydb.cursor()
 d = mydb.cursor()
 null = ""
@@ -61,6 +61,7 @@ def objects(dom_uidd, type, id):
     try:
         nested_objects = [ ]
         object = r.json()
+        print(object)
 
         # Lines 71- 83 gets nested objects. The i variable represents each list within the list. We will save targeted k/v pairs to list return it to caller
         # Process
@@ -79,7 +80,7 @@ def objects(dom_uidd, type, id):
                 try:
                     insert_object(i["id"])
                     nested_objects.append(i["port"])
-                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(i["type"], i["name"], i["value"], i["id"],))
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(i["type"], i["name"], i["port"], i["id"],))
                     mydb.commit()
                 except KeyError as error:
                     pass
@@ -87,7 +88,7 @@ def objects(dom_uidd, type, id):
                 try:
                     insert_object(i["id"])
                     nested_objects.append("ICMP" + "-" + i["icmpType"])
-                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?", (i["type"], i["name"], i["value"], i["id"],))
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?", (i["type"], i["name"], i["icmpType"], i["id"],))
                     mydb.commit()
                 except KeyError as error:
                     pass
@@ -100,29 +101,13 @@ def objects(dom_uidd, type, id):
             for objects in object["interfaces"]:
                 try:
                     insert_object(object["id"])
-                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(object["type"], object["name"], object["name"],  object["id"],))
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(objects["type"], objects["name"], objects["name"],  objects["id"],))
                     mydb.commit()
                 except KeyError:
                     pass
         except KeyError:
             pass
 
-        try:
-            for i in object["objects"]:
-
-                obj_type = str(i["type"] + "s").lower()
-                time.sleep(.5)
-
-                uri = "https://" + fmc_ip + "/api/fmc_config/v1/domain/" + fmc_access[2] + "/object/" + obj_type + "/" + i["id"] + ""
-                r = fmc_access[0].get(uri, verify=False, headers=fmc_access[1], auth=(username, password))
-                nested_object = r.json()
-
-                try:
-                    nested_objects.append(nested_object["value"])
-                except KeyError:
-                    pass
-        except KeyError:
-            pass
 
         try:
             for i in object["objects"]:
@@ -135,8 +120,8 @@ def objects(dom_uidd, type, id):
                 nested_object = r.json()
 
                 try:
-                    insert_object(object["id"])
-                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(object["type"], object["name"], object["value"], object["id"],))
+                    insert_object(nested_object["id"])
+                    c.execute("UPDATE Object_Used  SET type=?, name=?, value=? WHERE id=?",(nested_object["type"], nested_object["name"], nested_object["value"], nested_object["id"],))
                     mydb.commit()
                     nested_objects.append(nested_object["value"])
                 except KeyError:
