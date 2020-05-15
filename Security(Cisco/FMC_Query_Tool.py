@@ -3,16 +3,22 @@ try:
 except ImportError:
     module_array.append("sqllite3")
     print("Module SQLITE3 not available.")
+try:
+    import readline
+except ImportError:
+    module_array.append("readline")
+    print("readline not available")
+from os import system, name
 
 
 mydb = sqlite3.connect("FMC")
 c = mydb.cursor()
 
-def query(where, choice):
+def query(policy, where, choice):
 
     query = "%" + choice
     try:
-        for row in c.execute('SELECT * FROM FMC_Rules WHERE ' + where + ' LIKE ?', (query, )):
+        for row in c.execute('SELECT * FROM ' + policy + ' WHERE ' + where + ' LIKE ?', (query, )):
             print(" Name:            {}\n Source Int:      {}\n Dest Int:        {}\n Source Net:      {}\n Dest Net:        {}\n Source Port:     "
                 "{}\n Dest Port:       {}\n Action:          {}\n\n".format(row[0],row[1],
                                                              row[2],
@@ -35,11 +41,48 @@ def query_objects(where, object):
     except sqlite3.OperationalError:
         pass
 
+def db_tables():
+
+    tables = [ ]
+
+    try:
+        for table in c.execute('SELECT name FROM sqlite_master WHERE type=? ORDER BY name;', ("table",)):
+            if table[0] == "Object_Used":
+                continue
+            else:
+                tables.append(table[0] + "\n")
+                print(table[0])
+    except (IndexError, NameError):
+        pass
+
+    return tables
+
+def tab_complete(text, state):
+
+    db_table = db_tables()
+
+    tables = [table for table in db_table if table.startswith(text)]
+
+    if state < len(tables):
+        return tables[state]
+    else:
+        return None
+
+def clear():
+
+    # Clear screen for windows or MAC
+
+    if name == 'nt':
+        _ = system('cls')
+
+    else:
+        _ = system('clear')
+
+
 if __name__ == '__main__':
 
     while True:
 
-        print("\n")
         print("FMC Query Tool\n")
         print("1. Rule Name")
         print("2. Source Network")
@@ -51,30 +94,38 @@ if __name__ == '__main__':
 
         selection = input(" Selection: ")
         print("\n")
+        clear()
+        print("Select Policy * Use TAB for autocomplete\n")
+        db_tables()
+        readline.parse_and_bind("tab: complete")
+        readline.set_completer(tab_complete)
+        print("\n")
+        policy = input("Selection: ")
+        print("\n")
 
         if selection == "1":
             find_name = input("Rule Name:")
-            query("Name", find_name)
+            query(policy, "Name", find_name)
             print("\n")
         elif selection == "2":
             find_src_net = input("Source Network: ")
-            query("srcNet", find_src_net)
+            query(policy,"srcNet", find_src_net)
             print("\n")
         elif selection == "3":
             find_dst_net = input("Dest Network: ")
-            query("dstNet", find_dst_net)
+            query(policy,"dstNet", find_dst_net)
             print("\n")
         elif selection == "4":
             find_src_port = input("Source Port: ")
-            query("srcPort", find_src_port)
+            query(policy,"srcPort", find_src_port)
             print("\n")
         elif selection == "5":
             find_dst_port = input("Dest Port: ")
-            query("dstPort", find_dst_port)
+            query(policy,"dstPort", find_dst_port)
             print("\n")
         elif selection == "6":
             find_action = input("Action: ")
-            query("action", find_action)
+            query(policy, "action", find_action)
             print("\n")
         elif selection == "7":
 
