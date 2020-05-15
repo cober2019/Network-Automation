@@ -1,9 +1,9 @@
-Cisco FMC Project (5/14/2020)
+Cisco FMC Project (5/15/2020)
 
 Program Update:
 
-The program is somewhat slow due to FMC request restrictions. There is plans to resolve that in the future. 
-You can start the DB backup and use the query the new query to tool to search id desired.
+I've added different DB tables for different rule sets. You can use the updated query tool to select rule set before your query.
+After some modification to code, Used objects DB table is filling in nicely.
 
 Requirement:
 
@@ -24,11 +24,12 @@ Added DB and DB tables. I removed all print statements and and added DB write/up
 
 Al working on data validation but i believe a got most.
 
-Ive update the porgram with a tool to view your DB. Just select an option and input.
+Ive update the porgram with a tool to view your DB. The tool will ask which DB table/Rule set you want to view. You can use
+tab for autocomplete.
 
 Requirement:
 
-1. Ensure DB matches the one written in the FMC.pu. Line 8 in the FMC_Query_Tool
+1. Ensure DB matches the one written in the FMC.py. Line 8 in the FMC_Query_Tool
 
 Query Tool Ouput:
 
