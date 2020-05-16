@@ -11,7 +11,7 @@ except ImportError:
 from os import system, name
 
 
-mydb = sqlite3.connect("FMC")
+mydb = sqlite3.connect("FMC_9")
 c = mydb.cursor()
 
 def query(policy, where, choice):
@@ -50,8 +50,8 @@ def db_tables():
             if table[0] == "Object_Used":
                 continue
             else:
-                tables.append(table[0] + "\n")
-                print(table[0])
+                tables.append(table[0])
+
     except (IndexError, NameError):
         pass
 
@@ -78,8 +78,24 @@ def clear():
     else:
         _ = system('clear')
 
+def policy_selection():
+
+    print("\n")
+    print("Select Policy * Use TAB for autocomplete\n")
+    readline.parse_and_bind("tab: complete")
+    readline.set_completer(tab_complete)
+    print("\n")
+    policy = input("Selection: ")
+    print("\n")
+
+    return policy
+
+def policy_print():
+
+    print_policy = [(print(table[0])) for table in c.execute('SELECT name FROM sqlite_master WHERE type=? ORDER BY name;', ("table",))]
 
 if __name__ == '__main__':
+    
 
     while True:
 
@@ -94,39 +110,41 @@ if __name__ == '__main__':
 
         selection = input(" Selection: ")
         print("\n")
-        clear()
-        print("Select Policy * Use TAB for autocomplete\n")
-        db_tables()
-        readline.parse_and_bind("tab: complete")
-        readline.set_completer(tab_complete)
-        print("\n")
-        policy = input("Selection: ")
-        print("\n")
-
         if selection == "1":
-            find_name = input("Rule Name:")
+            policy_print()
+            policy = policy_selection()
+            find_name = input("Rule Name: ")
+            print("\n")
             query(policy, "Name", find_name)
-            print("\n")
         elif selection == "2":
+            policy_print()
+            policy = policy_selection()
             find_src_net = input("Source Network: ")
+            print("\n")
             query(policy,"srcNet", find_src_net)
-            print("\n")
         elif selection == "3":
+            policy_print()
+            policy = policy_selection()
             find_dst_net = input("Dest Network: ")
+            print("\n")
             query(policy,"dstNet", find_dst_net)
-            print("\n")
         elif selection == "4":
+            policy_print()
             find_src_port = input("Source Port: ")
+            print("\n")
             query(policy,"srcPort", find_src_port)
-            print("\n")
         elif selection == "5":
+            policy_print()
+            policy = policy_selection()
             find_dst_port = input("Dest Port: ")
+            print("\n")
             query(policy,"dstPort", find_dst_port)
-            print("\n")
         elif selection == "6":
+            policy_print()
+            policy = policy_selection()
             find_action = input("Action: ")
-            query(policy, "action", find_action)
             print("\n")
+            query(policy, "action", find_action)
         elif selection == "7":
 
             print("\n")
