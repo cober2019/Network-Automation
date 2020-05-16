@@ -2,6 +2,13 @@ Username Program:
 
 This a basic program using NETCONF and cisco YANG model. It allows you to view, add, and delete username from cisco IOS devices
 
+Required to run the program:
+
+1. File. I have the program set to C:\Python\XML_Filters\Credentials_Send_Config.xml. Please modify as needed
+
+Program output shown below:
+
+
 1. Add configuration
 2. Remove configuration
 3. View Users
