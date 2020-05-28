@@ -20,3 +20,17 @@ Still working on:
 2. Getting each proccess/instance to stop so the rules scanning don't overlap.
 3. Data validation
 4. More HTTP code.
+
+Output of runtime. Modified for confedentiality. (Times were not)
+
+It shows 3 different IPs accessing rules. Ive also  use time() for a better output. As you can see they have different times, 
+non sequential. 
+
+10.10.30.249               SampleRule1      254.130567396
+10.10.30.251               SampleRule2      235.86745483
+10.10.30.250               SampleRule3      248.688950976
+10.10.30.250               SampleRule11     287.649337499
+10.10.30.249               SampleRule12     308.654386801
+10.10.30.251               SampleRule13     301.147928246
+10.10.30.250               SampleRule21     344.538793272
+10.10.30.251               SampleRule22     345.318285388
