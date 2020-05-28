@@ -1,1 +1,22 @@
+* This is not a completed program. 
 
+The code is a second option to my FMC program. Since the first option is slow due to FMC limitations and response time on GET request
+I decided to fully customize the program. In this code I added:
+
+1. My own module which uses sockets and a custom HTTP request code. Not that the request module was awseome, because it is,
+   it just didnt give me the option to make custom sockets, or use multiple source ip/nic from my server.
+   
+2. Custom classes to give me the option to mutlithread different class instances
+
+So now whats possible? Now i can scan about 10 rules per minute instead of 4. The job can take 3 hours, instead of 10. You can add as many
+ips as you want for the job because each ip will get its own instance. In my case ive just added secondary ips to my primary nic. 
+The more you added the shorter runtime.
+
+When intiating the job i use the FMC query filter (offset) to start at different rules.
+
+Still working on:
+
+1. The program intiator file. Its still basic but will get alot more attention soon.
+2. Getting each proccess/instance to stop so the rules scanning don't overlap.
+3. Data validation
+4. More HTTP code.
