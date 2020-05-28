@@ -14,7 +14,6 @@ import FMC
 context = ssl._create_unverified_context()
 port = 443
 chunk_size = 4096
-log_file = "C:\\Python\log.txt"
 
 class contact_fmc():
 
@@ -91,9 +90,6 @@ class contact_fmc():
         req_content = re.findall(r' (?<='+ req_status[0] + '\s'').*', find_headers)
         status_dict[req_status[0]] = req_content[0]
         odd_value = re.findall(r'(?<=\\r\\n\\r\\n).*(?=\\r\\n{)', decode)
-
-        file = open(log_file, 'a+')
-        file.write(decode)
 
         try:
 
