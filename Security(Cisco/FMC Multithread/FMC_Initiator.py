@@ -17,7 +17,7 @@ def get_nic_ip():
 
     return  nic_list
 
-# Credentials and FMC go is the funtion variables. Each username and password need to be unique
+# Credentials and FMC go in the funtion variables. Each username and password need to be unique. Manual entry for now.
 
 def initiate_1(ip):
 
