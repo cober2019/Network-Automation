@@ -65,12 +65,12 @@ def initiate_3(ip):
 
 if __name__ == '__main__':
 
-    process_1 = Process(target=initiate_1, args=("10.1.3.249",))
+    process_1 = Process(target=initiate_1, args=("YOUR IP HERE",)) # Your IP here
     process_1.start()
     time.sleep(10)
-    process_2 = Process(target=initiate_2, args=("10.1.3.250",))
+    process_2 = Process(target=initiate_2, args=("YOUR IP HERE",)) # Your IP here
     process_2.start()
     time.sleep(10)
-    process_3 = Process(target=initiate_3, args=("10.1.3.251",))
+    process_3 = Process(target=initiate_3, args=("YOUR IP HERE",)) # Your IP here
     process_3.start()
     stop = input("")
