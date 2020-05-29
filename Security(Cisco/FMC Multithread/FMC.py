@@ -23,7 +23,7 @@ import  FMC_Sockets
 
 ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 
-mydb = sqlite3.connect("FMC_10")
+mydb = sqlite3.connect("FMC_11")
 c = mydb.cursor()
 d = mydb.cursor()
 null = ""
@@ -108,7 +108,7 @@ class fmc:
         self.auth_key = None
         self.refresh_key = None
         self.domain_uuid = None
-        self.stop_query = None
+        self.limit = None
 
     def get_fmc_tokens(self):
 
@@ -152,7 +152,7 @@ class fmc:
         for i in range(0, count):
 
                 rule_set = policies["items"][i]["name"].replace("-", "_")
-                path = policies["items"][i]["links"]["self"] + "/accessrules?" + self.query                                                                                                                                                                                            # offset is rule 2, limit is 100 rules per page. 1000 is max
+                path = policies["items"][i]["links"]["self"] + "/accessrules" + self.query
                 response = fmc_access.get(path, self.auth_key, self.refresh_key)
                 create_fw_table(rule_set)
                 # Now that we have our access_rule dictionary, we will need to dig another layer into the rule. Why? Because FMC only give us object names, not object values
@@ -162,24 +162,17 @@ class fmc:
                 auth_counter = 0
                 rule_num = 0
 
-                for i in range(0,5000):
+                try:
 
-                    if auth_counter == 20:
-                        auth_counter = 0
-                        fmc_access = fmc.get_fmc_tokens(self)
-                        rules = fmc_access.get(path, self.auth_key, self.refresh_key)
-                    else:
-                        pass
 
-                    try:
+                    for i in range(0,5000):
+
                         if rule == int( response["paging"]["limit"]):
-                            print("yes")
                             try:
                                 rule = 0
                                 path = response["paging"]["next"][0]
-                                print(path)
                                 response = fmc_access.get(path, self.auth_key, self.refresh_key)
-                            except (IndexError, KeyError) as error:
+                            except IndexError as error:
                                 break
                         else:
                             pass
@@ -187,9 +180,16 @@ class fmc:
                         path = response["items"][rule]["links"]["self"]
                         rules = fmc_access.get(path, self.auth_key, self.refresh_key)
 
+                        if auth_counter == 20:
+                            auth_counter = 0
+                            fmc_access = fmc.get_fmc_tokens(self)
+                            rules = fmc_access.get(path, self.auth_key, self.refresh_key)
+                        else:
+                            pass
+
                         try:
                             rule_name = rules["name"]
-                            print("{:<25}{:<35}{:<20}".format(self.ip,  rule_name , time.perf_counter()))
+                            print("{:<25}{:<35}{:<20} HTTP: {:<20}".format(self.ip,  rule_name , time.perf_counter(), fmc_access.status))
                         except (KeyError) as error:
                             pass
 
@@ -213,11 +213,11 @@ class fmc:
 
                                 nested_list = [src_net.append(i) for i in get_object_value[1]]
 
-                            src_list = [ i for i in src_net]                                                                                                                                                                            # List can't be stored to db so we convert it to rules using join()
-                            update_db(rule_set, "srcNet", "Name", ",".join(src_list), rule_name)                                                                                                                                                    # Call the update DB function, send name, column variables
+                            src_list = [ i for i in src_net]
+                            update_db(rule_set, "srcNet", "Name", ",".join(src_list), rule_name)
 
-                        except (KeyError, TypeError) as error:                                                                                                                                                                      # You will recive a Keyerror if the rule is set to ANY. FMC does'nt return src - ANY
-                            update_db(rule_set, "srcNet", "Name", "Any", rule_name)                                                                                                                                               # Call the update DB function, send name, column variables
+                        except (KeyError, TypeError) as error:
+                            update_db(rule_set, "srcNet", "Name", "Any", rule_name)
                             pass
 
                         try:
@@ -232,18 +232,18 @@ class fmc:
                                 except KeyError:
                                     pass
 
-                                nested_list = [dst_net.append(i) for i in get_object_value[1]]                                                                                                                                              # Unpack nested objects and store to a list. Objects are second variable
-                                                                                                                                                                                                                                                                                                  # returned from the get_objects_ function
+                                nested_list = [dst_net.append(i) for i in get_object_value[1]]
+
                             dst_list = [i for i in dst_net]
                             update_db(rule_set, "dstNet", "Name", ",".join(dst_list), rule_name)
 
                         except (KeyError, TypeError) as error:
-                            update_db(rule_set, "dstNet", "Name", "Any", rule_name)                                                                                                                                  # If keyError occurs, write "Any" into DB
+                            update_db(rule_set, "dstNet", "Name", "Any", rule_name)
                             pass
 
                         src_ports = [ ]
                         try:
-                            for i in rules["sourcePorts"]["literals"]:                                                                                                                                                                  # These are type literal. Which means they dont have an object associaited
+                            for i in rules["sourcePorts"]["literals"]:
                                 try:
                                     dst_ports.append(i["protocol"] + "-" + i["port"])
                                 except (KeyError, TypeError):
@@ -251,19 +251,19 @@ class fmc:
                         except (KeyError, TypeError):
                             pass
 
-                        try:                                                                                                # Use comments for destination ports section
-                            for i in rules["sourcePorts"]["objects"]:                                                      # Access the sourcePorts, object list of dictionaries, notice iteration
-                                type = str(i["type"] + "s").lower()                                                         # Grab i[type], i is a dictionary and set it to lower. URI requirement
+                        try:
+                            for i in rules["sourcePorts"]["objects"]:
+                                type = str(i["type"] + "s").lower()
                                 get_object_value = fmc.objects(self, fmc_access, type, i["id"])
-                                nest_objects = [src_ports.append(i) for i in get_object_value[1]]                           # Iterate through list of nested ports from parent. Store to list
+                                nest_objects = [src_ports.append(i) for i in get_object_value[1]]
 
                                 try:
-                                    src_ports.append(get_object_value[0]["protocol"] + "-" + get_object_value[0]["port"])   # Get single objects which aren't nested. Store to list
+                                    src_ports.append(get_object_value[0]["protocol"] + "-" + get_object_value[0]["port"])
                                 except (KeyError, TypeError):
                                     pass
 
                                 try:
-                                    for i in get_object_value[0]["objects"]:                                                # Iterate list of objects. No parent
+                                    for i in get_object_value[0]["objects"]:
                                         src_ports.append(i["protocol"] + "-" + i["port"])
                                 except (KeyError, TypeError):
                                     pass
@@ -337,10 +337,9 @@ class fmc:
                         auth_counter = auth_counter + 1
                         rule_num = rule_num + 1
 
-                    except (KeyError, TypeError, IndexError) as error:
-                        rule_num = rule_num + 1
-                        errored_uri.append(path)
-                        pass
+                except (KeyError, TypeError, IndexError) as error:
+                    errored_uri.append(path)
+                    pass
 
 
     def objects(self, object, type, id):
