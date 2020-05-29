@@ -1,7 +1,12 @@
 * This is not a completed program.
 
 * PROGRAM NEEDS TO RUN IN ADMIN MODE TO CREATE SOCKETS
-* FMCINITIATOR.py IS THE DRIVE CODE
+* FMCINITIATOR.py IS THE DRIVER CODE
+* IF YOU WANT TO USE A LOG FILE THAT SHOWS ALL HTTP REPONSES, CHECK THE FMC SOCKETS.py FILE, VARIABLE LOG. CREATE THE FILE
+  AND UPDATED THE PATH
+
+
+
 
 The code is a second option to my FMC program. Since the first option is slow due to FMC limitations and response time on GET request
 I decided to fully customize the program. In this code I added:
