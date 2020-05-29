@@ -29,7 +29,7 @@ def initiate_1(ip):
     initiate_1.username = username
     initiate_1.password = password
     initiate_1.net_loc = net_loc
-    initiate_1.query = "?offset=1&limit=250"
+    initiate_1.query = "?offset=1&limit=25"
     initiate_1.ip = ip
     initiate_1.get_rules()
 
@@ -44,7 +44,7 @@ def initiate_2(ip):
     initiate_2.username = username
     initiate_2.password = password
     initiate_2.net_loc = net_loc
-    initiate_2.query = "?offset=501&limit=250"
+    initiate_2.query = "?offset=501&limit=25"
     initiate_2.ip = ip
     initiate_2.get_rules()
 
@@ -59,7 +59,7 @@ def initiate_3(ip):
     initiate_3.username = username
     initiate_3.password = password
     initiate_3.net_loc = net_loc
-    initiate_3.query = "?offset=1001&limit=250"
+    initiate_3.query = "?offset=1001&limit=25"
     initiate_3.ip = ip
     initiate_3.get_rules()
 
