@@ -148,7 +148,7 @@ class find_encap():
 
         self.window = tk.Tk()
         self.window.geometry("300x200")
-        self.window.title("ACI Subnet Finder")
+        self.window.title("ACI Encap Finder")
         self.master = self.window
         self.frame = tk.Frame(master=self.master)
         self.frame.pack(expand=True)
@@ -184,7 +184,7 @@ class find_encap():
 
         self.notice = tk.Tk()
         self.notice.geometry("200x100")
-        self.notice.title("ACI Subnet Finder")
+        self.notice.title("ACI Encap Finder")
         self.master = self.notice
         self.window_3 = tk.Frame(master=self.master)
         self.window_3.pack(expand=True)
@@ -239,7 +239,7 @@ class results():
 
         self.window = tk.Tk()
         self.window.geometry("1500x500")
-        self.window.title("ACI Subnet Finder")
+        self.window.title("ACI Encap Finder")
         self.master = self.window
         self.frame = tk.Frame(master=self.master)
         self.frame.grid()
@@ -323,6 +323,6 @@ if __name__ == '__main__':
 
     root = tk.Tk()
     root.geometry("350x300")
-    root.title("ACI Subnet Finder")
+    root.title("ACI Encap Finder")
     app = Application_login(master=root)
     app.mainloop()
