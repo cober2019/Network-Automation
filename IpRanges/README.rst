@@ -16,9 +16,14 @@ __________
 
 Usage
 --------------
+
+**Import:**
+
+        	  >>> import IpRanges.IpRanges as range
+		  
 + A pipe "|" seperator is used to seperate subnets within the string.
 
-Example 1:
+**Example 1:**
 
 		  >>> string = "10.1.1.20.25,60-65|192.168.1.100-105,192.168.1.1"
 		  >>> call_class = range.IpRanges()
@@ -26,7 +31,7 @@ Example 1:
 	    	  >>> print(send_string)
 		  ['10.1.1.60', '10.1.1.61', '10.1.1.62', '10.1.1.63', '10.1.1.64', '10.1.1.65', '192.168.1.100', '192.168.1.1',		          '192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104', '192.168.1.105']
 		  
-Example 2:
+**Example 2:**
 
 		  >>> string = "10.1.1.20,10.1.50.1"
 		  >>> call_class = range.IpRanges()
@@ -34,7 +39,7 @@ Example 2:
 		  >>> print(send_string)
 		  ['10.1.1.20', '10.1.50.1']
 
-Example 3:
+**Example 3:**
 
       >>> string = "10.1.1.20,50-60"
       >>> call_class = range.IpRanges()
@@ -48,7 +53,7 @@ ____________
 As the IPs are being assembled they are validated by the ipaddresses module. These exceptions will be passed and the IP(s) wont be added to the list. 
 A ValueError will be thrown if the subnets on both sides of the pipe "|" are the same. The traceback will display the overlapping subnets
 
-Exception 1:
+**Exception 1:**
 
 		  >>> string = "10.1.1.1|10.1.1.2"
 		  >>> call_class = range.IpRanges()
@@ -63,7 +68,7 @@ Exception 1:
 		  ValueError: Overlapping Subnets between "|" 10.1.1. & 10.1.1.
 		  >>> 
 		  
-Exception 2:
+**Exception 2:**
 
 		  >>> string = "10.1.1.20,10.1.5a.1"
 		  >>> call_class = range.IpRanges()
