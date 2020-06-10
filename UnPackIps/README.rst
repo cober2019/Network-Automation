@@ -23,8 +23,11 @@ Usage
 		  >>> call_class = range.IpRanges()
 **Method**
 		  >>> send_string = call_class.get_ips(*args)
-		  
-+ A pipe "|" seperator is used to seperate subnets within the string.
+
+
+**Examples**
+
+**NOTE A pipe "|" seperator is used to seperate subnets within the string.**
 
 **Example 1:**
 
