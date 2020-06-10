@@ -1,11 +1,11 @@
 
-**IpRanges**
+**UnPackIps**
 ==============
 
 **Description**
 --------------
 
-IpRanges was designed for Network Engineer to quickly unpack IP ranges. The intention is to avoid spreadsheets, and other
+UnPackIps was designed for Network Engineer to quickly unpack IP ranges. The intention is to avoid spreadsheets, and other
 methods of IP importing.
 
 **Depedency Modules**
