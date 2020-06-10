@@ -15,7 +15,7 @@ __________
 + re
 
 Usage
---------------
+----
 
 **Import:**
         	  >>> from UnPackIps import UnPackIps as range
@@ -26,6 +26,7 @@ Usage
 
 
 **Examples**
+----
 
 **NOTE A pipe "|" seperator is used to seperate subnets within the string.**
 
