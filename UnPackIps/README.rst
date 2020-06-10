@@ -22,7 +22,7 @@ Usage
 **Class**
 		  >>> call_class = range.IpRanges()
 **Method**
-		  >>> send_string = call_class.get_ips(a*rgs)
+		  >>> send_string = call_class.get_ips(*args)
 		  
 + A pipe "|" seperator is used to seperate subnets within the string.
 
