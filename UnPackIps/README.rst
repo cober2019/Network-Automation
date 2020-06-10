@@ -19,7 +19,7 @@ Usage
 
 **Import:**
 
-        	  >>> import IpRanges.IpRanges as range
+        	  >>> from UnPackIps import UnPackIps as ranges
 		  
 + A pipe "|" seperator is used to seperate subnets within the string.
 
