@@ -18,8 +18,11 @@ Usage
 --------------
 
 **Import:**
-
-        	  >>> from UnPackIps import UnPackIps as ranges
+        	  >>> from UnPackIps import UnPackIps as range
+**Class**
+		  >>> call_class = range.IpRanges()
+**Method**
+		  >>> send_string = call_class.get_ips(a*rgs)
 		  
 + A pipe "|" seperator is used to seperate subnets within the string.
 
