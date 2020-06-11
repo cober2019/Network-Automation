@@ -35,7 +35,7 @@ _____
 
 **Import**
 
-        >>>import ACIOperations.ACIOps as ops
+        >>> import ACIOperations.ACIOps as ops
 
 Examples
 ---
