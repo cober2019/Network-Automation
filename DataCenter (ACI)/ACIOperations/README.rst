@@ -46,18 +46,17 @@ Some method can be run without any argument and some dont. The seed method is al
 
 **Example 2 (Fetch VLAN Pools: )**
 
-            >>>call_class.vlan_pools()
-            defaultdict(<class 'list'>, {'Pool1': 'vlan-10-vlan-20', 'Pool2': 'vlan-1000-vlan-2000'}
+            >>> call_class.vlan_pools()
+                defaultdict(<class 'list'>, {'Pool1': 'vlan-10-vlan-20', 'Pool2': 'vlan-1000-vlan-2000'}
             >>> pools = call_class.vlan_pools()
             >>> for k, v in pools.items():
-                    print("Pool: {}    Range: {}".format(k, v))
-
-                    Pool: Pool1    Range: vlan-10-vlan-20
-                    Pool: Pool2    Range: vlan-1000-vlan-2000
+                        print("Pool: {}    Range: {}".format(k, v))
+                Pool: Pool1    Range: vlan-10-vlan-20
+                Pool: Pool2    Range: vlan-1000-vlan-2000
 
 **Example 3 (Find Encap: )**
 
-            >>>find_encap = call_class.find_encap(vlan="2000")
+            >>> find_encap = call_class.find_encap(vlan="2000")
             * Output omitted due to length
             This will produce all access policies associated with an external fabric encapsulation
 
