@@ -3,13 +3,15 @@ ACIOps
 Description
 --------------
 
-ACIOps is a collection of my personal method/functions used in my programs. The module will return all the the requested
-information for you unformatted. Within this module you will find the following
-tools:
+ACIOps is a collection of my personal method/functions. The module will return all the the requestedinformation 
+for you unformatted. Within this module you will find the following. Uses cases for all inforamtion produced from
+this module can be found in my repository Datacenter folder. 
+
+Tools:
 
 + APIC Login
 + Subnet Finder
-+ View Tenats
++ View Tenants
 + Vlans Pools
 + Encapsulation Finder
 + Access Policy Mappings
@@ -39,7 +41,7 @@ _____
 
 Examples
 ---
-Some method can be run without any argument and some dont. The seed method is always the login() which produces the session
+The seed method is always the login() which produces the session. 
 
 **Example 1 (Authentication: )**
 
