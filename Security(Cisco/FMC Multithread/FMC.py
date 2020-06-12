@@ -23,7 +23,7 @@ import  FMC_Sockets
 
 ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 
-mydb = sqlite3.connect("FMC_11")
+mydb = sqlite3.connect("FMC")
 c = mydb.cursor()
 d = mydb.cursor()
 null = ""
@@ -155,6 +155,7 @@ class fmc:
                 path = policies["items"][i]["links"]["self"] + "/accessrules" + self.query
                 response = fmc_access.get(path, self.auth_key, self.refresh_key)
                 create_fw_table(rule_set)
+
                 # Now that we have our access_rule dictionary, we will need to dig another layer into the rule. Why? Because FMC only give us object names, not object values
                 # We will uses the range command to iterate through 1000 rules. You may not have tha many or more. Its an arbitrary number
 
@@ -164,26 +165,31 @@ class fmc:
 
                 try:
 
-
                     for i in range(0,5000):
 
-                        if rule == int( response["paging"]["limit"]):
+                        if rule == int( response["paging"]["limit"]):                                                                                       # Check to see if paging limit reached
                             try:
                                 rule = 0
-                                path = response["paging"]["next"][0]
-                                response = fmc_access.get(path, self.auth_key, self.refresh_key)
+                                path = response["paging"]["next"][0]                                                                                        # Grab next page from URI query
+                                response = fmc_access.get(path, self.auth_key, self.refresh_key)                                       # Use object instance to get next ruleset
                             except IndexError as error:
                                 break
                         else:
                             pass
 
-                        path = response["items"][rule]["links"]["self"]
-                        rules = fmc_access.get(path, self.auth_key, self.refresh_key)
+                        path = response["items"][rule]["links"]["self"]                                                                                 # URI for given firewall rule
+                        rules = fmc_access.get(path, self.auth_key, self.refresh_key)                                                       # Use object to GET firewall rules
 
-                        if auth_counter == 20:
+                        if rules == None:                                                                                                                                    # HTTP response is NoneType
+                            errored_uri.append(path)
+                            continue
+                        else:
+                            pass
+
+                        if auth_counter == 20:                                                                                                                          # Proactive reauthentication
                             auth_counter = 0
-                            fmc_access = fmc.get_fmc_tokens(self)
-                            rules = fmc_access.get(path, self.auth_key, self.refresh_key)
+                            fmc_access = fmc.get_fmc_tokens(self)                                                                                       # Create new auth object
+                            rules = fmc_access.get(path, self.auth_key, self.refresh_key)                                                  # Use object to GET firewall rule
                         else:
                             pass
 
@@ -268,11 +274,11 @@ class fmc:
                                 except (KeyError, TypeError):
                                     pass
 
-                            src_port_list = [i for i in src_ports]                                                          # List can't be stored to db so we convert it to rules using join()
-                            update_db(rule_set, "srcPort", "Name", ",".join(src_port_list), rule_name)                   # Call the update DB function, send name, column variables
+                            src_port_list = [i for i in src_ports]
+                            update_db(rule_set, "srcPort", "Name", ",".join(src_port_list), rule_name)
 
                         except (KeyError, TypeError) as error:
-                            update_db(rule_set, "srcPort", "Name", "Any", rule_name)                                     # If keyError occurs, write "Any" into DB
+                            update_db(rule_set, "srcPort", "Name", "Any", rule_name)
                             pass
 
                         dst_ports = [ ]
@@ -338,7 +344,6 @@ class fmc:
                         rule_num = rule_num + 1
 
                 except (KeyError, TypeError, IndexError) as error:
-                    errored_uri.append(path)
                     pass
 
 
