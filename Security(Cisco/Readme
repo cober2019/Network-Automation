@@ -2,7 +2,7 @@ Cisco FMC Project (6/12/2020)
 
 Program Update:
 
-I have'nt had much time to working on this project. I did notice that the ruleset was having issues fipping over to the next page.
+I haven't had much time to work on this project. I did notice that the ruleset was having issues fipping over to the next page.
 This has been addressed in the FMC.py
 
 Requirement:
