@@ -1,9 +1,9 @@
-Cisco FMC Project (5/15/2020)
+Cisco FMC Project (6/12/2020)
 
 Program Update:
 
-I've added different DB tables for different rule sets. You can use the updated query tool to select rule set before your query.
-After some modification to code, Used objects DB table is filling in nicely.
+I have'nt had much time to working on this project. I did notice that the ruleset was having issues fipping over to the next page.
+This has been addressed in the FMC.py
 
 Requirement:
 
