@@ -3,11 +3,9 @@ ACIOps
 Description
 --------------
 
-ACIOps is a collection of my personal method/functions. The module will return all the the requestedinformation 
-for you unformatted. Within this module you will find the following. Uses cases for all inforamtion produced from
-this module can be found in my repository Datacenter folder. 
-
-Tools:
+ACIOps is a collection of my personal method/functions used in my programs. The module will return all the the requested
+information for you unformatted. Within this module you will find the following
+tools:
 
 + APIC Login
 + Subnet Finder
@@ -37,11 +35,11 @@ _____
 
 **Import**
 
-        >>> import ACIOperations.ACIOps as ops
+        >>>import ACIOperations.ACIOps as ops
 
 Examples
 ---
-The seed method is always the login() which produces the session. 
+Some method can be run without any argument and some dont. The seed method is always the login() which produces the session
 
 **Example 1 (Authentication: )**
 
@@ -53,17 +51,18 @@ The seed method is always the login() which produces the session.
 
 **Example 2 (Fetch VLAN Pools: )**
 
-            >>> call_class.vlan_pools()
-                defaultdict(<class 'list'>, {'Pool1': 'vlan-10-vlan-20', 'Pool2': 'vlan-1000-vlan-2000'}
+            >>>call_class.vlan_pools()
+            defaultdict(<class 'list'>, {'Pool1': 'vlan-10-vlan-20', 'Pool2': 'vlan-1000-vlan-2000'}
             >>> pools = call_class.vlan_pools()
             >>> for k, v in pools.items():
-                        print("Pool: {}    Range: {}".format(k, v))
-                Pool: Pool1    Range: vlan-10-vlan-20
-                Pool: Pool2    Range: vlan-1000-vlan-2000
+                    print("Pool: {}    Range: {}".format(k, v))
+
+                    Pool: Pool1    Range: vlan-10-vlan-20
+                    Pool: Pool2    Range: vlan-1000-vlan-2000
 
 **Example 3 (Find Encap: )**
 
-            >>> find_encap = call_class.find_encap(vlan="2000")
+            >>>find_encap = call_class.find_encap(vlan="2000")
             * Output omitted due to length
             This will produce all access policies associated with an external fabric encapsulation
 
@@ -129,4 +128,53 @@ The seed method is always the login() which produces the session.
             Encapsulation: vlan-200
             Location: uni/tn-Customer-1/ap-ANP-WEB/epg-EPG-WEB/cep-00:50:56:A0:77:88
             IP: 10.1.1.10
+            >>>
+
+Coming Soon
+____
+
+** The next release will feature configuration send . You can run it from you own program or just use
+   the python console. Simple easy methods inherited from our parent class in v1.0.0. Examples show below
+   
+
+**Example 1 (Create Tenant: )**
+
+            >>> call_class = ops.AciOpsSend(apic="192.168.1.1", username="JoeSmo", password="Help!")
+            >>> create_tenant = call_class.create_tenant(tenant="Example")
+            >>> call_class.view_tenants()
+            ['Example']
+            >>>
+
+**Example 2 (Create App Profile: )**
+
+            >>> create_app = call_class.create_app_profile(tenant="Example", app="Web")
+            >>> call_class.create_app_profile()
+            >>> call_class.create_app_profile(tenant="Example")
+            (<Response [200]>, defaultdict(<class 'list'>, {'name': ['Web', 'None']}))
+            >>>
+
+**Example 3 (Create EPG: )**
+
+            >>> call_class.create_epg(tenant="Example", app="Web", epg="Servers")
+            (<Response [200]>, defaultdict(<class 'list'>, {'name': ['Servers']}))
+            >>>
+
+**Example 4 (Create BD: )**
+
+            >>> call_class.create_bd_l3(tenant="Example", bd="L3BD", subnet="4.4.4.4/32")
+            (<Response [200]>, defaultdict(<class 'list'>, {'name': ['L3BD']}))
+            >>> call_class.subnet_finder(subnet="4.4.4.4/32")
+            ('4.4.4.4/32', 'Example', 'L3BD', 'vrf', 'None', 'yes', 'private', 'proxy', 'None', 'None')
+            >>>
+
+**Example 5 (Create vrf: )**
+
+            >>> call_class.create_vrf(tenant="Example", vrf="vrf-1")
+            (<Response [200]>, defaultdict(<class 'list'>, {'vrf': ['vrf-1']}))
+            >>>
+
+**Example 6 (Enable Unicast Route: )**
+
+            >>> call_class.enable_unicast(tenant="Example", bd="L3BD", enable="no") **yes/no**
+            (<Response [200]>, '{"fvBD":{"attributes": {"name": "L3BD", "unicastRoute": "no"}}}')
             >>>
