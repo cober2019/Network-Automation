@@ -19,7 +19,7 @@ tools:
 + Bridge Domains
 + Endpoint Finder
 
-**Version 2.0 additions
+**Version 2.0 additions**
 
 + Create Tenant
 + Create App Profile
