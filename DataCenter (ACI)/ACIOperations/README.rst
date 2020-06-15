@@ -133,9 +133,9 @@ Some method can be run without any argument and some dont. The seed method is al
 Coming Soon
 ____
 
-** The next release will feature configuration send . You can run it from you own program or just use
-   the python console. Simple easy methods inherited from our parent class in v1.0.0. Examples show below
-   
+**The next release will feature configuration send . You can run it from you own program or just use**
+**the python console. Simple easy methods inherited from our parent class in v1.0.0. Examples show below**
+
 
 **Example 1 (Create Tenant: )**
 
@@ -177,4 +177,18 @@ ____
 
             >>> call_class.enable_unicast(tenant="Example", bd="L3BD", enable="no") **yes/no**
             (<Response [200]>, '{"fvBD":{"attributes": {"name": "L3BD", "unicastRoute": "no"}}}')
+            >>>
+
+**Example 7 (Assign vrf to BridgeDomain: )**
+
+            >>>call_class.vrf_to_bd(tenant="Example", bd="BDL3", vrf="vrf-1")
+            (<Response [200]>, defaultdict(<class 'list'>, {'vrf': ['vrf-1']}))
+            >>>
+
+**Example 8 (Routing Scope: )**
+
+            >>>call_class.routing_scope(tenant="Example", bd="BDL3", scope="private", subnet="4.4.4.4/32") **share|public|shared***
+            (<Response [200]>, defaultdict(<class 'list'>, {'name': ['L3BD', 'BDL3']}), {'IP': 'uni/tn-Example/BD-BDL3/subnet-[4.4.4.4/32]',
+            'Tenant': 'Example', 'BD': 'BDL3', 'vrf': 'vrf-1', 'L3Out': 'None', 'Route Enable': 'yes', 'Scope': 'private', 'Uni Flood': 'proxy',
+            'APs': 'None', 'EPGs': 'None'})
             >>>
