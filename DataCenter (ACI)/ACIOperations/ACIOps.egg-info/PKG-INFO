@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: ACIOps
-Version: 1.6.0
+Version: 2.0.0
 Summary: ACIOps allows you to fetch basic ACI information.
 Home-page: https://github.com/cober2019/Network-Automation/tree/master/DataCenter%20(ACI)/ACIOperations
 Author: Chris Oberdalhoff
@@ -26,6 +26,16 @@ Description: ACIOps
         + Endpoint Groups
         + Bridge Domains
         + Endpoint Finder
+        
+        **Version 2.0 additions
+        
+        + Create Tenant
+        + Create App Profile
+        + Create EPG
+        + Create BD (l3/l2)
+        + Routing Scope
+        + Create VRF
+        + Enable Unicast
         
         Depedency Modules
         __________
@@ -108,23 +118,19 @@ Description: ACIOps
         
         **Example 9 (View Bridge Domains: )**
         
-                    >>> bd = call_class.view_bd(tenant="Customer-1")
-                    >>> print(bd)
-                    defaultdict(<class 'list'>, {'name': ['BD-VL100', 'BD-VL200']}
+                    >>>call_class.view_bd(tenant="Example")
+                    ['L3BD', 'BDL3']
                     >>>
         
         **Example 9 (View App Profiles: )**
         
-                    >>> ap = call_class.view_app_profiles(tenant="Customer-1")
-                    >>> print(ap)
-                    defaultdict(<class 'list'>, {'name': ['ANP-WEB', 'ANP-DB']}
-                    >>>
+                    >>>call_class.view_app_profiles(tenant="Example")
+                    ['Web', 'None']
         
         **Example 10 (View EPG: )**
         
-                    >>> epg = call_class.view_epgs(tenant="Customer-1", app="ANP-WEB")
-                    >>> print(epg)
-                    defaultdict(<class 'list'>, {'name': ['EPG-WEB']})
+                    >>>call_class.view_epgs(tenant="Example", app="Web")
+                    ['Servers']
                     >>>
         
         **Example 11 (Endpoint Tracker: )**
@@ -138,6 +144,69 @@ Description: ACIOps
                     IP: 10.1.1.10
                     >>>
         
+        Send Operations
+        =====
+        
+        Description
+        ----
+        **The AciOpsSend class enables you to send configurations to ACI. You can run it from you own program or just use**
+        **the python console. Simple and easy methods inherited from our parent class in v1.0.0**
+        
+        **Example 1 (Create Tenant: )**
+        
+                    >>> call_class = ops.AciOpsSend(apic="192.168.1.1", username="JoeSmo", password="Help!")
+                    >>> create_tenant = call_class.create_tenant(tenant="Example")
+                    >>> call_class.view_tenants()
+                    ['Example']
+                    >>>
+        
+        **Example 2 (Create App Profile: )**
+        
+                    >>> create_app = call_class.create_app_profile(tenant="Example", app="Web")
+                    >>> call_class.create_app_profile()
+                    >>> call_class.create_app_profile(tenant="Example")
+                    (<Response [200]>, defaultdict(<class 'list'>, {'name': ['Web', 'None']}))
+                    >>>
+        
+        **Example 3 (Create EPG: )**
+        
+                    >>> call_class.create_epg(tenant="Example", app="Web", epg="Servers")
+                    (<Response [200]>, defaultdict(<class 'list'>, {'name': ['Servers']}))
+                    >>>
+        
+        **Example 4 (Create BD: )**
+        
+                    >>> call_class.create_bd_l3(tenant="Example", bd="L3BD", subnet="4.4.4.4/32")
+                    (<Response [200]>, defaultdict(<class 'list'>, {'name': ['L3BD']}))
+                    >>> call_class.subnet_finder(subnet="4.4.4.4/32")
+                    ('4.4.4.4/32', 'Example', 'L3BD', 'vrf', 'None', 'yes', 'private', 'proxy', 'None', 'None')
+                    >>>
+        
+        **Example 5 (Create vrf: )**
+        
+                    >>> call_class.create_vrf(tenant="Example", vrf="vrf-1")
+                    (<Response [200]>, defaultdict(<class 'list'>, {'vrf': ['vrf-1']}))
+                    >>>
+        
+        **Example 6 (Enable Unicast Route: )**
+        
+                    >>> call_class.enable_unicast(tenant="Example", bd="L3BD", enable="no") **yes/no**
+                    (<Response [200]>, '{"fvBD":{"attributes": {"name": "L3BD", "unicastRoute": "no"}}}')
+                    >>>
+        
+        **Example 7 (Assign Vrf to BridgeDomain: )**
+        
+                    >>>call_class.vrf_to_bd(tenant="Example", bd="BDL3", vrf="vrf-1")
+                    (<Response [200]>, defaultdict(<class 'list'>, {'vrf': ['vrf-1']}))
+                    >>>
+        
+        **Example 8 (Routing Scope: )**
+        
+                    >>> call_class.routing_scope(tenant="Example", bd="BDL3", scope="private", subnet="4.4.4.4/32") **share|public|shared***
+                    (<Response [200]>, defaultdict(<class 'list'>, {'name': ['L3BD', 'BDL3']}), {'IP': 'uni/tn-Example/BD-BDL3/subnet-[4.4.4.4/32]',
+                    'Tenant': 'Example', 'BD': 'BDL3', 'vrf': 'vrf-1', 'L3Out': 'None', 'Route Enable': 'yes', 'Scope': 'private', 'Uni Flood': 'proxy',
+                    'APs': 'None', 'EPGs': 'None'})
+                    >>>
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
