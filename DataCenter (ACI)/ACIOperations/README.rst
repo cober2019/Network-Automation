@@ -19,6 +19,16 @@ tools:
 + Bridge Domains
 + Endpoint Finder
 
+**Version 2.0 additions
+
++ Create Tenant
++ Create App Profile
++ Create EPG
++ Create BD (l3/l2)
++ Routing Scope
++ Create VRF
++ Enable Unicast
+
 Depedency Modules
 __________
 
@@ -100,23 +110,19 @@ Some method can be run without any argument and some dont. The seed method is al
 
 **Example 9 (View Bridge Domains: )**
 
-            >>> bd = call_class.view_bd(tenant="Customer-1")
-            >>> print(bd)
-            defaultdict(<class 'list'>, {'name': ['BD-VL100', 'BD-VL200']}
+            >>>call_class.view_bd(tenant="Example")
+            ['L3BD', 'BDL3']
             >>>
 
 **Example 9 (View App Profiles: )**
 
-            >>> ap = call_class.view_app_profiles(tenant="Customer-1")
-            >>> print(ap)
-            defaultdict(<class 'list'>, {'name': ['ANP-WEB', 'ANP-DB']}
-            >>>
+            >>>call_class.view_app_profiles(tenant="Example")
+            ['Web', 'None']
 
 **Example 10 (View EPG: )**
 
-            >>> epg = call_class.view_epgs(tenant="Customer-1", app="ANP-WEB")
-            >>> print(epg)
-            defaultdict(<class 'list'>, {'name': ['EPG-WEB']})
+            >>>call_class.view_epgs(tenant="Example", app="Web")
+            ['Servers']
             >>>
 
 **Example 11 (Endpoint Tracker: )**
@@ -130,12 +136,13 @@ Some method can be run without any argument and some dont. The seed method is al
             IP: 10.1.1.10
             >>>
 
-Coming Soon
-____
+Send Operations
+=====
 
-**The next release will feature configuration send . You can run it from your own program or just use**
-**the python console. Simple easy methods inherited from our parent class in v1.0.0. Examples show below**
-
+Description
+----
+**The AciOpsSend class enables you to send configurations to ACI. You can run it from you own program or just use**
+**the python console. Simple and easy methods inherited from our parent class in v1.0.0**
 
 **Example 1 (Create Tenant: )**
 
@@ -179,9 +186,9 @@ ____
             (<Response [200]>, '{"fvBD":{"attributes": {"name": "L3BD", "unicastRoute": "no"}}}')
             >>>
 
-**Example 7 (Assign vrf to BridgeDomain: )**
+**Example 7 (Assign Vrf to BridgeDomain: )**
 
-            >>> call_class.vrf_to_bd(tenant="Example", bd="BDL3", vrf="vrf-1")
+            >>>call_class.vrf_to_bd(tenant="Example", bd="BDL3", vrf="vrf-1")
             (<Response [200]>, defaultdict(<class 'list'>, {'vrf': ['vrf-1']}))
             >>>
 
