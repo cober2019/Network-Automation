@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name="ACIOps",
-    version="1.6.0",
+    version="2.0.0",
     author="Chris Oberdalhoff",
     author_email="cober91130@gmail.com",
     description="ACIOps allows you to fetch basic ACI information.",
