@@ -181,7 +181,7 @@ ____
 
 **Example 7 (Assign vrf to BridgeDomain: )**
 
-            >>>call_class.vrf_to_bd(tenant="Example", bd="BDL3", vrf="vrf-1")
+            >>> call_class.vrf_to_bd(tenant="Example", bd="BDL3", vrf="vrf-1")
             (<Response [200]>, defaultdict(<class 'list'>, {'vrf': ['vrf-1']}))
             >>>
 
