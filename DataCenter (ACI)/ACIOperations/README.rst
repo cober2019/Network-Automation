@@ -187,7 +187,7 @@ ____
 
 **Example 8 (Routing Scope: )**
 
-            >>>call_class.routing_scope(tenant="Example", bd="BDL3", scope="private", subnet="4.4.4.4/32") **share|public|shared***
+            >>> call_class.routing_scope(tenant="Example", bd="BDL3", scope="private", subnet="4.4.4.4/32") **share|public|shared***
             (<Response [200]>, defaultdict(<class 'list'>, {'name': ['L3BD', 'BDL3']}), {'IP': 'uni/tn-Example/BD-BDL3/subnet-[4.4.4.4/32]',
             'Tenant': 'Example', 'BD': 'BDL3', 'vrf': 'vrf-1', 'L3Out': 'None', 'Route Enable': 'yes', 'Scope': 'private', 'Uni Flood': 'proxy',
             'APs': 'None', 'EPGs': 'None'})
