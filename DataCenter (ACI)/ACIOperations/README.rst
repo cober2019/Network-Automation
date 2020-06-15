@@ -133,7 +133,7 @@ Some method can be run without any argument and some dont. The seed method is al
 Coming Soon
 ____
 
-**The next release will feature configuration send . You can run it from you own program or just use**
+**The next release will feature configuration send . You can run it from your own program or just use**
 **the python console. Simple easy methods inherited from our parent class in v1.0.0. Examples show below**
 
 
