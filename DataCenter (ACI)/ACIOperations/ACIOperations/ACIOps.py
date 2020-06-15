@@ -6,7 +6,6 @@ import re
 import collections
 import ipaddress
 
-
 class AciOps:
 
     """Collects authentication information from user, returns session if successfull, or response if not"""
@@ -20,17 +19,22 @@ class AciOps:
         self.policies_dict = collections.defaultdict(list)
         self.device_info = []
         self.tenant_array = []
+        self.bd_array = []
+        self.ap_array = []
+        self.epg_array = []
+        self.vrf_array = []
+        self.json_header = headers = {'content-type': 'application/json'}
 
-    def login(self, **kwargs):
+    def login(self, apic=None, username=None, password=None):
 
         """APIC authentication method. Takes username, password, apic kwargs and returns session"""
 
         ignore_warning = warnings.filterwarnings('ignore', message='Unverified HTTPS request')
-        uri = "https://%s/api/aaaLogin.json" % kwargs["apic"]
-        json_auth = {'aaaUser': {'attributes': {'name': kwargs["username"], 'pwd': kwargs["password"]}}}
+        uri = "https://%s/api/aaaLogin.json" % apic
+        json_auth = {'aaaUser': {'attributes': {'name': username, 'pwd': password}}}
         json_credentials = json.dumps(json_auth)
         self.session = requests.Session()
-        self.apic = kwargs["apic"]
+        self.apic = apic
 
         try:
             request = self.session.post(uri, data=json_credentials, verify=False)
@@ -40,15 +44,14 @@ class AciOps:
 
         try:
             if self.response["imdata"][0]["error"]["attributes"]["code"] == "401":
-                raise ValueError("Login Failed, please verify credentials | Credential Submitted:\n{}\n{}".format(
-                                                                            kwargs["username"], kwargs["password"]))
+                raise ValueError("Login Failed, please verify credentials | Credential Submitted:\n{}\n{}"
+                                                                                .format(username, password))
         except TypeError:
             raise TypeError("Something Went Wrong")
         except KeyError:
             pass
         else:
             return self.session
-
 
     def vlan_pools(self):
 
@@ -96,9 +99,9 @@ class AciOps:
 
                 self.vlan_dict[parse_dn[0]].append(vlans_unpacked)
 
-        return vlan_range_dict
+        return request, vlan_range_dict
 
-    def find_encap(self, **kwargs):
+    def find_encap(self, encap=None):
 
         """Takes in the vlan encapsulation, intiaates vlan_pool(0 and policy_mappings. Calls _find_encap_comiple to fin fabric information about the encapsulation
         Returns a series of list to the caller"""
@@ -112,12 +115,12 @@ class AciOps:
         self.vlan_pools()
         self.policy_mappings()
 
-        pools = self._find_encap_compile(vlan=kwargs["vlan"])
-        vlan_pool[kwargs["vlan"]].append(pools[0])
-        phys_doms[kwargs["vlan"]].append(pools[1])
-        aaeps[kwargs["vlan"]].append(pools[2])
-        location[kwargs["vlan"]].append(pools[3])
-        path[kwargs["vlan"]].append(pools[4])
+        pools = self._find_encap_compile(encap)
+        vlan_pool[encap].append(pools[0])
+        phys_doms[encap].append(pools[1])
+        aaeps[encap].append(pools[2])
+        location[encap].append(pools[3])
+        path[encap].append(pools[4])
 
         unpacked_vlan_pools = [v for k, v in vlan_pool.items() for v in v for v in v]
         unpacked_phys_doms = [v for k, v in phys_doms.items() for v in v for v in v]
@@ -127,10 +130,10 @@ class AciOps:
 
         return unpacked_vlan_pools, unpacked_phys_doms, unpacked_aaep, unpacked_location, unpacked_path
 
+    def _find_encap_compile(self, encap=None):
 
-    def _find_encap_compile(self, **kwargs):
-
-        """ This method is for local use only. It works with vlan_pool() to produce a series of list and return them to the call find_encap"""
+        """ This method is for local use only. It works with vlan_pool() to produce a series of list and return them
+        to the call find_encap"""
 
         pools = []
         phy_doms = []
@@ -138,7 +141,7 @@ class AciOps:
         location = []
         path = []
 
-        uri = "https://{}/api/class/fvRsPathAtt.xml?query-target-filter=eq(fvRsPathAtt.encap,\"vlan-{}\")".format(self.apic, kwargs["vlan"])
+        uri = "https://{}/api/class/fvRsPathAtt.xml?query-target-filter=eq(fvRsPathAtt.encap,\"vlan-{}\")".format(self.apic, encap)
         request = self.session.get(uri, verify=False)
         root = ET.fromstring(request.text)
 
@@ -165,7 +168,7 @@ class AciOps:
             for key_1, value_1 in self.vlan_dict.items():
                 for v in value_1:
                     for v in v:
-                        if kwargs["vlan"] == v:
+                        if encap == v:
                             pools.append(key_1)
                             for key_2, value_2 in self.policies_dict.items():
                                 if key_2 == key_1:
@@ -236,14 +239,13 @@ class AciOps:
             else:
                 continue
 
-        return self.policies_dict
+        return request, self.policies_dict
 
-    def infr(self, **kwargs):
-
+    def infr(self, pod=None):
 
         """Takes in pod number , and return all information about the fabric hardware. Greate for TAC use"""
 
-        pod_num = kwargs["pod"]
+        pod_num = pod
         pod_number = "pod-{}".format(pod_num)
 
         uri = "https://{}/api/node/mo/topology/{}.xml?query-target=children".format(self.apic, pod_number)
@@ -276,6 +278,7 @@ class AciOps:
 
         try:
             index = 0
+            self.tenant_array.clear()
             for i in range(0, total_count):
                 self.tenant_array.append(response_dict["imdata"][index]["fvTenant"]["attributes"]["name"])
                 index = index + 1
@@ -284,13 +287,11 @@ class AciOps:
 
         return self.tenant_array
 
-    def subnet_finder(self, **kwargs):
+    def subnet_finder(self, subnet=None):
 
         """ Takes in kwarg subnet and finds all details about the subnet (BD, Tenant, scope etc."""
 
-
-        self.view_tenants()
-
+        endpoint_dict = {}
         uri = "https://{}/api/class/fvBD.xml?query-target=subtree".format(self.apic)
         request = self.session.get(uri, verify=False)
         root = ET.fromstring(request.text)
@@ -298,7 +299,7 @@ class AciOps:
         for fvSubnet in root.iter("fvSubnet"):
             location = fvSubnet.get("dn")
             ip = fvSubnet.get("ip")
-            if kwargs["subnet"] in ip:
+            if subnet in ip:
                 gps = location
                 gps_ip = ip
                 scope = fvSubnet.get("scope")
@@ -314,7 +315,9 @@ class AciOps:
             for fvRsCtx in root.iter("fvRsCtx"):
                 vrf = fvRsCtx.get("tnFvCtxName")
                 location = fvRsCtx.get("dn")
+                print(location)
                 if re.findall('[?<=/BD-]' + gps_bd + '(?=/)', location):
+                    print(vrf)
                     gps_vrf = vrf
 
             aps = []
@@ -331,12 +334,15 @@ class AciOps:
                     pass
 
             for fvRsBDToOut in root.iter("fvRsBDToOut"):
-                dn = fvRsBDToOut.get("dn")
-                if re.findall('[?<=/BD-]' + gps_bd + '(?=/)', dn):
-                    if not fvRsBDToOut.get("tnL3extOutName"):
-                        l3out = "N/A"
-                    else:
-                        l3out = fvRsBDToOut.get("tnL3extOutName")
+                if "fvRsBDToOut" in fvRsBDToOut:
+                    dn = fvRsBDToOut.get("dn")
+                    if re.findall('[?<=/BD-]' + gps_bd + '(?=/)', dn):
+                        if not fvRsBDToOut.get("tnL3extOutName"):
+                            l3out = "N/A"
+                        else:
+                            l3out = fvRsBDToOut.get("tnL3extOutName")
+                else:
+                    l3out = "None"
 
             for tenant in self.tenant_array:
                 if tenant in gps:
@@ -345,106 +351,122 @@ class AciOps:
                     continue
 
             unpack_ap = [i for i in aps]
+            if not unpack_ap:
+                unpack_ap = "None"
+
             unpack_epg = [i for i in epgs]
+            if not unpack_epg:
+                unpack_epg = "None"
+
+            endpoint_dict["IP"] = gps
+            endpoint_dict["Tenant"] = gps_tenant
+            endpoint_dict["BD"] = gps_bd
+            endpoint_dict["vrf"] = gps_vrf
+            endpoint_dict["L3Out"] = l3out
+            endpoint_dict["Route Enable"] = uni_route
+            endpoint_dict["Scope"] = scope
+            endpoint_dict["Uni Flood"] = unkwn_uni
+            endpoint_dict["APs"] = unpack_ap
+            endpoint_dict["EPGs"] = unpack_epg
+
+            return endpoint_dict
 
         except UnboundLocalError:
-            pass
+            return "Subnet not found"
 
-        return gps_ip, gps_tenant, gps_bd, vrf, l3out, uni_route, scope, unkwn_uni, unpack_ap, unpack_epg
-
-    def tenant_vrf(self, **kwargs):
+    def view_tenant_vrf(self, tenant=None):
 
         """View Tenant vrf, return Tenant vrf names"""
 
-        vrf_dict = collections.defaultdict(list)
         uri = "https://{}/api/node/mo/uni/tn-{}.json?query-target=children&target-subtree-class=fvCtx"\
-                                                                    .format(self.apic, kwargs["tenant"])
+                                                                            .format(self.apic, tenant)
         request = self.session.get(uri, verify=False)
         response = json.loads(request.text)
 
         try:
             index = 0
+            self.vrf_array.clear()
             for i in range(0, 100):
-                vrf_dict["vrf"].append(response["imdata"][index]["fvCtx"]["attributes"]["name"])
+                self.vrf_array.append(response["imdata"][index]["fvCtx"]["attributes"]["name"])
                 index = index + 1
         except IndexError:
             pass
 
-        return vrf_dict
+        return self.vrf_array
 
-    def view_bd(self, **kwargs):
+    def view_bd(self, tenant=None):
 
         """View Bridge domains of a Tenant, returns bridge domain names"""
 
-        bd_dict = collections.defaultdict(list)
         uri = "https://{}/api/node/mo/uni/tn-{}.json?query-target=children&target-subtree-class=fvBD"\
-                                                                    .format(self.apic, kwargs["tenant"])
+                                                                            .format(self.apic, tenant)
         request = self.session.get(uri, verify=False)
         response = json.loads(request.text)
         total_count = int(response["totalCount"])
 
         index = 0
+        self.bd_array.clear()
         for i in range(0, total_count):
-            bd_dict["name"].append(response["imdata"][index]["fvBD"]["attributes"]["name"])
+            self.bd_array.append(response["imdata"][index]["fvBD"]["attributes"]["name"])
             index = index + 1
 
-        return bd_dict
+        return self.bd_array
 
-    def view_app_profiles(self, **kwargs):
+    def view_app_profiles(self, tenant=None):
 
         """View Application profiles of a particular Tenant, return App profiles"""
 
-        app_dict = collections.defaultdict(list)
         uri = "https://{}/api/node/mo/uni/tn-{}.json?query-target=children&target-subtree-class=fvAp"\
-                                                                    .format(self.apic, kwargs["tenant"])
+                                                                            .format(self.apic, tenant)
         request = self.session.get(uri, verify=False)
         response = json.loads(request.text)
         total_count = int(response["totalCount"])
 
         index = 0
+        self.ap_array.clear()
         for i in range(0, total_count):
-            app_dict["name"].append(response["imdata"][index]["fvAp"]["attributes"]["name"])
+            self.ap_array.append(response["imdata"][index]["fvAp"]["attributes"]["name"])
             index = index + 1
 
-        return app_dict
+        return self.ap_array
 
-    def view_epgs(self, **kwargs):
+    def view_epgs(self, tenant=None, app=None):
 
         """View endpoint groups of a particular Tenant-App profile, returns EPG names"""
 
-        epg_dict = collections.defaultdict(list)
         uri = "https://{}/api/node/mo/uni/tn-{}/ap-{}.json?query-target=children&target-subtree-class=fvAEPg"\
-                                                            .format(self.apic, kwargs["tenant"], kwargs["app"])
+                                                                                .format(self.apic, tenant, app)
         request = self.session.get(uri, verify=False)
         response = json.loads(request.text)
         total_count = int(response["totalCount"])
 
         index = 0
+        self.epg_array.clear()
         for i in range(0, total_count):
-            epg_dict["name"].append(response["imdata"][index]["fvAEPg"]["attributes"]["name"])
+            self.epg_array.append(response["imdata"][index]["fvAEPg"]["attributes"]["name"])
             index = index + 1
 
-        return epg_dict
+        return self.epg_array
 
-    def enpoint_tracker(self, **kwargs):
+    def enpoint_tracker(self, endpoint=None):
 
-        """This method take in a IP or MAC address and returns the endpoint data. Return string if no endpoint is found"""
+        """This method take in a IP or MAC address and returns the endpoint data. Return string if no endpoint
+        is found"""
 
         try:
-            ipaddress.IPv4Address(kwargs["endpoint"])
+            ipaddress.IPv4Address(endpoint)
             uri = "https://%s" % self.apic + "/api/node/class/fvCEp.xml?rsp-subtree=full&rsp-subtree-include=" \
-                                     "required&rsp-subtree-filter=eq(fvIp.addr," + "\"%s\"" % kwargs["endpoint"]
+                                                "required&rsp-subtree-filter=eq(fvIp.addr," + "\"%s\"" % endpoint
 
         except ValueError:
             uri = "https://%s" % self.apic + "/api/node/class/fvCEp.xml?rsp-subtree=full&rsp-subtree-class=" \
                   "fvCEp,fvRsCEpToPathEp,fvIp,fvRsHyper,fvRsToNic,fvRsToVm&query-target-filter=eq(fvCEp.mac," \
-                  + "\"%s\"" % kwargs["endpoint"]
+                  + "\"%s\"" % endpoint
 
         request = self.session.get(uri, verify=False)
         root = ET.fromstring(request.text)
 
         for fvCEp in root.iter("fvCEp"):
-            print(fvCEp)
             ep_name = fvCEp.get("name")
             ep_mac = fvCEp.get("mac")
             encap = fvCEp.get("encap")
@@ -452,11 +474,226 @@ class AciOps:
             ep_ip = fvCEp.get("ip")
 
             endpoint = ("Name: {0:20}\nEP: {1:<20}\nEncapsulation: {2:<20}\nLocation: {3:<20}\nIP: {4:<20}"
-                                                                .format(ep_name,ep_mac,encap,ep_loc,ep_ip))
-
+                                                                .format(ep_name, ep_mac, encap, ep_loc, ep_ip))
 
         try:
             return endpoint
         except UnboundLocalError:
             return  "Endpoint Not Found"
+
+
+class AciOpsSend(AciOps):
+
+    """ACI send basic configs. Return value will be APIC response in dictionary structure, or string notify the caller of
+    and error"""
+
+    def __init__(self, **kwargs):
+
+        """ Import * from AciOps class. Use AciOps login method to create a http session. Once session has been
+        intiated, call AciOps view_tenants method. The AciOps self.session and self.tenant_array will be used
+        throughout"""
+
+        super().__init__()
+        self.login(apic=kwargs["apic"], username=kwargs["username"], password=kwargs["password"])
+        self.view_tenants()
+
+    def create_tenant(self, tenant=None):
+
+        """Create tenant, arg supplied will be tenants name. Conditional check will be done o insure  no duplicates"""
+
+        uri = """https://{}/api/mo/uni.json""".format(self.apic)
+
+        if tenant not in self.tenant_array:
+
+            tenants = """{"fvTenant" : { "attributes" : { "name" : "%s"}}}""" % tenant
+            request = self.session.post(uri, verify=False, data=tenants, headers=self.json_header)
+            tenants = self.view_tenants()
+
+            return request, tenants
+        else:
+            return "Tenant: %s Exist" % tenant
+
+    def create_app_profile(self, tenant=None, app=None):
+
+        """Create app prof, args supplied will be tenant, and app prof name.
+        Conditional check will be done to insure  no duplicates"""
+
+        app_profiles = self.view_app_profiles(tenant=tenant)
+
+        if app not in app_profiles:
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + ".json"
+            app_profile = "{\"fvAp\": " \
+                          "{\"attributes\": " \
+                          "{\"name\": \"%s\"}}}}" % app
+
+            request = self.session.post(uri, verify=False, data=app_profile, headers=self.json_header)
+            app_profiles = self.view_app_profiles(tenant=tenant)
+
+            return request, app_profiles
+        else:
+            return "App Profile: %s Exist " % app
+
+    def create_epg(self, tenant=None, app=None, epg=None):
+
+        """Create epg, args supplied will be tenant, and app prof name, and epg name
+        Conditional check will be done to insure  no duplicates"""
+
+        epgs = self.view_epgs(tenant=tenant, app=app)
+
+        if epg not in epgs:
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + "/ap-" + app + ".json"
+            epg = "{\"fvAEPg\":" \
+                  "{\"attributes\": " \
+                  "{\"name\": \"%s\"}}}}" % epg
+
+            request = self.session.post(uri, verify=False, data=epg, headers=self.json_header)
+            epgs = self.view_epgs(tenant=tenant, app=app)
+
+            return request, epgs
+        else:
+            return "EPG: %s Exist" % epg
+
+    def create_bd_l3(self, tenant=None, bd=None, subnet=None, scope=None):
+
+        """Create bd, args supplied will be tenant. Conditional check will be done to insure  no duplicates"""
+
+        bds = self.view_bd(tenant=tenant)
+
+        if bd not in bds:
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + ".json"
+            bridge_dom = "{\"fvBD\":" \
+                         "{\"attributes\": " \
+                         "{\"name\": \"%s\"" % bd + "}," \
+                         "\"children:[" \
+                         "{\"fvSubnet\": " \
+                         "{\"attributes\":" \
+                         "{\"ip\": \"%s\"" % subnet + "," \
+                         "{\"scope\": \"%s\"" % scope + "}}}}]}}}"
+
+            request = self.session.post(uri, verify=False, data=bridge_dom, headers=self.json_header)
+            bds = self.view_bd(tenant=tenant)
+            bd_info = self.subnet_finder(subnet=subnet)
+
+            return request, bds, bd_info
+
+        else:
+            return "BD: %s Exist" % bd
+
+    def routing_scope(self, tenant=None, bd=None, subnet=None, scope=None):
+
+        """Configuring routing scope (shared, private, external). First we split the scope to check for validity
+        if valid, use the orignal scope arg for the variable"""
+
+        split_scope = scope.split(",")
+        scope_list = ["private", "public", "shared"]
+        bds = self.view_bd(tenant=tenant)
+
+        for scope in split_scope:
+            if scope not in scope_list:
+                raise ValueError("Invalid Scope \"{}\" - Expecting private|public|shared".format(scope))
+            else:
+                pass
+
+        if bd in bds:
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + "/BD-" + bd + "/subnet-[" + subnet + "].json"
+            bridge_dom = "{\"fvSubnet\": " \
+                         "{\"attributes\":" \
+                         "{\"scope\": \"%s\"" % scope + "}}}"
+
+            request = self.session.post(uri, verify=False, data=bridge_dom, headers=self.json_header)
+            bds = self.view_bd(tenant=tenant)
+            bd_info = self.subnet_finder(subnet=subnet)
+
+            return request, bds, bd_info
+
+        else:
+            return "BD: %s Exist" % bd
+
+    def enable_unicast(self, tenant=None, bd=None, enable=None):
+
+        """Create bd, args supplied will be tenant  Conditional check will be done to insure  no duplicates,
+        require yes/no input"""
+
+        bds = self.view_bd(tenant=tenant)
+        yes_no = ["yes", "no"]
+
+        if enable not in yes_no:
+            raise ValueError("Invalid arg \"{}\" - Expecting yes/no".format(enable))
+        if bd in bds:
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + ".json"
+            bridge_dom = "{\"fvBD\":" \
+                         "{\"attributes\": " \
+                         "{\"name\": \"%s\"" % bd + ", \"" \
+                         "unicastRoute\": \"%s\"" % enable + "}}}"
+
+            request = self.session.post(uri, verify=False, data=bridge_dom, headers=self.json_header)
+
+            return request, bridge_dom
+
+        else:
+            return "BD: %s Exist" % bd
+
+    def create_bd_l2(self, tenant=None, bd=None):
+
+        """Create L2 bd, args supplied will be tenant  Conditional check will be done to insure  no duplicates"""
+
+        bds = self.view_bd(tenant=tenant)
+
+        if bd not in bds:
+
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + ".json"
+            bridge_dom = "{\"fvBD\":" \
+                         "{\"attributes\": " \
+                         "{\"name\": \"%s\"" % bd + "}}}"
+
+            request = self.session.post(uri, verify=False, data=bridge_dom, headers=self.json_header)
+            bds = self.view_bd(tenant=tenant)
+
+            return request, bds
+        else:
+            return "BD: %s Exist" % bd
+
+    def create_vrf(self, tenant=None, vrf=None):
+
+        """Create tenant vrf, args supplied will be tenant  Conditional check will be done to insure  no duplicates"""
+
+        vrfs = self.view_tenant_vrf(tenant=tenant)
+
+        if vrf not in vrfs:
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + ".json"
+            vrf = "{\"fvCtx\":" \
+                  "{\"attributes\": " \
+                  "{\"name\": \"%s\"" % vrf + "}}}"
+
+            request = self.session.post(uri, verify=False, data=vrf, headers=self.json_header)
+            vrfs = self.view_tenant_vrf(tenant=tenant)
+
+            return request, vrfs
+        else:
+            return "Vrf: %s Exist" % vrf
+
+    def vrf_to_bd(self, tenant=None, bd=None, vrf=None):
+
+        """Assign vrf to bd, args supplied will be tenant, bd name, vrf name
+        Conditional check will be done to insure vrf has been configured"""
+
+        vrfs = self.view_tenant_vrf(tenant=tenant)
+
+        if vrf in vrfs:
+            uri = "https://" + self.apic + "/api/mo/uni/tn-" + tenant + ".json"
+            vrf_bd = "{\"fvBD\":" \
+                     "{\"attributes\": " \
+                     "{\"name\": \"%s\"" % bd + "}," \
+                     "\"children:[" \
+                     "{\"fvRsCtx \": " \
+                     "{\"attributes\":" \
+                     "{\"tnFvCtxName\": \"%s\"" % vrf + "}}}]}}}"
+
+            request = self.session.post(uri, verify=False, data=vrf_bd, headers=self.json_header)
+            vrfs = self.view_tenant_vrf(tenant=tenant)
+
+            return request, vrfs
+        else:
+            return "VRF: %s Doesn't Exist " % vrf
+
 
