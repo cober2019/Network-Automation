@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name="NETCONF-Interfaces", # Replace with your own username
-    version="1.0.2",
+    version="1.0.3",
     author="Chris Oberdalhoff",
     author_email="cober91130@gmail.com",
     description="Allows Network Engineer to view interfaces details",
