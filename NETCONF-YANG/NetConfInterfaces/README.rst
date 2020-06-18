@@ -19,7 +19,7 @@ Description:
 + Interface Bandwidth Usage (Polled During Method Initiation)
 + Interface Status (up/down, admin up/down, phys address, speed, ip)
 
-**Not All interfaces are supported. Send me a email, or message LinkedIn if you need a new typ in the module**
+**Not all interfaces are supported. Send me a email, or message LinkedIn if you need a new interface type in the module**
 
 Usage:
 ------
