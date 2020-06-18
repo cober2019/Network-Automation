@@ -104,4 +104,9 @@ Usage:
 
         >>> call_class.view_vlan_access_ports()
         {'GigabitEthernet1/0/15': '77'}
+        
+**Example 8 (Interface up/down: )**
+
+        >>> call_class.view_int_up_down()
+        {'GigabitEthernet0': 'up', 'GigabitEthernet0/0/0': 'lower-layer-down', 'GigabitEthernet0/0/1': 'lower-layer-down'}
 
