@@ -19,7 +19,7 @@ Usage:
 ------
 
 
-        >>> import NetConfInterfaces.NetConfInterfaces as intconf
+        >>> import import netconf.Ints as intconf
 
 **Example 1 (Object Initialization/Login: )**
 
