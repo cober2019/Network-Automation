@@ -1,6 +1,10 @@
 NETCONF Interfaces
 ==========
 
+**Supported YANG Models**
+
++ ietf-interfaces
++ Cisco-IOS-XE-native
 
 Description:
 -----------
