@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/cober2019/Network-Automation/tree/master/NETCONF-YANG/NetConfInterfaces",
     packages=find_packages(),
-    py_modules=["NetConfInterfaces"],
+    py_modules=["Ints"],
     install_requires=("ipaddress", "ncclient", "xmltodict"),
     classifiers=[
         "Programming Language :: Python :: 3",
