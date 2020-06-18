@@ -100,5 +100,8 @@ Usage:
         {'class_name': 'Default-Class', 'parent_policy': 'Shape-100-Meg class-default Child-Policy Default-Class', 'class_bytes': '438654809568', 'class_pkts': '2053037519', 'class_rate': '591', 'queue_size_pkts': '0', 'queue_size_bytes': '0', 'drop_pkts': '0', 'drop_bytes': '0'},
         {'class_name': 'class-default', 'parent_policy': 'Shape-100-Meg class-default Child-Policy class-default', 'class_bytes': '30599755317', 'class_pkts': '20537865', 'class_rate': '608', 'queue_size_pkts': '0', 'queue_size_bytes': '0', 'drop_pkts': '69534', 'drop_bytes': '95303074'}]})
 
+**Example 7 (Get VLAN Access Ports: )**
 
+        >>> call_class.view_vlan_access_ports()
+        {'GigabitEthernet1/0/15': '77'}
 
