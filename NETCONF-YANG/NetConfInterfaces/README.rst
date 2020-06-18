@@ -1,8 +1,8 @@
 NETCONF Interfaces
-===============
+===
 
 Description:
------------
+---
 
 **NETCONF Interfaces allows Network Engineers to view a wide range of data from a given interface:**
 
@@ -14,8 +14,7 @@ Description:
 + Interface Status (up/down, admin up/down, phys address, speed, ip)
 
 Usage:
-------
-
+---
 
         >>> import NetConfInterfaces.NetConfInterfaces as intconf
 
@@ -61,6 +60,8 @@ Usage:
 
 **Example 5 (Get Interfaces: )**
 
+        All Interfaces:
+
         >>> call_class.get_interfaces()
         {'GigabitEthernet0': {'admin-status': 'up', 'oper-status': 'up', 'speed': '1024000000', 'last-change': '2019-10-22T05:27:29.000439+00:00', 'phys-address': 'a0:e0:af:e9:f0:a0'},
         'GigabitEthernet0/0/0': {'admin-status': 'up', 'oper-status': 'up', 'speed': '1024000000', 'last-change': '2019-10-21T00:46:37.000096+00:00', 'phys-address': 'a0:e0:af:e9:f0:82'},
@@ -72,6 +73,11 @@ Usage:
         'Port-channel30': {'admin-status': 'down', 'oper-status': 'lower-layer-down', 'speed': '102400000', 'last-change': '2020-04-02T23:21:30.000529+00:00', 'phys-address': '00:00:00:00:00:00'},
         'TenGigabitEthernet1/1/1': {'admin-status': 'down', 'oper-status': 'lower-layer-down', 'speed': '1650065408', 'last-change': '2019-10-21T17:51:04.000301+00:00', 'phys-address': 'ec:1d:8b:54:39:35'}
 
+        Single Interface:
+
+        >>> call_class.view_single_interface(interface="GigabitEthernet0/0/0")
+        {'admin-status': 'up', 'oper-status': 'up', 'speed': '1024000000', 'last-change': '2019-10-21T00:46:37.000322+00:00', 'phys-address': 'a0:e0:af:e9:f0:82', 'ip': '100.65.0.18 255.255.255.252'}
+
 **Example 6 (Get Interface Stats: )**
 
         >>> call_class.get_interface_stats()
@@ -79,7 +85,6 @@ Usage:
         'GigabitEthernet0/0/0': {'In-octets': '0', 'In-unicast': '0', 'In-multicast': '0', 'In-discards': '0', 'In-errors': '0', 'In-unknown-protocol': '0', 'Out-octets': '0', 'Out-unicast': '0', 'Out-multicast': '0', 'Out-discards': '0', 'Out-errors': '0', 'Out-broad-errors': '0', 'Out-multi-errors': '0'},
         'GigabitEthernet0/0/1': {'In-octets': '0', 'In-unicast': '0', 'In-multicast': '0', 'In-discards': '0', 'In-errors': '0', 'In-unknown-protocol': '0', 'Out-octets': '0', 'Out-unicast': '0', 'Out-multicast': '0', 'Out-discards': '0', 'Out-errors': '0', 'Out-broad-errors': '0', 'Out-multi-errors': '0'}
 
-**Example 7 (Get QoS Stats: )**
 
         >>> call_class.get_interface_qos(interface="GigabitEthernet0/0/0")
         defaultdict(<class 'list'>, {'Shape-100-Meg': [{'policy_direction': 'outbound', 'class_name': 'class-default', 'parent_policy': 'Shape-100-Meg class-default', 'class_bytes': '469434337785', 'class_pkts': '2075264740', 'class_rate': '84', 'queue_size_pkts': '0', 'queue_size_bytes': '0', 'drop_pkts': '69534', 'drop_bytes': '95303074'},
