@@ -23,7 +23,7 @@ __________
 Device Models Tested
 ---------------
 
-**Different device modules return different configuration/XML. I've tested on the following**
+**Different device models return different configuration/XML. I've tested on the following**
 
 + ISR 4331
 + ASR 1001-X
