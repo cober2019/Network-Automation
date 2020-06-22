@@ -20,7 +20,7 @@ __________
 + ncclient
 + socket
 
-Device Modules Tested
+Device Models Tested
 ---------------
 
 **Different device modules return different configuration/XML. I've tested on the following**
