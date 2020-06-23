@@ -19,6 +19,7 @@ __________
 + xmltodict
 + ncclient
 + socket
++ netmiko
 
 Device Modules Tested
 ---------------
@@ -66,7 +67,7 @@ Usage
 
 **Find Overlapping Prefixes**
 
-            call_class.find_overlapping_prefixes()
+            >>> call_class.find_overlapping_prefixes()
             defaultdict(<class 'list'>,
             {'local-prefixes': [OrderedDict([('prefix', '1.1.1.0/24'), ('overlapping-seq', '5'), ('ge', '25'), ('le', '32'), ('overlapping-prefixes', ['1.1.1.0/25', '1.1.1.0/26', '1.1.1.0/27', '1.1.1.0/28', '1.1.1.0/29', '1.1.1.0/30', '1.1.1.0/31', '1.1.1.0/32'])]),
             OrderedDict([('prefix', '1.1.1.0/25'), ('overlapping-seq', '5'), ('ge', '25'), ('le', '32'), ('overlapping-prefixes', ['1.1.1.0/25', '1.1.1.0/26', '1.1.1.0/27', '1.1.1.0/28', '1.1.1.0/29', '1.1.1.0/30', '1.1.1.0/31', '1.1.1.0/32'])]),
