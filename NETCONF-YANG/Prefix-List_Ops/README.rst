@@ -38,7 +38,7 @@ Usage
 
 **Create Objects/Call Class**
 
-            >>> call_class = ipops.IpOps(host="10.48.1.130", username="cisco", password="cisco")
+            >>> call_class = ipops.IpOps(host="10.10.10.1", username="cisco", password="cisco")
             print(call_class)
             <IPOperations.isr_lists.IpOps object at 0x0000024A786C8248>
 
