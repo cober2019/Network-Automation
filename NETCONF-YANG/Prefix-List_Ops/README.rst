@@ -171,5 +171,19 @@ Usage
                 self._find_dups_internal(prefix=kwargs["prefix"])
               File "C:\JoeSmo\PycharmProjects\IPOperations\IPOperations\isr_lists.py", line 561, in _find_dups_internal
                 raise ValueError("{} overlapps with {}".format(kwargs["prefix"], network))
-            ValueError: 192.168.1.0/26 overlaps with 192.168.1.0/24
+            ValueError: 192.168.1.0/26 overlaps with 192.168.1.0/2
+   
+**Routing Table Check**
+    **Using netmiko to get the routing table, the prefix is compared to the destination prefixes. If the prefix is**
+    **external the program will warn you of this. If your selection no, the prefix will be canceled and an expection will**
+    **be thrown. If yes, the prefix will be added to the list.**
+
+        >>> call_class.send_prefix_list(name="HelpMe", prefix="10.10.12.0/24", seq="30", action="permit")
+        Prefix is external/not local, Are you sure you want to add (yes/no)?
+        no
+        Traceback (most recent call last):
+          File "<input>", line 1, in <module>
+          File "C:\Users\JoeSmo\PycharmProjects\IPOperations\IPOperations\isr_lists.py", line 442, in send_prefix_list
+            raise ValueError("Prefix configuration aborted")
+        ValueError: Prefix configuration aborted
 
