@@ -163,11 +163,11 @@ class IpParse:
             except ValueError:
                 continue
 
-        for i in ips:
-            if re.findall(r'.*[0-9]\..*[0-9]\..*[0-9]\.[0]', str(i)):
-                continue
-            else:
-                self._ip_list.append(str(i))
+            for i in ips:
+                if re.findall(r'.*[0-9]\..*[0-9]\..*[0-9]\.[0]', str(i)):
+                    continue
+                else:
+                    self._ip_list.append(str(i))
 
     def _whole_ips(self):
 
