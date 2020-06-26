@@ -2,7 +2,9 @@ from netmiko import ConnectHandler, ssh_exception
 import re
 
 class Routing:
-
+    
+    """Collect Routing table details using netmiko and re. Method will return a dictionary with route, protocol, next-hop"""
+    
     def __init__(self, host=None, username=None, password=None):
 
         self.host= host
