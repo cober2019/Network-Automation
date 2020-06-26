@@ -84,6 +84,7 @@ class IpParse:
         self._indivisual_ips()
         self._whole_ips()
         self._assemble_ips()
+        self._whole_subnets()
 
     def _find_range(self, i):
 
@@ -149,6 +150,24 @@ class IpParse:
                     self._ip_list.append(str(next_address))
                 except (IndexError, ValueError):
                     pass
+
+    def _whole_subnets(self):
+
+        """Unpack whole subnets"""
+
+        for i in self._split_comma:
+
+            try:
+                if ipaddress.ip_network(i):
+                    ips = list(ipaddress.ip_network(i))
+            except ValueError:
+                continue
+
+            for i in ips:
+                if re.findall(r'.*[0-9]\..*[0-9]\..*[0-9]\.[0]', str(i)):
+                    continue
+                else:
+                    self._ip_list.append(str(i))
 
     def _whole_ips(self):
 
