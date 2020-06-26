@@ -152,6 +152,3 @@ class Routing:
 
         return self.routing_prefixes
 
-call_class = Routing(host="192.168.156.20", username="admin", password="C!sco!@#")
-routes = call_class.get_routing_table()
-print(routes)
