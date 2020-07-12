@@ -30,6 +30,8 @@ Usage
 __________
 
 **Initiate Class:**
+
+  **IOS XE & Nexus**
   
         >>> getroutes = Routing(host="192.168.1.1", username="JoeSmo", password="HelpMe!")
          
