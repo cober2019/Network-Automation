@@ -30,17 +30,17 @@ How to:
 
 **Initiate Class:**
 
-          getroutes = Routing(host="192.168.1.1", username="JoeSmo", password="HelpMe!")
+           >>> getroutes = Routing(host="192.168.1.1", username="JoeSmo", password="HelpMe!")
           
 **Print Routing Table Formatted:**
    
   **Nexus**
      
-          print(getroutes.vdc_routes_unpacked())
+          >>> print(getroutes.vdc_routes_unpacked())
           
   **IOS XE**
   
-          print(getroutes.routes_unpacked())
+          >>> print(getroutes.routes_unpacked())
           
 **Print Routing Table UnFormatted:**
   
