@@ -498,8 +498,4 @@ class Routing:
         return self._vdcroutes
 
 
-getroutes = Routing(host="192.168.156.40", username="admin", password="C!sco!@#")
-print(getroutes.vdc_routes_unpacked())
-
-
 
