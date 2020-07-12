@@ -44,7 +44,7 @@ __________
      
           >>> print(getroutes.vdc_routes_unpacked())
           
-  **IOS XE**
+  **IOS XE & ASA**
   
           >>> print(getroutes.routes_unpacked())
           
@@ -59,7 +59,7 @@ __________
     
          >>> getroutes.vdcroutes
    
-  **IOS XE**
+  **IOS XE & ASA**
     
     Use property routinginstance
     
