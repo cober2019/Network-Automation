@@ -61,8 +61,8 @@ __________
    
   **IOS XE & ASA**
     
-    Use property routinginstance
+    Use property routing_instance
     
-         >>> getroutes.routinginstance
+         >>> getroutes.routing_instance
     
     
