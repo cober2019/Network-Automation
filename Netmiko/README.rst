@@ -4,7 +4,7 @@ Description
 --------------
 
 Using Netmiko, this code gets a device routing table and converts it to dictionary format. The goal is to allow you to run your code against the
-routing as a condition, int turn will improve the reliability of your deployment. 
+routing as a condition. In turn, it will improve the reliability of your deployment. 
 
 Status
 ______
