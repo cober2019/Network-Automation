@@ -30,9 +30,14 @@ Usage
 __________
 
 **Initiate Class:**
+  
+        >>> getroutes = Routing(host="192.168.1.1", username="JoeSmo", password="HelpMe!")
+         
+  **ASA**
+        
+        >>> getroutes = Routing(host="192.168.1.1", username="JoeSmo", password="HelpMe!", enable="HelpMe!")
 
-                      >>> getroutes = Routing(host="192.168.1.1", username="JoeSmo", password="HelpMe!")
-          
+                    
 **Print Routing Table Formatted:**
    
   **Nexus**
