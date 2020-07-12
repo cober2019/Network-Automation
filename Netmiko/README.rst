@@ -44,8 +44,8 @@ How to:
           
 **Print Routing Table UnFormatted:**
   
-  Printing unformatted is more of a use case the this code. As mentioned above you can run conditional statments against the route table.
-  Please view class method routes_unpacket() for IOS XE, and vdc_routes_unpacked() to view how to access the route dictionary.
+  **Printing unformatted is more of a use case the this code. As mentioned above you can run conditional statments against the route table.
+  Please view class method routes_unpacket() for IOS XE, and vdc_routes_unpacked() to view how to access the route dictionary.**
   
   **Nexus**
     
