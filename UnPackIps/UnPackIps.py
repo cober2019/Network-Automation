@@ -14,7 +14,7 @@ class IpRanges:
 
         self._final_list = []
 
-    def get_ips(self, user_input):
+    def get_ips(self, user_input: str) -> None:
 
         """Take in the user input and split twice using \"|\" and \",\""as seperators. Create object from IpParse
         class to unpack IPs. Use inner funtions to check for overlapping subnets and syntax validation"""
@@ -35,7 +35,7 @@ class IpRanges:
             else:
                 pass
 
-        def syntax_check(subnet_string):
+        def syntax_check(subnet_string: str):
 
             """Checks to see if the is an [a-zA-Z] char in the string"""
             ...
@@ -70,11 +70,11 @@ class IpRanges:
         check_subnet_overlapp()
 
     @property
-    def final_list(self):
+    def final_list(self) -> list:
         return self._final_list
 
 
-def find_range(i):
+def find_range(i: str) -> tuple:
 
     """Check for start and end range using regex ex. 10-20, 50-60
         This method is called in the _assemble_ips method. Return for range() interation"""
@@ -111,7 +111,7 @@ class IpParse:
     """All operation for parsing IP string/User Input
     Methods - _init_, find_range, indivisual_ips, whole_ips, assemble_ips"""
 
-    def __init__(self, ip_address=None, ip_set=None, subnet_ranges=None):
+    def __init__(self, ip_address: str = None, ip_set: list = None, subnet_ranges: list = None):
 
         """Initiate instance attributes"""
 
@@ -246,6 +246,11 @@ class IpParse:
                 build_ips(ip_address, int(ip_range[0]), int(ip_range[1]))
 
     @property
-    def ip_list(self):
+    def ip_list(self) -> list:
         return self._ip_list
 
+
+string = "10.1.1.20,25,60-65|192.168.1.1-10|172.16.10.10-40|192.168.15.0/24"
+call_class = IpRanges()
+send_string = call_class.get_ips(string)
+print(call_class.final_list)
