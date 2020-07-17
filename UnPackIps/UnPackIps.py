@@ -249,8 +249,3 @@ class IpParse:
     def ip_list(self) -> list:
         return self._ip_list
 
-
-string = "10.1.1.20,25,60-65|192.168.1.1-10|172.16.10.10-40|192.168.15.0/24"
-call_class = IpRanges()
-send_string = call_class.get_ips(string)
-print(call_class.final_list)
