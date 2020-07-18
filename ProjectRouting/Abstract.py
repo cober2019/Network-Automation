@@ -69,7 +69,11 @@ class Routing(ABC):
 
 
 class Database(ABC):
-    """This class's purpose is informational"""
+    """This class's purpose is informational
+    
+    Required database columns. Fill with None if not applicable
+    
+    vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag"""
 
     @abstractmethod
     def create_database_table_nexus(self):
