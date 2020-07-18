@@ -3,12 +3,14 @@ Project Routing
 **Description**
 --------------
 
-  Project Routing is an open-source project which goal is to collect and store routing tabled by vendor and vendor table types. The tables is collected and store in memory
-  in dictionary format. They are aslo stored to a local dtabase in a local folder. 
+  Project Routing is an open-source project which goal is to collect and store routing tabled by vendor and vendor table types. The tables are stored in two different ways.
+  
+  + Memorey, dictionary format
+  + SqlLite3
 
 **Contributions:**
 
-  For contributions to the project please use the blueprint from Abstract.py file. Following the abstract methods create you own vendor specific code to collect the routing     table. 
+  For contributions to the project please use the blueprint from Abstract.py file. Following the abstract methods will allow you to create you own vendor specific code to collect the routing     table. 
 
 Status
 ______
