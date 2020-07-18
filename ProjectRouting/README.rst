@@ -27,9 +27,9 @@ ___________
 **Usages**
 ___________
 
-**Database Tool:** 
+**Database Tool** 
 
-View routing table from a local sqlite database. Username/Password entry is here or just skip credential input if your've previosly populated the  table. You can query the routing table useing the following permameters
+View routing table from a local sqlite database. Credential entry is here or just skip credential input if your've previosly populated the  table. You can query the routing table useing the following permameters
 
                     + Protocol
                     + Prefix
@@ -38,7 +38,7 @@ View routing table from a local sqlite database. Username/Password entry is here
                     + Outgoing Interface
                     + Tag
 
-**Usage w/out DB Tool:** 
+**Usage w/out DB Tool** 
 
 View data in a dictionary format, or formatted output from a dictionary. SQLlite databse is still created if class is initiated. You also can use this for conditional checks.
 
