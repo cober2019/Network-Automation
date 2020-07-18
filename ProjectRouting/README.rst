@@ -1,23 +1,19 @@
-Routing Tables
+Project Routing
 ==============
-Description
+**Description**
 --------------
 
-Using Netmiko, this code gets a device routing table and converts it to dictionary format. The goal is to allow you to run your code against the
-routing as a condition. In turn, it will improve the reliability of your deployment. 
+  Project Routing is an open-source project which goal is to collect and store routing tabled by vendor and vendor table types. The tables is collected and store in memory
+  in dictionary format. They are aslo stored to a local dtabase in a local folder. 
+
+**Contributions:**
+
+  For contributions to the project please use the blueprint from Abstract.py file. Following the abstract methods create you own vendor specific code to collect the routing     table. 
 
 Status
 ______
 
 Under Developement
-
-Depedency Modules
-__________
-
-+ netmiko
-+ re
-+ collections
-+ time
 
 Routing Table Compatibility
 ___________
@@ -26,7 +22,7 @@ ___________
 + Cisco IOS XE
 + ASA
 
-**Usage**
+**Usages**
 ___________
 
 **Database Tool:** 
