@@ -10,9 +10,9 @@ Project Routing
 
 **Contributions:**
 
-  For contributions to the project please use the blueprint from Abstract.py file. Following the abstract methods will allow you to create you own vendor specific code to collect the routing     table. 
+  For contributions to the project please use the blueprint from Abstract.py file. Following the abstract methods will allow you to create code for a specific vendor.
 
-Status
+**Status**
 ______
 
 Under Developement
