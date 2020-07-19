@@ -21,7 +21,6 @@ def netmiko_w_enable(host: str = None, username: str = None, password: str = Non
     """Logs into device and returns a connection object to the caller. """
 
     try:
-        enable["enable"]
         credentials = {
             'device_type': 'cisco_asa',
             'host': host,
