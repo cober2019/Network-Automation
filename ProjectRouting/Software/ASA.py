@@ -111,7 +111,7 @@ class Routing_Asa(Abstract.Routing):
             create_netmiko_connection = connect_with.netmiko_w_enable(self.host, self.username, self.password)
         else:
             create_netmiko_connection = connect_with.netmiko_w_enable(self.host, self.username, self.password,
-                                                                        enable["enable"])
+                                                                        enable["enable_pass"])
         self.netmiko_connection = create_netmiko_connection
 
         # Get route table using netmiko instance attribute.
