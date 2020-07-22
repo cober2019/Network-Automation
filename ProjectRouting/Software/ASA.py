@@ -33,7 +33,7 @@ class Routing_Asa(Abstract.Routing):
                        "/12": "255.240.0.0", "/11": "255.224.0.0", "/10": "255.192.0.0", "/9": "255.128.0.0",
                        "/8": "255.0.0.0" , "/0": "0.0.0.0", "/31": "255.255.255.254", "/32": "255.255.255.255"}
 
-    def __init__(self, host=None, username=None, password=None, enable=None, **enale):
+    def __init__(self, host=None, username=None, password=None, **enable):
 
         """Initialize instance attributes. Credentials
         _host
@@ -67,6 +67,14 @@ class Routing_Asa(Abstract.Routing):
 
         """Using Netmiko, this methis logs onto the device and gets the routing table. It then loops through each prefix
         to find the routes and route types."""
+
+        def parse_global_routing_entries():
+            "Not used in implementation"
+            pass
+
+        def parse_routing_entries_with_vrfs():
+            "Not used in implementation"
+            pass
 
         def find_prefix(prefix: str) -> None:
 
@@ -108,10 +116,10 @@ class Routing_Asa(Abstract.Routing):
         # Check to see if self.enable has been assigned. Create connection object, save object to instance attribute
 
         if self.enable is None:
-            create_netmiko_connection = connect_with.netmiko_w_enable(self.host, self.username, self.password)
+            create_netmiko_connection = connect_with.netmiko_w_enable(host= self.host, username= self.username, password= self.password)
         else:
-            create_netmiko_connection = connect_with.netmiko_w_enable(self.host, self.username, self.password,
-                                                                        enable["enable_pass"])
+            create_netmiko_connection = connect_with.netmiko_w_enable(host= self.host, username= self.username, password= self.password,
+                                                                        enable_pass=self.enable)
         self.netmiko_connection = create_netmiko_connection
 
         # Get route table using netmiko instance attribute.
@@ -278,7 +286,10 @@ class Routing_Asa(Abstract.Routing):
             route_details["next-hop"] = "connected"
             outgoing_interfaces()
             find_metric()
-
+    
+    def neighbors(self):
+        pass
+    
     def protocols_and_metrics(self, routing_entry: str) -> None:
 
         """Gets route type, Parent protocol/Child type. Ex. OSPF, or OSPF E2. """

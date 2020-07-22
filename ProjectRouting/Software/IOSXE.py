@@ -2,8 +2,11 @@ from netmiko import ConnectHandler, ssh_exception
 import re
 import collections
 import Database.DatabaseOps as databaseops
+import Database.DB_queries as db_queries
 import Abstract
 import Software.DeviceLogin as connect_with
+from Software import Neighbors
+import sqlite3
 
 
 def get_vrfs(netmiko_connection: object) -> str:
@@ -50,6 +53,9 @@ class Routing_Ios(Abstract.Routing):
     route_protocols = ("L", "C", "S", "R", "M", "B", "D", "D EX", "O", "O IA", "O N1", "O N2", "O E1", "O E2", "i",
                        "i su", "i L1", "i l2", "*", "U", "o", "P", "H", "l", "a", "+", "%", "p", "S*")
 
+    Routing_db = sqlite3.connect("Routing")
+    cursor = Routing_db.cursor()
+
     def __init__(self, host=None, username=None, password=None, **enable):
 
         """Initialize instance attributes. Credentials
@@ -68,7 +74,9 @@ class Routing_Ios(Abstract.Routing):
         self._password = password
         self.netmiko_connection = None
         self.routes = collections.defaultdict(list)
+        self.cdp_lldp_neighbors = {}
         self._routing = {}
+        self.cdp_lldp_neighbors = {}
         self.prefix = None
         self.protocol = None
 
@@ -165,16 +173,18 @@ class Routing_Ios(Abstract.Routing):
         # Check to see if self.enable has been assigned. Create connection object, save object to instance attribute
 
         if self.enable is None:
-            create_netmiko_connection = connect_with.netmiko(self.host, self.username, self.password)
+            create_netmiko_connection = connect_with.netmiko(host= self.host, username= self.username, password= self.password)
         else:
-            create_netmiko_connection = connect_with.netmiko_and_enable(self.host, self.username, self.password,
-                                                                        enable["enable_pass"])
+            create_netmiko_connection = connect_with.netmiko_w_enable(host= self.host, username= self.username, password= self.password,
+                                                                        enable_pass=self.enable)
 
         self.netmiko_connection = create_netmiko_connection
+        
         get_routings = get_vrfs(self.netmiko_connection)
 
         parse_routing_entries_with_vrfs(get_routings)
         parse_global_routing_entries()
+        self.neighbors()
 
     def slash_ten_and_up(self, routing_entry: str) -> None:
 
@@ -370,6 +380,119 @@ class Routing_Ios(Abstract.Routing):
         except IndexError:
             pass
 
+    def neighbors(self) -> dict:
+        """Get full interface name from the routing database, convert to cdp interface types, write to dictionary
+        full interface type as key, cdp interface type as value"""
+
+        formatted_interfaces = {}
+        cdp_lldp_neighbors = {}
+        db_connect = db_queries.Routing_Datbases()
+        interfaces = db_connect.get_routing_interfaces(table="Routing_IOS_XE")
+
+        def db_outgoing_ints():
+
+            if len(interfaces) == 0:
+                pass
+            else:
+                for k in interfaces.keys():
+                    if len(k[0]) < 2 or "None" in k[0]:
+                        pass
+                    else:
+                        interface_type = k[0][0:2]
+                        if re.findall(r'(?<=[a-zA-Z])[0-9]', k[0]):
+
+                            interface_number = re.findall(r'(?<=[a-zA-Z])[0-9]', k[0])
+
+                            try:
+                                formatted_interfaces[k[0]] = interface_type + interface_number[0]
+                            except (IndexError, TypeError):
+                                pass
+
+                        if re.findall(r'(?<=[a-zA-Z])[0-9].*[0-9]', k[0]):
+
+                            interface_number = re.findall(r'(?<=[a-zA-Z])[0-9].*[0-9]', k[0])
+
+                            try:
+                                formatted_interfaces[k[0]] = interface_type + interface_number[0]
+                            except (IndexError, TypeError):
+                                pass
+
+
+        def parse_cdp():
+
+            interface = None
+            device_id = None
+            cdp_neigh = Neighbors.cdp_neighbors(self.netmiko_connection)
+
+            line = re.findall(r'.*(?=\n)', cdp_neigh)
+
+            for _ in line:
+                if re.findall(r'(?<=\s)[a-zA-Z].*/[0-9]$', _):
+                    find_interface = re.findall(r'(?<=\s)[a-zA-Z].*/[0-9]\s\s', _)
+                    interface = re.split(r'\s', find_interface[0])
+                    split_string = re.split(r'\s', _)
+                    if re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0]):
+                        device_id = re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0])
+                    else:
+                        device_id = re.split(r'\s', _)
+                elif re.findall(r'(?<=\s)[a-zA-Z].*/[0-9][0-9]$', _):
+                    find_interface = re.findall(r'(?<=\s)[a-zA-Z].*/[0-9][0-9]\s\s', _)
+                    interface = re.split(r'\s', find_interface[0])
+                    split_string = re.split(r'\s', _)
+                    if re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0]):
+                        device_id = re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0])
+                    else:
+                        device_id = re.split(r'\s', _)
+
+                try:
+                    for k, v in formatted_interfaces.items():
+                        if v == interface[0]:
+                            self.cdp_lldp_neighbors[k] = device_id[0]
+                        else:
+                            pass
+                except TypeError:
+                    pass
+
+        def parse_lldp():
+
+            interface = None
+            device_id = None
+            lldp_neigh = Neighbors.lldp_neighbors(self.netmiko_connection)
+
+            line = re.findall(r'.*(?=\n)', lldp_neigh)
+            for _ in line:
+                if re.findall(r'(?<=\s)[a-zA-Z].*/[0-9]\s\s', _):
+                    find_interface = re.findall(r'(?<=\s)[a-zA-Z].*/[0-9]\s\s', _)
+                    interface = re.split(r'\s', find_interface[0])
+                    split_string = re.split(r'\s', _)
+                    if re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0]):
+                        device_id = re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0])
+                    else:
+                        device_id = re.split(r'\s', _)
+                elif re.findall(r'(?<=\s)[a-zA-Z].*/[0-9][0-9]\s\s', _):
+                    find_interface = re.findall(r'(?<=\s)[a-zA-Z].*/[0-9][0-9]\s\s', _)
+                    interface = re.split(r'\s', find_interface[0])
+                    split_string = re.split(r'\s', _)
+                    if re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0]):
+                        device_id = re.findall(r'^.*(?=\.[a-zA-Z].*\.)', split_string[0])
+                    else:
+                        device_id = re.split(r'\s', _)
+
+                try:
+                    for k, v in formatted_interfaces.items():
+                        if v == interface[0]:
+                            self.cdp_lldp_neighbors[k] = device_id[0]
+                        else:
+                            pass
+                except TypeError:
+                    pass
+
+        db_outgoing_ints()
+        parse_cdp()
+        parse_lldp()
+        
+        return self.cdp_lldp_neighbors
+
     def routes_unpacked(self):
         """Print routes formatted"""
 
@@ -416,22 +539,34 @@ class Routing_Ios(Abstract.Routing):
 
                 if len(routes_attributes) == 5:
 
+                    ldp_neigh = [v for k, v in self.cdp_lldp_neighbors.items() if k == routes_attributes[3]]
+
                     try:
-                        db_write.db_update_ios_xe(vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                          routes_attributes[2], routes_attributes[3], routes_attributes[4], tag=None)
-                    except (IndexError, TypeError) as error:
-                        print(error)
+                        if ldp_neigh:
+                            db_write.db_update_ios_xe(vrf, prefix, routes_attributes[0], routes_attributes[1],
+                                              routes_attributes[2], routes_attributes[3], routes_attributes[4],
+                                                      tag=None, ldp_neigh=ldp_neigh[0])
+                        else:
+                            ldp_neigh = [v for k, v in self.cdp_lldp_neighbors.items() if k == routes_attributes[3]]
+                            db_write.db_update_ios_xe(vrf, prefix, routes_attributes[0], routes_attributes[1],
+                                                      routes_attributes[2], routes_attributes[3], routes_attributes[4],
+                                                      tag=None, ldp_neigh="Unknown")
+                    except (IndexError, TypeError):
                         pass
 
+
                 if len(routes_attributes) == 8:
+
+                    ldp_neigh = [v for k, v in self.cdp_lldp_neighbors.items() if k == routes_attributes[3] or k == routes_attributes[6]]
 
                     try:
                         next_hops = routes_attributes[2] + ", " + routes_attributes[5]
                         route_metrics = routes_attributes[4] + ", " + routes_attributes[7]
                         interfaces = routes_attributes[3] + ", " + routes_attributes[6]
+                        ldp_neigh = [v for k, v in self.cdp_lldp_neighbors.items() if k == routes_attributes[3] or k == routes_attributes[6]]
                         db_write.db_update_ios_xe(vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                 next_hops, interfaces, route_metrics, routes_attributes[2])
-                    except (IndexError, TypeError, NameError) as error:
+                                                 next_hops, interfaces, route_metrics, routes_attributes[2], ldp_neigh=", ".join(ldp_neigh))
+                    except (IndexError, TypeError, NameError) :
                         pass
 
                 if len(routes_attributes) == 11:
@@ -441,9 +576,11 @@ class Routing_Ios(Abstract.Routing):
                         route_metrics = routes_attributes[4] + ", " + routes_attributes[7] + ", " + routes_attributes[10]
                         interfaces = routes_attributes[3] + ", " + routes_attributes[6] + ", " + routes_attributes[9]
                         db_write.db_update_ios_xe(vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                 next_hops, interfaces, route_metrics, routes_attributes[2])
-                    except (IndexError, TypeError, NameError) as error:
+                                                 next_hops, interfaces, route_metrics, routes_attributes[2], ldp_neigh="Unknown")
+                    except (IndexError, TypeError, NameError):
                         pass
+                    
+
 
     @property
     def host(self):

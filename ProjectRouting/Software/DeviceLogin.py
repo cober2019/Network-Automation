@@ -35,19 +35,7 @@ def netmiko_w_enable(host: str = None, username: str = None, password: str = Non
             raise ConnectionError("Could not connect to device {}".format(host))
 
         return device_connect
+    
     except KeyError:
-        credentials = {
-            'device_type': 'cisco_asa',
-            'host': host,
-            'username': username,
-            'password': password,
-            'secret': password,
-            'session_log': 'my_file.out'}
-
-        try:
-            device_connect = ConnectHandler(**credentials)
-        except ssh_exception.AuthenticationException:
-            raise ConnectionError("Could not connect to device {}".format(host))
-
-        return device_connect
+        pass
 
