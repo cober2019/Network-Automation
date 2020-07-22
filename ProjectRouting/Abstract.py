@@ -6,24 +6,52 @@ class Routing(ABC):
 
     @abstractmethod
     def initialize_class_methods(self):
+        def find_prefix():
+            pass
+        def parse_global_routing_entries():
+            pass
+        def parse_routing_entries_with_vrfs(vrfs):
+            pass
         pass
 
     @abstractmethod
     def slash_ten_and_up(self):
+        def outgoing_interfaces():
+            pass
+        def find_metric():
+            pass
         pass
 
     @abstractmethod
     def slash_nine_and_below(self):
+        def outgoing_interfaces():
+            pass
+        def find_metric():
+            pass
         pass
 
     @abstractmethod
     def no_mask(self):
+        def outgoing_interfaces():
+            pass
+        def find_metric():
+            pass
         pass
 
     @abstractmethod
     def protocols_and_metrics(self):
         pass
-
+    
+    @abstractmethod
+    def neighbors(self):
+        def db_outgoing_ints():
+            pass
+        def parse_cdp():
+            pass
+        def parse_lldp():
+            pass
+        pass
+    
     @abstractmethod
     def routes_unpacked(self):
         pass
@@ -69,7 +97,11 @@ class Routing(ABC):
 
 
 class Database(ABC):
-    """This class's purpose is informational"""
+    """This class's purpose is informational
+
+    Database Columns
+
+    vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag"""
 
     @abstractmethod
     def create_database_table_nexus(self):
