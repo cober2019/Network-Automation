@@ -94,8 +94,8 @@ def query_db_ios(**attributes: Union[str, List[int]]) -> None:
 
             if attributes["query"] == row[attributes["index"]]:
                 print("VRF: {}\nPrefix: {}\nProtocol: {}\nAdmin-Distance: {}\nHop(s): {}\nOut-Interface(s): {}\n"
-                      "Metric(s): {}\nTag: {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                        row[7]))
+                      "Metric(s): {}\nTag: {}\nCDP neighbor(s): {}".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                        row[7], row[8]))
 
                 matched_query = matched_query + 1
 
@@ -112,8 +112,8 @@ def query_db_ios(**attributes: Union[str, List[int]]) -> None:
                        attributes["query"] in re.findall(r'(?<=,)' + attributes["query"] + '', row[attributes["index"]]):
 
                        print("VRF: {}\nPrefix: {}\nProtocol: {}\nAdmin-Distance: {}\nHop(s): {}\nOut-Interface(s): {}\n"
-                            "Metric(s): {}\nTag: {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                              row[7]))
+                            "Metric(s): {}\nTag: {}\nCDP neighbor(s): {}".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                              row[7], row[8]))
                        matched_query = matched_query + 1
 
                     if attributes["query"] in re.findall(r'^' + attributes["query"] + '(?=,)', row[attributes["index"]]) \
@@ -121,8 +121,8 @@ def query_db_ios(**attributes: Union[str, List[int]]) -> None:
                        attributes["query"] in re.findall(r'(?<=,)' + attributes["query"] + '', row[attributes["index"]]):
 
                        print("VRF: {}\nPrefix: {}\nProtocol: {}\nAdmin-Distance: {}\nHop(s): {}\nOut-Interface(s): {}\n"
-                            "Metric(s): {}\nTag: {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                              row[7]))
+                            "Metric(s): {}\nTag: {}\nCDP neighbor(s): {}".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                              row[7], row[8]))
                        matched_query = matched_query + 1
                 else:
                     pass
@@ -146,8 +146,8 @@ def query_db_nexus(**attributes: Union[str, List[int]]) -> None:
 
             if attributes["vrf"] == row[1] and attributes["query"] == row[attributes["index"]]:
                 print("VDC: {}\nVRF: {}\nPrefix: {}\nProtocol: {}\nAdmin-Distance: {}\nHop(s): {}\nOut-Interface(s): {}\n"
-                    "Metric(s): {}\nTag: {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                      row[7], row[8]))
+                    "Metric(s): {}\nTag: {}\nCDP neighbor(s): {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                      row[7], row[8], row[9]))
 
                 matched_query = matched_query + 1
 
@@ -164,8 +164,8 @@ def query_db_nexus(**attributes: Union[str, List[int]]) -> None:
                        attributes["query"] in re.findall(r'(?<=,)' + attributes["query"] + '', row[attributes["index"]]):
 
                        print("VRF: {}\nPrefix: {}\nProtocol: {}\nAdmin-Distance: {}\nHop(s): {}\nOut-Interface(s): {}\n"
-                            "Metric(s): {}\nTag: {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                              row[7]))
+                            "Metric(s): {}\nTag: {}\nCDP neighbor(s): {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                              row[7], row[8]))
 
                        matched_query = matched_query + 1
 
@@ -174,8 +174,8 @@ def query_db_nexus(**attributes: Union[str, List[int]]) -> None:
                        attributes["query"] in re.findall(r'(?<=,)' + attributes["query"] + '', row[attributes["index"]]):
 
                        print("VRF: {}\nPrefix: {}\nProtocol: {}\nAdmin-Distance: {}\nHop(s): {}\nOut-Interface(s): {}\n"
-                            "Metric(s): {}\nTag: {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                              row[7]))
+                            "Metric(s): {}\nTag: {}\nCDP neighbor(s): {}\n".format(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                              row[7], row[8]))
 
                        matched_query = matched_query + 1
                 else:
@@ -541,7 +541,7 @@ class Routing_Datbases():
                 print("+ " + k[0])
             print("\n")
 
-    def get_routing_interfaces(self, table: str = None) -> None:
+    def get_routing_interfaces(self, table: str = None) -> dict:
         """Gets routing interfaces from table"""
 
         interfaces = {}
@@ -553,6 +553,13 @@ class Routing_Datbases():
                     interfaces[i[0]] = None
             else:
                 interfaces[row] = None
+
+        return interfaces
+
+    def print_routing_interfaces(self, table: str = None) -> None:
+        """Gets routing interfaces from table, prints"""
+
+        interfaces = self.get_routing_interfaces(table=table)
 
         print("\nRouting Interfaces ---------\n")
         if len(interfaces) == 0:
@@ -615,3 +622,4 @@ class Routing_Datbases():
                 else:
                     print("+ " + k[0])
             print("\n")
+

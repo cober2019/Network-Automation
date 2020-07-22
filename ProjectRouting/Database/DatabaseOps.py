@@ -68,7 +68,7 @@ class RoutingDatabase(Abstract.Database):
 
         """Create routing TABLE in routing database"""
 
-        cursor.execute('''CREATE TABLE Routing_Nexus (vdc, vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag)''')
+        cursor.execute('''CREATE TABLE Routing_Nexus (vdc, vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag, ldp)''')
         mydb.commit()
 
     @db_table_cleanup
@@ -76,7 +76,7 @@ class RoutingDatabase(Abstract.Database):
 
         """Create routing TABLE in routing database"""
 
-        cursor.execute('''CREATE TABLE Routing_IOS_XE (vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag)''')
+        cursor.execute('''CREATE TABLE Routing_IOS_XE (vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag, ldp)''')
         mydb.commit()
 
     @db_table_cleanup
@@ -87,18 +87,18 @@ class RoutingDatabase(Abstract.Database):
         cursor.execute('''CREATE TABLE Routing_ASA (context, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag)''')
         mydb.commit()
 
-    def db_update_nexus(self, vdc: str, vrf: str,  prefix: str, protocol: str, admin_distance: str, nexthops: str, interfaces: str, metric: str, tag: str) -> None:
+    def db_update_nexus(self, vdc: str, vrf: str,  prefix: str, protocol: str, admin_distance: str, nexthops: str, interfaces: str, metric: str, tag: str, ldp_neigh: str) -> None:
 
-        cursor.execute("INSERT INTO Routing_Nexus VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
-                  (vdc, vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag))
+        cursor.execute("INSERT INTO Routing_Nexus VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
+                  (vdc, vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag, ldp_neigh))
         mydb.commit()
 
-    def db_update_ios_xe(self, vrf: str, prefix: str, protocol: str, admin_distance: str, nexthops: str, interfaces: str, metric: str, tag: str) -> None:
+    def db_update_ios_xe(self, vrf: str, prefix: str, protocol: str, admin_distance: str, nexthops: str, interfaces: str, metric: str, tag: str, ldp_neigh: str) -> None:
 
         tag =None
 
-        cursor.execute("INSERT INTO Routing_IOS_XE VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
-                  (vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag))
+        cursor.execute("INSERT INTO Routing_IOS_XE VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
+                  (vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag, ldp_neigh))
         mydb.commit()
 
     def db_update_asa(self, vrf: str,  prefix: str, protocol: str, admin_distance: str, nexthops: str, interfaces: str, metric: str, tag: str) -> None:
@@ -106,6 +106,3 @@ class RoutingDatabase(Abstract.Database):
         cursor.execute("INSERT INTO Routing_ASA VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" %
                   (vrf, prefix, protocol, admin_distance, nexthops, interfaces, metric, tag))
         mydb.commit()
-
-
-
