@@ -38,6 +38,19 @@ View routing table from a local sqlite database. Credential entry is here or jus
                     + Outgoing Interface
                     + Tag
 
+**Example Query**
+
+                    >>> VRF: global
+                        Prefix: 10.10.10.0/24
+                        Protocol: O
+                        Admin-Distance: 110
+                        Hop(s): 192.168.150.25, 192.168.150.21
+                        Out-Interface(s): GigabitEthernet0/0/5, GigabitEthernet0/0/4
+                        Metric(s): 41, 41
+                        Tag: None
+                        CDP neighbor(s): Iceland-Core01, Iceland-Core02
+                        Total Routes: 1
+
 **Usage w/out DB Tool** 
 
 View data in a dictionary format, or formatted output from a dictionary. SQLlite databse is still created if class is initiated. You also can use this for conditional checks.
