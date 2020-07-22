@@ -38,7 +38,7 @@ View routing table from a local sqlite database. Credential entry is here or jus
                     + Outgoing Interface
                     + Tag
 
-**Example Query**
+**Example Query (Prefix Lookup: )**
 
                     >>> VRF: global
                         Prefix: 10.10.10.0/24
