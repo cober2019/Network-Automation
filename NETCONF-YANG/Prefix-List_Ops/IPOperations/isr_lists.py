@@ -1,14 +1,14 @@
 import ipaddress
-from netmiko import ConnectHandler, ssh_exception
+from typing import Any, Dict, DefaultDict
 from socket import gaierror
 from ncclient import manager
+from Software import IOSXE
 import xmltodict
 import collections
 import re
 
 
-class IpOps:
-
+class IpOpsIsr:
     """IpOps class is ised for ip prefix-list operations:
 
     1. View prefix-list
@@ -19,20 +19,20 @@ class IpOps:
 
     def __init__(self, host=None, username=None, password=None):
 
-        self.prefix_list = collections.defaultdict(list)
-        self.overlapp_prefixes = collections.defaultdict(list)
-        self.prefix_length = collections.defaultdict(list)
-        self.routing_prefixes = {}
         self.username = username
         self.password = password
         self.host = host
+
+        self._prefix_list = collections.defaultdict(list)
+        self._overlapping_prefixes = collections.defaultdict(list)
+        self.prefix_check = collections.defaultdict(list)
         self.prefixes = []
-        self._device_connect()
-        self.get_routing_table()
-        self._ip_prefix_list()
+        self.routing_table = None
+        self.session = None
+        self.device_connect()
+        self.ip_prefix_list()
 
-
-    def _device_connect(self):
+    def device_connect(self) -> object:
 
         """Device login using NCC Client. One login is complete the program will _collect_data(self)"""
 
@@ -51,20 +51,10 @@ class IpOps:
         else:
             return self.session
 
-    def _ip_prefix_list(self):
-
-        """Get all prefix-list entries for a device.
-
-        Here's how to access the data:
-
-        for k, v in get.items():
-            print("\n")
-            print(k)
-            for v in v:
-                print(v["seq"], v["action"], v["prefix"])"""
+    def ip_prefix_list(self) -> None:
 
         init_dict_breakdown = {}
-        filter = """<filter xmlns:xc="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+        xml_filter = """<filter xmlns:xc="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
                         <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
                         <ip>
                         <prefix-list/>
@@ -72,7 +62,7 @@ class IpOps:
                         </native>
                         </filter>"""
 
-        intf_info = self.session.get(filter)
+        intf_info = self.session.get(xml_filter)
         intf_dict = xmltodict.parse(intf_info.xml)["rpc-reply"]["data"]
         prefix_list = intf_dict["native"]["ip"]["prefix-list"]["prefixes"]
 
@@ -83,25 +73,24 @@ class IpOps:
             for k, v in prefix_list.items():
                 init_dict_breakdown[prefix_list["name"]] = prefix_list["seq"]
 
-        for k, v in init_dict_breakdown.items():
-            if not isinstance(v, list):
-                if "deny" in v:
-                    self._prefix_parse(k=k, v=v, action="deny")
-                elif "permit" in v:
-                    self._prefix_parse(k=k, v=v, action="permit")
+        for k, data in init_dict_breakdown.items():
+            if not isinstance(data, list):
+                if "deny" in data:
+                    self.prefix_parse(k=k, v=data, action="deny")
+                elif "permit" in data:
+                    self.prefix_parse(k=k, v=data, action="permit")
             else:
-                for v in v:
-                    if "deny" in v:
-                        self._prefix_parse(k=k, v=v, action="deny")
-                    elif "permit" in v:
-                        self._prefix_parse(k=k, v=v, action="permit")
+                for statment in data:
+                    if "deny" in statment:
+                        self.prefix_parse(k=k, v=statment, action="deny")
+                    elif "permit" in statment:
+                        self.prefix_parse(k=k, v=statment, action="permit")
 
-    def _prefix_parse(self, k=None, v=None, action=None):
+    def prefix_parse(self, k: Dict[str, str] = None, v: Dict[str, str] = None, action: Dict[str, str] = None) -> None:
 
         """Parse prefix-list entry and store to dictionary"""
 
-        entry_details = {}
-        entry_details["action"] = action
+        entry_details = {"action": action}
 
         try:
             entry_details["prefix"] = v["ip"]
@@ -129,81 +118,50 @@ class IpOps:
         except (KeyError, TypeError):
             pass
 
-        self.prefix_list[k].append(entry_details)
+        self._prefix_list[k].append(entry_details)
 
-    def view_prefix_list(self):
+    def find_prefix_length(self, length: str = None) -> DefaultDict[Any, list]:
 
-        """View current prefix-list"""
+        """ Finds prefix with a certain length. Takes one argument, length ex. "25". Return dictionationary
+        Use view__prefix_length() method to get formatted output"""
 
-        for k, v in self.prefix_list.items():
-            print("\n")
-            print(k)
-            for v in v:
-                try:
-                    if "length_ge" in v and "length_le" not in v:
-                        print(v["seq"], v["action"], v["prefix"], v["length_ge"])
-                except KeyError:
-                    pass
-
-                try:
-                    if "length_le" in v and "length_ge" not in v:
-                        print(v["seq"], v["action"], v["prefix"], v["length_le"])
-                except KeyError:
-                    pass
-
-                try:
-                    if "length_ge" in v and "length_le" in v:
-                        print(v["seq"], v["action"], v["prefix"], v["length_ge"], v["length_le"])
-                except KeyError:
-                    pass
-                try:
-                    if "length_ge" not in v and "length_le" not in v:
-                        print(v["seq"], v["action"], v["prefix"])
-                except KeyError:
-                    pass
-
-    def find_prefix_length(self, length=None):
-
-        """ Finds prefix with a certain length. Takes one argument, length ex. \"25\". Return dictionationary
-        Use view_prefix_length() method to get formatted output"""
-
+        prefix_length = collections.defaultdict(list)
         tempt_dict = {}
-        for k, v in self.prefix_list.items():
-            if isinstance(v, list):
-                for v in v:
-                    prefix_find = re.findall(r'(?<=/).*$', v["prefix"])
+
+        for k, structure in self._prefix_list.items():
+            if isinstance(structure, list):
+                for entry in structure:
+                    prefix_find = re.findall(r'(?<=/).*$', entry["prefix"])
                     if length in prefix_find:
-                        tempt_dict["seq"] = v["seq"]
-                        tempt_dict["prefix"] = v["prefix"]
-                        self.prefix_length[k].append(tempt_dict)
+                        tempt_dict["seq"] = entry["seq"]
+                        tempt_dict["prefix"] = entry["prefix"]
+                        prefix_length[k].append(tempt_dict)
                         tempt_dict = {}
                     else:
                         pass
-            else:
-                prefix_find = re.findall(r'(?<=/).*$', v["prefix"])
+            elif isinstance(structure, dict):
+                prefix_find = re.findall(r'(?<=/).*$', structure["prefix"])
                 if length in prefix_find:
-                    tempt_dict["seq"] = v["seq"]
-                    tempt_dict["prefix"] = v["prefix"]
-                    self.prefix_length[k].append(tempt_dict)
+                    tempt_dict["seq"] = structure["seq"]
+                    tempt_dict["prefix"] = structure["prefix"]
+                    prefix_length[k].append(tempt_dict)
                     tempt_dict = {}
                 else:
                     pass
 
-        return self.prefix_length
+        return prefix_length
 
-    def duplicate_prefix(self):
-
-        """Find duplicate prefixes in all prefix list"""
+    def duplicate_prefix(self) -> DefaultDict[Any, list]:
 
         prefixes = []
         dup_prefixes = collections.defaultdict(list)
 
-        for k, v in self.prefix_list.items():
-            if isinstance(v, list):
-                for v in v:
-                    prefixes.append(v["prefix"])
-            else:
-                prefixes.append(v["prefix"])
+        for k, structure in self._prefix_list.items():
+            if isinstance(structure, list):
+                for entry in structure:
+                    prefixes.append(entry["prefix"])
+            elif isinstance(structure, dict):
+                prefixes.append(structure["prefix"])
 
         dups = [k for k, v in collections.Counter(prefixes).items() if v > 1]
 
@@ -213,27 +171,26 @@ class IpOps:
 
         return dup_prefixes
 
-    def find_prefix(self, prefix=None):
-
-        """Find a prefix in all list. Takes prefix argument"""
+    def find_prefix(self, prefix=None) -> DefaultDict[Any, list]:
+        """Find specific prefix in prefix-list"""
 
         prefixes = collections.defaultdict(list)
         tempt_dict = {}
 
-        for k, v in self.prefix_list.items():
-            if isinstance(v, list):
-                for v in v:
-                    if prefix == v["prefix"]:
-                        tempt_dict["seq"] = v["seq"]
-                        tempt_dict["prefix"] = v["prefix"]
+        for k, structure in self._prefix_list.items():
+            if isinstance(structure, list):
+                for entry in structure:
+                    if prefix == entry["prefix"]:
+                        tempt_dict["seq"] = entry["seq"]
+                        tempt_dict["prefix"] = entry["prefix"]
                         prefixes[k].append(tempt_dict)
                         tempt_dict = {}
                     else:
                         pass
-            else:
-                if prefix == v["prefix"]:
-                    tempt_dict["seq"] = v["seq"]
-                    tempt_dict["prefix"] = v["prefix"]
+            elif isinstance(structure, dict):
+                if prefix == structure["prefix"]:
+                    tempt_dict["seq"] = structure["seq"]
+                    tempt_dict["prefix"] = structure["prefix"]
                     prefixes[k].append(tempt_dict)
                     tempt_dict = {}
                 else:
@@ -241,37 +198,37 @@ class IpOps:
 
         return prefixes
 
-    def find_overlapping_prefixes(self, **kwargs):
+    def find_overlapping_prefixes(self) -> None:
 
         """This method finds overlapping prefixes. The loop logic is as follows:
 
-        1. Unpack k, v. K = prefix-list name. V = prefix-list configuration
-        2. Unpack v in v. Each v is a part of the prefix entries configuration
-        3. Check if GE or LE or both are present in v (prefix-list configuration)
-        4. Get network address
-        5. If length (ge or le) and create range
-        6. Add 1 to ge or subtract 1 from le for each CIDR in range. Concatenate network address with GE/LE and
-           everyone one in between, below, or above
-        7. For each prefix in list, loops through all prefixes in list.
-        8. Check to see if they overlap
-        9. Store to list/dictionary
+                1. Unpack k, v. K = prefix-list name. V = prefix-list configuration
+                2. Unpack v in v. Each v is a part of the prefix entries configuration
+                3. Check if GE or LE or both are present in v (prefix-list configuration)
+                4. Get network address
+                5. If length (ge or le) and create range
+                6. Add 1 to ge or subtract 1 from le for each CIDR in range. Concatenate network address with GE/LE and
+                   everyone one in between, below, or above
+                7. For each prefix in list, loops through all prefixes in list.
+                8. Check to see if they overlap
+                9. Store to list/dictionary
 
-        Returns Ordered dictionary. For formatted output use view_overlapping_prefixes()"""
+                Returns funtion. For formatted output use view_overlapping_prefixes()"""
 
         remove_dups = list(dict.fromkeys(self.prefixes))
         prefix_list = []
 
-        for k, v in self.prefix_list.items():
-            for v in v:
+        for k, v in self._prefix_list.items():
+            for statement in v:
                 list_networks = []
                 try:
                     if "length_ge" in v and "length_le" not in v:
-                        network_address = str(ipaddress.IPv4Network(v["prefix"]).network_address)
+                        network_address = str(ipaddress.IPv4Network(statement["prefix"]).network_address)
 
-                        int_prefix = int(v["length_ge"])
+                        int_prefix = int(statement["length_ge"])
                         prefix_range = range(int_prefix, 32 + 1)
 
-                        for i in prefix_range:
+                        for _ in prefix_range:
                             list_networks.append(network_address + "/" + str(int_prefix))
                             int_prefix = int_prefix + 1
 
@@ -290,23 +247,24 @@ class IpOps:
                                 pass
                             else:
                                 prefix_dict["prefix"] = network
-                                prefix_dict["overlapping-seq"] = v["seq"]
-                                prefix_dict["ge"] = v["length_ge"]
+                                prefix_dict["overlapping-seq"] = statement["seq"]
+                                prefix_dict["ge"] = statement["length_ge"]
                                 prefix_dict["le"] = "32"
                                 prefix_dict["overlapping-prefixes"] = prefix_list
-                                self.overlapp_prefixes[k].append(prefix_dict)
+                                self._overlapping_prefixes[k].append(prefix_dict)
                                 prefix_list = []
+
                 except KeyError:
                     pass
 
                 try:
                     if "length_le" in v and "length_ge" not in v:
-                        network_address = str(ipaddress.IPv4Network(v["prefix"]).network_address)
+                        network_address = str(ipaddress.IPv4Network(statement["prefix"]).network_address)
 
-                        int_prefix = int(v["length_le"])
+                        int_prefix = int(statement["length_le"])
                         prefix_range = range(0, int_prefix)
 
-                        for i in prefix_range:
+                        for _ in prefix_range:
                             list_networks.append(network_address + "/" + str(int_prefix))
                             int_prefix = int_prefix - 1
 
@@ -327,23 +285,23 @@ class IpOps:
                                 pass
                             else:
                                 prefix_dict["prefix"] = network
-                                prefix_dict["overlapping-seq"] = v["seq"]
-                                prefix_dict["le"] = v["length_le"]
+                                prefix_dict["overlapping-seq"] = statement["seq"]
+                                prefix_dict["le"] = statement["length_le"]
                                 prefix_dict["overlapping-prefixes"] = prefix_list
-                                self.overlapp_prefixes[k].append(prefix_dict)
+                                self._overlapping_prefixes[k].append(prefix_dict)
                                 prefix_list = []
                 except KeyError:
                     pass
 
                 try:
                     if "length_ge" in v and "length_le" in v:
-                        network_address = str(ipaddress.IPv4Network(v["prefix"]).network_address)
+                        network_address = str(ipaddress.IPv4Network(statement["prefix"]).network_address)
 
-                        start_prefix = int(v["length_ge"])
-                        end_prefix = int(v["length_le"])
+                        start_prefix = int(statement["length_ge"])
+                        end_prefix = int(statement["length_le"])
                         prefix_range = range(start_prefix, end_prefix + 1)
 
-                        for i in prefix_range:
+                        for _ in prefix_range:
                             list_networks.append(network_address + "/" + str(start_prefix))
                             start_prefix = start_prefix + 1
 
@@ -364,18 +322,18 @@ class IpOps:
                                 pass
                             else:
                                 prefix_dict["prefix"] = network
-                                prefix_dict["overlapping-seq"] = v["seq"]
-                                prefix_dict["ge"] = v["length_ge"]
-                                prefix_dict["le"] = v["length_le"]
+                                prefix_dict["overlapping-seq"] = statement["seq"]
+                                prefix_dict["ge"] = statement["length_ge"]
+                                prefix_dict["le"] = statement["length_le"]
                                 prefix_dict["overlapping-prefixes"] = prefix_list
-                                self.overlapp_prefixes[k].append(prefix_dict)
+                                self._overlapping_prefixes[k].append(prefix_dict)
                                 prefix_list = []
                 except KeyError:
                     pass
 
                 try:
                     if "length_ge" not in v and "length_le" not in v:
-                        list_networks.append(v["prefix"])
+                        list_networks.append(statement["prefix"])
 
                         for network in remove_dups:
                             prefix_dict = collections.OrderedDict()
@@ -394,36 +352,57 @@ class IpOps:
                                 pass
                             else:
                                 prefix_dict["prefix"] = network
-                                prefix_dict["overlapping-seq"] = v["seq"]
+                                prefix_dict["overlapping-seq"] = statement["seq"]
                                 prefix_dict["overlapping-prefixes"] = prefix_list
-                                self.overlapp_prefixes[k].append(prefix_dict)
+                                self._overlapping_prefixes[k].append(prefix_dict)
                                 prefix_list = []
                 except KeyError:
                     pass
 
-        return self.overlapp_prefixes
+        return self.view_overlapping_prefixes()
 
-    def send_prefix_list(self, **kwargs):
+    def view_overlapping_prefixes(self) -> None:
 
-        """Send prefix statement to device. Based on kwargs passed to method a specific template will be selected. The following
-        conditions need to be met for the configuration to send:
+        """Print overlapping prefixes. For dictionary output use find_overlapping_prefixes()"""
 
-        1. Check to see if self.routing_prefixes is empty. Ask to pass check. If not empty, see if the prefix is in routing,
-           and check to see if external, warn user.
-        1. Sequence must be unique. Raise exception if the check fails
-        2. Prefix must be unique. Rise exception if the check fails
-        3. The new prefix can't overlap with a current prefix (exact prefix and ge/le check)"""
+        for k, v in self._overlapping_prefixes.items():
+            print(k)
+            for prefix in v:
+                print("Prefix: {}".format(prefix["prefix"]))
+                print("Overlapping Sequence: {}".format(prefix["overlapping-seq"]))
+                try:
+                    print("Range: GE: {}".format(prefix["ge"]))
+                except KeyError:
+                    pass
+                try:
+                    print("Range: LE {}".format(prefix["le"]))
+                except KeyError:
+                    pass
+                print("Overlapping Prefixes: {}".format(", ".join(prefix["overlapping-prefixes"])))
+                print("\n")
 
-        external_routes = ("O E1", "O E2", "D EX", "B", "O N1", "O N2", "i L2")
+    def send_prefix_list(self, **kwargs: str) -> Any:
 
-        for k, v in self.prefix_list.items():
-            for v in v:
-                if kwargs["name"] == k and kwargs["seq"] == v["seq"]:
-                    raise ValueError("Sequence Exist")
-                if kwargs["name"] == k and kwargs["prefix"] == v["prefix"]:
-                    raise ValueError("Prefix Exist")
+        """Send prefix statement to device. Based on kwargs passed to method a specific template will be selected.
+        The following conditions need to be met for the configuration to send:
 
-        if not self.routing_prefixes:
+        1. Check to see if self.routing_table is empty. Ask to pass check. If not empty, see if the prefix is in
+        routing, and check to see if external, warn user. 1. Sequence must be unique. Raise exception if the check
+        fails 2. Prefix must be unique. Rise exception if the check fails 3. The new prefix can't overlap with a
+        current prefix (exact prefix and ge/le check) """
+
+        route_protocols = ("L", "C", "S", "R", "M", "B", "D", "D EX", "O", "O IA", "O N1", "O N2", "O E1", "O E2", "i",
+                           "i su", "i L1", "i l2", "*", "U", "o", "P", "H", "l", "a", "+", "%", "p", "S*")
+
+        config_filter = None
+
+        # Get local routing table.
+
+        get_routing_table = IOSXE.RoutingIos(host=self.host, username=self.username, password=self.password)
+        self.routing_table = get_routing_table.routing
+
+        if not self.routing_table:
+
             warning = input("NETMIKO routing table empty! Do you want to bypass routing check?\n").lower()
             if warning == "yes":
                 pass
@@ -431,27 +410,50 @@ class IpOps:
                 raise ValueError("Prefix configuration aborted")
             else:
                 raise ValueError("Invalid Input!")
+
         else:
-            for k, v in self.routing_prefixes.items():
-                if kwargs["prefix"] == k:
-                    if v["protocol"] in external_routes:
-                        warning = input("Prefix is external/not local, Are you sure you want to add (yes/no)?\n").lower()
-                        if warning == "yes":
-                            continue
-                        elif warning == "no":
-                            raise ValueError("Prefix configuration aborted")
+
+            # Check the local routing table to see if the prefix has been originated elsewhere
+
+            for vrf, values_vrf in self.routing_table.items():
+                for prefix, val_prefix in values_vrf.items():
+                    if kwargs["prefix"] == prefix or kwargs["prefix"] in prefix:
+                        for attributes in val_prefix:
+                            for attribute, protocol in attributes.items():
+                                if protocol in route_protocols:
+                                    print(
+                                        "\nDetails\nPrefix: {}\nProtocol: {}\n".format(prefix, attributes["protocol"]))
+                                    warning = input(
+                                        "Prefix is external/not local, Are you sure you want to add (yes/no): ").lower()
+                                    if warning == "yes":
+                                        break
+                                    elif warning == "no":
+                                        raise ValueError("Prefix configuration aborted")
+                                    else:
+                                        raise ValueError("Invalid Input!")
+                                else:
+                                    break
                         else:
-                            raise ValueError("Invalid Input!")
+                            continue
                     else:
-                        pass
-                else:
-                    continue
+                        continue
+
+        # Check for duplicate sequences
+
+        for k, v in self.prefix_check.items():
+            for v in v:
+                if kwargs["name"] == k and kwargs["seq"] == v["seq"]:
+                    raise ValueError("Sequence Exist")
+                if kwargs["name"] == k and kwargs["prefix"] == v["prefix"]:
+                    raise ValueError("Prefix Exist")
+
+        # Create configuration based off method arguments
 
         try:
             if "ge" in kwargs and "le" not in kwargs:
-                self._find_dups_internal(prefix=kwargs["prefix"], ge=kwargs["ge"])
-                filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip><prefix-list><prefixes>
-                            <name>""" + kwargs["name"] + """</name>
+                self.find_dups_internal(prefix=kwargs["prefix"], ge=kwargs["ge"])
+                config_filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
+                            <prefix-list><prefixes><name>""" + kwargs["name"] + """</name> 
                             <seq>
                             <no>""" + kwargs["seq"] + """</no> 
                             <""" + kwargs["action"] + """>
@@ -465,9 +467,9 @@ class IpOps:
 
         try:
             if "le" in kwargs and "ge" not in kwargs:
-                self._find_dups_internal(prefix=kwargs["prefix"], ge=kwargs["le"])
-                filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip><prefix-list><prefixes>
-                            <name>""" + kwargs["name"] + """</name>
+                self.find_dups_internal(prefix=kwargs["prefix"], ge=kwargs["le"])
+                config_filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
+                            <prefix-list><prefixes><name>""" + kwargs["name"] + """</name> 
                             <seq>
                             <no>""" + kwargs["seq"] + """</no> 
                             <""" + kwargs["action"] + """> 
@@ -481,9 +483,9 @@ class IpOps:
 
         try:
             if "le" in kwargs and "ge" in kwargs:
-                self._find_dups_internal(prefix=kwargs["prefix"], ge=kwargs["ge"], le=kwargs["le"])
-                filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip><prefix-list><prefixes>
-                            <name>""" + kwargs["name"] + """</name>
+                self.find_dups_internal(prefix=kwargs["prefix"], ge=kwargs["ge"], le=kwargs["le"])
+                config_filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
+                            <prefix-list><prefixes><name>""" + kwargs["name"] + """</name> 
                             <seq>
                             <no>""" + kwargs["seq"] + """</no>
                             <""" + kwargs["action"] + """>
@@ -493,15 +495,14 @@ class IpOps:
                             </""" + kwargs["action"] + """>
                             </seq>
                             </prefixes></prefix-list></ip></native></config>"""
-        except KeyError as error:
-            print(error)
+        except KeyError:
             pass
 
         try:
             if "le" not in kwargs and "ge" not in kwargs:
-                self._find_dups_internal(prefix=kwargs["prefix"])
-                filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip><prefix-list><prefixes>
-                            <name>""" + kwargs["name"] + """</name>
+                self.find_dups_internal(prefix=kwargs["prefix"])
+                config_filter = """<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
+                            <prefix-list><prefixes><name>""" + kwargs["name"] + """</name> 
                             <seq>
                             <no>""" + kwargs["seq"] + """</no> 
                             <""" + kwargs["action"] + """>
@@ -512,23 +513,18 @@ class IpOps:
         except KeyError:
             pass
 
-        self.session.edit_config(config=filter, target="running")
-        self.compile_new_prefixes()
+        # Send configuration via NETCONF
+
+        self.session.edit_config(config=config_filter, target="running")
+        self._prefix_list.clear()
+        self.ip_prefix_list()
 
         return self.view_prefix_list()
 
-    def _find_dups_internal(self, **kwargs):
-
-        """Finds overlapping prefixes when creating a new prefix statement. An error will be raised if new
-        prefix overlaps with a current sequence in the same list
-
-        The logic is to unpack all prefix ranges between the le, ge, or both. Then compare all prefixes
-        to the newly created list, list_networks"""
+    def find_dups_internal(self, **kwargs: str) -> None:
 
         remove_dups = list(dict.fromkeys(self.prefixes))
         list_networks = []
-
-        list_networks.append(kwargs["prefix"])
 
         if "length_ge" in kwargs and "length_le" not in kwargs:
             network_address = str(ipaddress.IPv4Network(kwargs["prefix"]).network_address)
@@ -536,7 +532,7 @@ class IpOps:
             int_prefix = int(kwargs["ge"])
             prefix_range = range(int_prefix, 32 + 1)
 
-            for i in prefix_range:
+            for _ in prefix_range:
                 list_networks.append(network_address + "/" + str(int_prefix))
                 int_prefix = int_prefix + 1
 
@@ -548,7 +544,7 @@ class IpOps:
             end_prefix = int(kwargs["le"])
             prefix_range = range(start_prefix, end_prefix + 1)
 
-            for i in prefix_range:
+            for _ in prefix_range:
                 list_networks.append(network_address + "/" + str(start_prefix))
                 start_prefix = start_prefix + 1
 
@@ -560,188 +556,42 @@ class IpOps:
                 if ipaddress.IPv4Network(network).overlaps(ipaddress.IPv4Network(i)):
                     raise ValueError("{} overlapps with {}".format(kwargs["prefix"], network))
 
-    def get_routing_table(self):
+    def view_prefix_list(self) -> None:
 
-        """Gets all subnets and protocol/route types in the device routing table. This is used as check when
-        a new prefix wants to be inserted into a list"""
+        """View current prefix-list, match statemnt combinations"""
 
-        self._clear_attr_routes()
-        credentials = {
-            'device_type': 'cisco_ios',
-            'host': self.host,
-            'username': self.username,
-            'password': self.password,
-            'session_log': 'my_file.out'}
-
-        try:
-            device_connect = ConnectHandler(**credentials)
-        except ssh_exception.AuthenticationException as error:
-            raise ConnectionError("Could not connect to device {}".format(self.host))
-            pass
-
-        terminal_length = device_connect.send_command(command_string="terminal length 0")
-        get_routes = device_connect.send_command(command_string="show ip route")
-        exit = device_connect.send_command(command_string="exit", expect_string="")
-
-        line = re.findall(r'.*(?=\n)', get_routes)
-        for i in line:
-            route_details = {}
-
-            # Find entries eith mask /10-32
-
-            try:
-                if re.findall(r'.*[0-9]\..*[0-9]\..*[0-9]\..*[0-9]/[1-9][0-9]', i):
-
-                    if re.findall(r'.*[0-9]\.*[0-9]\..*[0-9]\..*[0-9]/[1-9][0-9]', i):
-                        generic = re.findall(r'.*[0-9]\.*[0-9]\.*[0-9]\.*[0-9]/[1-9][0-9]', i)
-                    if re.findall(r'\b[0-9].*\.[0-9].*\.[0-9].*\.[0-9].*/[1-9][0-9]\b', generic[0]):
-                        prefix = re.findall(r'\b[0-9].*\.[0-9].*\.[0-9].*\.[0-9].*/[1-9][0-9]\b', generic[0])
-                    if re.findall(r'\b[a-zA-Z]\b', generic[0]):
-                        route_type = re.findall(r'[a-zA-Z]', generic[0])
-                        route_details["protocol"] = route_type[0]
-                    if re.findall(r'\b[a-zA-Z]\s[A-Z][0-9]\b', generic[0]):
-                        route_type = re.findall(r'\b[a-zA-Z]\s[A-Z][0-9]\b', generic[0])
-                        route_details["protocol"] = route_type[0]
-                    if re.findall(r'(?<=via\s).*[0-9]\.*[0-9]\..*[0-9]\..*[0-9](?=,)', i):
-                        next_hop = re.findall(r'(?<=via\s).*[0-9]\.*[0-9]\.*[0-9]\.*[0-9](?=,)', i)
-                        route_details["next-hop"] = next_hop[0]
-                    if re.findall(r'(?<=directly\s)connected(?=,)', i):
-                        route_details["next-hop"] = "connected"
-                    if re.findall(r'(?<=variably\s)subnetted(?=,)', i):
-                        route_details["next-hop"] = "variably subnetted"
-                    if re.findall(r'(?<=is\s)subnetted(?=,)', i):
-                        route_details["next-hop"] = "subnetted"
-
-                    try:
-                        self.routing_prefixes[prefix[0].replace(" ", "")] = route_details
-                    except UnboundLocalError:
-                        pass
-
-            except IndexError:
-                pass
-
-            # Find entries with mask /0-9
-
-            try:
-                if re.findall(r'.*[0-9]\..*[0-9]\..*[0-9]\..*[0-9]/[1-9]\b', i):
-
-                    if re.findall(r'.*[0-9]\.*[0-9]\..*[0-9]\..*[0-9]/[1-9]', i):
-                        generic = re.findall(r'.*[0-9]\.*[0-9]\.*[0-9]\.*[0-9]/[1-9]', i)
-                    if re.findall(r'\b[0-9].*\.[0-9].*\.[0-9].*\.[0-9].*/[1-9]\b', generic[0]):
-                        prefix = re.findall(r'\b[0-9].*\.[0-9].*\.[0-9].*\.[0-9].*/[1-9]\b', generic[0])
-                    if re.findall(r'\b[a-zA-Z]\b', generic[0]):
-                        route_type = re.findall(r'[a-zA-Z]', generic[0])
-                        route_details["protocol"] = route_type[0]
-                    if re.findall(r'\b[a-zA-Z]\s[A-Z][0-9]\b', generic[0]):
-                        route_type = re.findall(r'\b[a-zA-Z]\s[A-Z][0-9]\b', generic[0])
-                        route_details["protocol"] = route_type[0]
-                    if re.findall(r'(?<=via\s).*[0-9]\.*[0-9]\..*[0-9]\..*[0-9](?=,)', i):
-                        next_hop = re.findall(r'(?<=via\s).*[0-9]\.*[0-9]\.*[0-9]\.*[0-9](?=,)', i)
-                        route_details["next-hop"] = next_hop[0]
-                    if re.findall(r'(?<=directly\s)connected(?=,)', i):
-                        route_details["next-hop"] = "connected"
-                    if re.findall(r'(?<=variably\s)subnetted(?=,)', i):
-                        route_details["next-hop"] = "variably subnetted"
-                    if re.findall(r'(?<=is\s)subnetted(?=,)', i):
-                        route_details["next-hop"] = "subnetted"
-
-                    try:
-                        self.routing_prefixes[prefix[0].replace(" ", "")] = route_details
-                    except UnboundLocalError:
-                        pass
-
-            except IndexError:
-                pass
-
-            # Find entries no subnet mask
-
-            try:
-                if re.findall(r'.*[0-9]\..*[0-9]\..*[0-9]\..*[0-9](?=\s)', i):
-                    if re.findall(r'.*[0-9]\.*[0-9]\..*[0-9]\..*[0-9](?=\s)', i):
-                        generic = re.findall(r'.*[0-9]\.*[0-9]\.*[0-9]\.*[0-9](?=\s)', i)
-                        prefix = re.findall(r'\b[0-9].*\.[0-9].*\.[0-9].*\..*[0-9](?=\s)', i)
-                    if re.findall(r'\b[a-zA-Z]\b', generic[0]):
-                        route_type = re.findall(r'[a-zA-Z]', generic[0])
-                        route_details["protocol"] = route_type[0]
-                    if re.findall(r'\b[a-zA-Z]\s[A-Z][0-9]\b', generic[0]):
-                        route_type = re.findall(r'\b[a-zA-Z]\s[A-Z][0-9]\b', generic[0])
-                        route_details["protocol"] = route_type[0]
-                    if re.findall(r'(?<=via\s).*[0-9]\.*[0-9]\..*[0-9]\..*[0-9](?=,)', i):
-                        next_hop = re.findall(r'(?<=via\s).*[0-9]\.*[0-9]\.*[0-9]\.*[0-9](?=,)', i)
-                        route_details["next-hop"] = next_hop[0]
-                    if re.findall(r'(?<=directly\s)connected(?=,)', i):
-                        route_details["next-hop"] = "connected"
-                    if re.findall(r'(?<=variably\s)subnetted(?=,)', i):
-                        route_details["next-hop"] = "variably subnetted"
-                    if re.findall(r'(?<=is\s)subnetted(?=,)', i):
-                        route_details["next-hop"] = "subnetted"
-
-                    try:
-                        self.routing_prefixes[prefix[0]] = route_details
-                    except UnboundLocalError:
-                        pass
-
-            except IndexError:
-                pass
-
-            # Find lines that are equal routes, no protocol on line just next hop
-
-            try:
-                if re.findall(r"^\s.*(?=\[)", i):
-                    find_hops = re.findall(r'(?<=via\s).*[0-9]\.*[0-9]\.*[0-9]\.*[0-9](?=,)', i)
-                    self.routing_prefixes[prefix[0]]["next-hop"] = find_hops[0]
-            except (IndexError, TypeError):
-                pass
-
-            # Save last prefix just in case the next hopd are on the next line(s). We can still use the prefix as the
-            # key in the dictionary. Usage - self.routing_prefixes[prefix[0]]["next-hop"] = find_hops[0]
-
-            try:
-                prefix = prefix
-            except (UnboundLocalError):
-                pass
-
-    def view_overlapping_prefixes(self):
-
-        """Print overlapping prefixes. For dictionary output use find_overlapping_prefixs()"""
-
-        for k, v in self.overlapp_prefixes.items():
-            print(k)
-            for v in v:
-                print("Prefix: {}".format(v["prefix"]))
-                print("Overlapping Sequence: {}".format(v["overlapping-seq"]))
+        for k, v in self._prefix_list.items():
+            print("\n" + k + "\n")
+            print("________________________")
+            for statement in v:
                 try:
-                    print("Range: GE: {}".format(v["ge"]))
+                    if "length_ge" in v and "length_le" not in v:
+                        print(statement["seq"], statement["action"], statement["prefix"], statement["length_ge"])
+                except KeyError:
+                    pass
+
+                try:
+                    if "length_le" in v and "length_ge" not in v:
+                        print(statement["seq"], statement["action"], statement["prefix"], statement["length_le"])
+                except KeyError:
+                    pass
+
+                try:
+                    if "length_ge" in v and "length_le" in v:
+                        print(statement["seq"], statement["action"], statement["prefix"], statement["length_ge"],
+                              statement["length_le"])
                 except KeyError:
                     pass
                 try:
-                    print("Range: LE {}".format(v["le"]))
+                    if "length_ge" not in v and "length_le" not in v:
+                        print(statement["seq"], statement["action"], statement["prefix"])
                 except KeyError:
                     pass
-                print("Overlapping Prefixes: {}".format(", ".join(v["overlapping-prefixes"])))
-                print("\n")
 
-    def view_prefix_length(self):
+    @property
+    def prefix_list(self) -> DefaultDict[Any, list]:
+        return self._prefix_list
 
-        """Prints output from find_prefix_length() method"""
-
-        for k, v in self.prefix_length.items():
-            print("List: {}".format(k))
-            for v in v:
-                print("Sequence: {} Prefix: {}".format(v["seq"], v["prefix"]))
-            print("\n")
-
-    def compile_new_prefixes(self):
-
-        """ Clear prefix list dictionary attributes. No need to create another object instance"""
-
-        self.prefix_list.clear()
-        self.prefix_length.clear()
-        self.overlapp_prefixes.clear()
-        self._ip_prefix_list()
-
-    def _clear_attr_routes(self):
-
-        """Clears routing table dictionary attributes"""
-
-        self.routing_prefixes.clear()
+    @property
+    def overlapping_prefixes(self) -> DefaultDict[Any, list]:
+        return self._overlapping_prefixes
