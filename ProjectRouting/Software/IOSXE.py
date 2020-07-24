@@ -84,7 +84,8 @@ class Routing_Ios(Abstract.Routing):
             self.enable = enable["enable"]
         except KeyError:
             self.enable = None
-
+        
+        self.create_db = databaseops.RoutingDatabase()
         self.initialize_class_methods()  # Initiate class methods
         self.database()
 
