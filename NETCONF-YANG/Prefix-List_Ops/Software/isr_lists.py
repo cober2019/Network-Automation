@@ -120,43 +120,11 @@ class IpOpsIsr:
 
         self._prefix_list[k].append(entry_details)
 
-    def find_prefix_length(self, length: str = None) -> DefaultDict[Any, list]:
-
-        """ Finds prefix with a certain length. Takes one argument, length ex. "25". Return dictionationary
-        Use view__prefix_length() method to get formatted output"""
-
-        prefix_length = collections.defaultdict(list)
-        tempt_dict = {}
-
-        for k, structure in self._prefix_list.items():
-            if isinstance(structure, list):
-                for entry in structure:
-                    prefix_find = re.findall(r'(?<=/).*$', entry["prefix"])
-                    if length in prefix_find:
-                        tempt_dict["seq"] = entry["seq"]
-                        tempt_dict["prefix"] = entry["prefix"]
-                        prefix_length[k].append(tempt_dict)
-                        tempt_dict = {}
-                    else:
-                        pass
-            elif isinstance(structure, dict):
-                prefix_find = re.findall(r'(?<=/).*$', structure["prefix"])
-                if length in prefix_find:
-                    tempt_dict["seq"] = structure["seq"]
-                    tempt_dict["prefix"] = structure["prefix"]
-                    prefix_length[k].append(tempt_dict)
-                    tempt_dict = {}
-                else:
-                    pass
-
-        return prefix_length
-
-    def duplicate_prefix(self) -> DefaultDict[Any, list]:
+    def find_duplicate_prefix(self):
 
         prefixes = []
-        dup_prefixes = collections.defaultdict(list)
 
-        for k, structure in self._prefix_list.items():
+        for k, structure in self.prefix_list.items():
             if isinstance(structure, list):
                 for entry in structure:
                     prefixes.append(entry["prefix"])
@@ -166,37 +134,48 @@ class IpOpsIsr:
         dups = [k for k, v in collections.Counter(prefixes).items() if v > 1]
 
         for i in dups:
-            find_prefixes = self.find_prefix(prefix=i)
-            dup_prefixes["prefixes"].append(find_prefixes)
+            for k, structure in self.prefix_list.items():
+                for v in structure:
+                    if i == v["prefix"]:
+                        print("________________________")
+                        print("\nPrefix: " + i)
+                        print("\nList: " + k)
+                        try:
+                            if "length_ge" in v and "length_le" not in v:
+                                print(v["seq"], v["action"], v["prefix"],
+                                      v["length_ge"])
+                        except KeyError:
+                            pass
 
-        return dup_prefixes
+                        try:
+                            if "length_le" in v and "length_ge" not in v:
+                                print(v["seq"], v["action"], v["prefix"],
+                                      v["length_le"])
+                        except KeyError:
+                            pass
 
-    def find_prefix(self, prefix=None) -> DefaultDict[Any, list]:
+                        try:
+                            if "length_ge" in v and "length_le" in v:
+                                print(v["seq"], v["action"], v["prefix"],
+                                      v["length_ge"],
+                                      v["length_le"])
+                        except KeyError:
+                            pass
+                        try:
+                            if "length_ge" not in v and "length_le" not in v:
+                                print(v["seq"], v["action"], v["prefix"])
+                        except KeyError:
+                            pass
+
+    def find_prefix(self, prefix=None):
         """Find specific prefix in prefix-list"""
 
-        prefixes = collections.defaultdict(list)
-        tempt_dict = {}
-
-        for k, structure in self._prefix_list.items():
-            if isinstance(structure, list):
-                for entry in structure:
-                    if prefix == entry["prefix"]:
-                        tempt_dict["seq"] = entry["seq"]
-                        tempt_dict["prefix"] = entry["prefix"]
-                        prefixes[k].append(tempt_dict)
-                        tempt_dict = {}
-                    else:
-                        pass
-            elif isinstance(structure, dict):
-                if prefix == structure["prefix"]:
-                    tempt_dict["seq"] = structure["seq"]
-                    tempt_dict["prefix"] = structure["prefix"]
-                    prefixes[k].append(tempt_dict)
-                    tempt_dict = {}
-                else:
-                    pass
-
-        return prefixes
+        for k, structure in self.prefix_list.items():
+            for v in structure:
+                if prefix == v["prefix"]:
+                    print("\nList: " + k)
+                    print("Seq: " + v["seq"])
+                    print("Prefix: " + v["prefix"])
 
     def find_overlapping_prefixes(self) -> None:
 
@@ -592,6 +571,3 @@ class IpOpsIsr:
     def prefix_list(self) -> DefaultDict[Any, list]:
         return self._prefix_list
 
-    @property
-    def overlapping_prefixes(self) -> DefaultDict[Any, list]:
-        return self._overlapping_prefixes
