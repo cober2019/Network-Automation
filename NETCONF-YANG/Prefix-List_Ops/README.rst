@@ -6,7 +6,6 @@ Description
 Prefix-List Ops has the following features:
 
 + View prefix-list
-+ Find prefix by prefix or prefix length
 + Find overlapping prefixes in the same list (ge, le)
 + Find duplicate prefixes in different list
 + Send Prefix Statements
@@ -50,14 +49,6 @@ Usage
             5 permit 1.1.1.0/24 25
             10 permit 3.1.1.0/26 27
             15 permit 2.1.1.0/26 27
-
-**Find Prefix Length**
-
-            >>> call_class.find_prefix_length(length="25")
-            defaultdict(<class 'list'>, {'test22': [{'seq': '25', 'prefix': '1.1.1.0/25'},
-            {'seq': '30', 'prefix': '2.2.2.0/25'}],
-            'test23': [{'seq': '25', 'prefix': '1.1.1.0/25'},
-            {'seq': '30', 'prefix': '2.2.2.0/25'}]})
 
 **Find Perfix**
 
@@ -107,17 +98,6 @@ Usage
         {'local-prefixes': [{'seq': '5', 'prefix': '1.1.1.0/24'}],
         'test22': [{'seq': '5', 'prefix': '1.1.1.0/24'}],
         'test23': [{'seq': '5', 'prefix': '1.1.1.0/24'}]})
-
-**View Routing Prefixes (No next hop)**
-**Example only shows local and connected. The method will display all routing protocols and types if configured**
-
-        >>> call_class.get_routing_table()
-        >>> call_class.routing_prefixes
-        {'1.0.0.0/8': 'C', '1.1.1.1/32': 'L', '4.0.0.0/8': 'L', '4.4.4.0/24': 'C', '4.4.4.4/32': 'L', '5.0.0.0/8': 'L',
-            '5.5.5.0/24': 'C', '5.5.5.5/32': 'L', '6.0.0.0/8': 'L', '6.6.6.0/24': 'C', '6.6.6.6/32': 'L', '7.0.0.0/8': 'L',
-        '7.7.7.0/24': 'C', '7.7.7.7/32': 'L', '8.0.0.0/8': 'L', '8.8.8.0/24': 'C', '8.8.8.8/32': 'L', '9.0.0.0/8': 'L',
-        '9.9.9.0/24': 'C', '9.9.9.9/32': 'L', '10.0.0.0/8': 'L', '10.1.3.0/24': 'S', '10.10.10.0/24': 'C', '10.10.10.10/32': 'L',
-        '10.10.11.0/24': 'C', '10.10.11.1/32': 'L', '192.168.1.0/24': 'C'}
 
 **Sending Prefixes**
 
