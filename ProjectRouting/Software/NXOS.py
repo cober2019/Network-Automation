@@ -2,11 +2,11 @@ from netmiko import ConnectHandler, ssh_exception
 import re
 import collections
 import time
-import Database.DatabaseOps as databaseops
-import Database.DB_queries as db_queries
+from Database import DatabaseOps as DataBaseOps
+from Database import DB_queries as DbQueries
 from Software import Neighbors
 import Abstract
-import Software.DeviceLogin as connect_with
+import Software.DeviceLogin as ConnectWith
 
 
 def get_routing_table(netmiko_connection: object, *vrf: str) -> str:
@@ -22,7 +22,7 @@ def get_routing_table(netmiko_connection: object, *vrf: str) -> str:
     return routes
 
 
-def get_vdcs(netmiko_connection: object) -> str:
+def get_vdcs(netmiko_connection: object) -> list:
     """Using the connection object created from the netmiko_login(), get vdcs"""
 
     vdcs = []
@@ -65,8 +65,7 @@ def get_vrfs(netmiko_connection: object, vdc: str) -> list:
         return edit_vrf_list
 
 
-class Routing_Nexus(Abstract.Routing):
-
+class RoutingNexus(Abstract.Routing):
     """Collect Routing table details using netmiko and re. Methods will return a dictionary with routes, protocol,
     next-hop, interfaces. for code readlabilty, Each method contains inner fuctions to perfrom actions for that
     particular method """
@@ -97,6 +96,7 @@ class Routing_Nexus(Abstract.Routing):
         except KeyError:
             self.enable = None
 
+        self.create_db = DataBaseOps.RoutingDatabase()
         self.initialize_class_methods()  # Initiate class methods
         self.database()
 
@@ -108,7 +108,6 @@ class Routing_Nexus(Abstract.Routing):
         def find_prefix(prefix: str) -> None:
 
             """Finds the prefix on the current line"""
-
 
             if re.findall(r'^[0-9].*\..*[0-9]\..*[0-9]\..*[0-9]/[1-9][0-9](?=,)', prefix):
                 prefix = re.findall(r'^[0-9].*\..*[0-9]\..*[0-9]\..*[0-9]/[1-9][0-9](?=,)', prefix)
@@ -193,16 +192,17 @@ class Routing_Nexus(Abstract.Routing):
         # Check to see if self.enable has been assigned. Create connection object, save object to instance attribute
 
         if self.enable is None:
-            create_netmiko_connection = connect_with.netmiko(host= self.host, username= self.username, password= self.password)
+            create_netmiko_connection = ConnectWith.netmiko(host=self.host,
+                                                            username=self.username,
+                                                            password=self.password)
         else:
-            create_netmiko_connection = connect_with.netmiko_w_enable(host= self.host, username= self.username, password= self.password,
-                                                                        enable_pass=self.enable)
+            create_netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
+                                                                     username=self.username,
+                                                                     password=self.password,
+                                                                     enable_pass=self.enable)
         self.netmiko_connection = create_netmiko_connection
 
-        # Get VDCs
         vdcs = get_vdcs(self.netmiko_connection)
-
-        # Use inner functions to start collecting routes and route particulars
         parse_global_routing_entries()
         parse_routing_entries_with_vrfs()
         self.neighbors()
@@ -404,7 +404,7 @@ class Routing_Nexus(Abstract.Routing):
                 route_details["tag"] = tag[0]
             except IndexError:
                 pass
-            
+
             try:
                 tag = re.findall(r'(?<=\s)[0-9].*', split_route_entry[5])
                 route_details["tag"] = tag[0]
@@ -461,9 +461,7 @@ class Routing_Nexus(Abstract.Routing):
         full interface type as key, cdp interface type as value"""
 
         formatted_interfaces = {}
-        cdp_lldp_neighbors = {}
-        db_connect = db_queries.Routing_Datbases()
-        interfaces = db_connect.get_routing_interfaces(table="Routing_Nexus")
+        interfaces = DbQueries.get_routing_interfaces(table="Routing_Nexus")
 
         def db_outgoing_ints():
 
@@ -568,7 +566,7 @@ class Routing_Nexus(Abstract.Routing):
         parse_lldp()
 
         return self.cdp_lldp_neighbors
-    
+
     def routes_unpacked(self):
         """Print route formated"""
 
@@ -603,9 +601,6 @@ class Routing_Nexus(Abstract.Routing):
 
     def database(self):
 
-        # Create DB object
-        db_write = databaseops.RoutingDatabase()
-
         # Unpack routing dictionary
         for vdc, values_vdc in self._vdcroutes.items():
             for i in values_vdc:
@@ -617,62 +612,34 @@ class Routing_Nexus(Abstract.Routing):
                                 # Save routing attributes to list in preperation for DB write
                                 routes_attributes.append(value)
 
-                        # Get the length of the list. Each will be a fixed length. Combine next hops, interfaces, metrics
-                        # and tags. This is so we dont have to modify DB rows/columns.
+                        # Get the length of the list. Each will be a fixed length. Combine next hops, interfaces,
+                        # metrics and tags. This is so we dont have to modify DB rows/columns.
+
                         if len(routes_attributes) == 6:
 
-                            ldp_neigh = [v for k, v in self.cdp_lldp_neighbors.items() if k == routes_attributes[4]]
-                            
-                            try:
-                                db_write.db_update_nexus(vdc, vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                  routes_attributes[3], routes_attributes[4], routes_attributes[5], routes_attributes[2], ldp_neigh=ldp_neigh[0])
-                            except (IndexError, TypeError):
-                                db_write.db_update_nexus(vdc, vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                         routes_attributes[3], routes_attributes[4],
-                                                         routes_attributes[5], routes_attributes[2], ldp_neigh="Unknown")
+                            DataBaseOps.db_update_nexus(vdc, vrf, prefix, routes_attributes[0],
+                                                        routes_attributes[1],
+                                                        routes_attributes[3], routes_attributes[4],
+                                                        routes_attributes[5], routes_attributes[2])
 
                         if len(routes_attributes) == 9:
 
-                            ldp_neigh = [v for k, v in self.cdp_lldp_neighbors.items() if k == routes_attributes[4] or k == routes_attributes[7]]
-        
-                            try:
+                            next_hops = routes_attributes[3] + ", " + routes_attributes[6]
+                            route_metrics = routes_attributes[5] + ", " + routes_attributes[8]
+                            interfaces = routes_attributes[4] + ", " + routes_attributes[7]
 
-                                next_hops = routes_attributes[3] + ", " + routes_attributes[6]
-                                route_metrics = routes_attributes[5] + ", " + routes_attributes[8]
-                                interfaces = routes_attributes[4] + ", " + routes_attributes[7]
-                                db_write.db_update_nexus(vdc, vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                  next_hops, interfaces, route_metrics, routes_attributes[2], ", ".join(ldp_neigh))
-
-                            except (IndexError, TypeError, NameError):
-
-                                next_hops = routes_attributes[3] + ", " + routes_attributes[6]
-                                route_metrics = routes_attributes[5] + ", " + routes_attributes[8]
-                                interfaces = routes_attributes[4] + ", " + routes_attributes[7]
-                                db_write.db_update_nexus(vdc, vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                         next_hops, interfaces, route_metrics, routes_attributes[2],
-                                                         ldp_neigh="Unknown")
+                            DataBaseOps.db_update_nexus(vdc, vrf, prefix, routes_attributes[0],
+                                                        routes_attributes[1],
+                                                        next_hops, interfaces, route_metrics, routes_attributes[2])
 
                         if len(routes_attributes) == 12:
 
-                            try:
-                                next_hops = routes_attributes[3] + ", " + routes_attributes[6] + routes_attributes[9]
-                                route_metrics = routes_attributes[5] + ", " + routes_attributes[8] + routes_attributes[11]
-                                interfaces = routes_attributes[4] + ", " + routes_attributes[7] + routes_attributes[10]
-                                db_write.db_update_nexus(vdc, vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                  next_hops, interfaces, route_metrics, routes_attributes[2])
-                            except (IndexError, TypeError, NameError) as error:
-                                pass
+                            next_hops = routes_attributes[3] + ", " + routes_attributes[6] + routes_attributes[9]
+                            route_metrics = routes_attributes[5] + ", " + routes_attributes[8] + routes_attributes[11]
+                            interfaces = routes_attributes[4] + ", " + routes_attributes[7] + routes_attributes[10]
+                            DataBaseOps.db_update_nexus(vdc, vrf, prefix, routes_attributes[0],routes_attributes[1],
+                                                        next_hops, interfaces, route_metrics, routes_attributes[2])
 
-                        if len(routes_attributes) == 15:
-
-                            try:
-                                next_hops = routes_attributes[3] + ", " + routes_attributes[6] + routes_attributes[9] + routes_attributes[12]
-                                route_metrics = routes_attributes[5] + ", " + routes_attributes[8] + routes_attributes[11] + routes_attributes[14]
-                                interfaces = routes_attributes[4] + ", " + routes_attributes[7] + routes_attributes[10] + routes_attributes[13]
-                                db_write.db_update_nexus(vdc, vrf, prefix, routes_attributes[0], routes_attributes[1],
-                                                  next_hops, interfaces, route_metrics, routes_attributes[2])
-                            except (IndexError, TypeError, NameError) as error:
-                                pass
 
     @property
     def host(self):
@@ -701,8 +668,3 @@ class Routing_Nexus(Abstract.Routing):
     @property
     def routing(self) -> dict:
         return self._vdcroutes
-
-
-
-
-

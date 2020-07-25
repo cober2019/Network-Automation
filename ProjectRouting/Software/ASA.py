@@ -1,9 +1,9 @@
 from netmiko import ConnectHandler, ssh_exception
 import re
 import collections
-import Database.DatabaseOps as databaseops
+from Database import DatabaseOps as DatabaseOps
 import Abstract
-import Software.DeviceLogin as connect_with
+import Software.DeviceLogin as ConnectWith
 
 
 def get_routing_table(netmiko_connection: object) -> str:
@@ -17,7 +17,7 @@ def get_routing_table(netmiko_connection: object) -> str:
     return routes
 
 
-class Routing_Asa(Abstract.Routing):
+class RoutingAsa(Abstract.Routing):
     """Collect Routing table details using netmiko and re. Methods will return a dictionary with routes, protocol,
     next-hop, interfaces. for code readlabilty, Each method contains inner fuctions to perfrom actions for that
     particular method """
@@ -26,12 +26,12 @@ class Routing_Asa(Abstract.Routing):
                        "i su", "i L1", "i l2", "*", "U", "o", "P", "H", "l", "a", "+", "%", "p", "S*")
 
     prefix_to_mask = {"/30": "255.255.255.252", "/29": "255.255.255.248", "/28": "255.255.255.240",
-                       "/27": "255.255.255.224", "/26": "255.255.255.192", "/25": "255.255.255.128",
-                       "/24": "255.255.255.0", "/23": "255.255.254.0", "/22": "255.255.252.0", "/21": "255.255.248.0",
-                       "/20": "255.255.240.0", "/19": "255.255.224.0", "/18": "255.255.192.0", "/17": "255.255.128.0",
-                       "/16": "255.255.0.0", "/15": "255.254.0.0", "/14": "255.252.0.0","/13": "255.248.0.0",
-                       "/12": "255.240.0.0", "/11": "255.224.0.0", "/10": "255.192.0.0", "/9": "255.128.0.0",
-                       "/8": "255.0.0.0" , "/0": "0.0.0.0", "/31": "255.255.255.254", "/32": "255.255.255.255"}
+                      "/27": "255.255.255.224", "/26": "255.255.255.192", "/25": "255.255.255.128",
+                      "/24": "255.255.255.0", "/23": "255.255.254.0", "/22": "255.255.252.0", "/21": "255.255.248.0",
+                      "/20": "255.255.240.0", "/19": "255.255.224.0", "/18": "255.255.192.0", "/17": "255.255.128.0",
+                      "/16": "255.255.0.0", "/15": "255.254.0.0", "/14": "255.252.0.0", "/13": "255.248.0.0",
+                      "/12": "255.240.0.0", "/11": "255.224.0.0", "/10": "255.192.0.0", "/9": "255.128.0.0",
+                      "/8": "255.0.0.0", "/0": "0.0.0.0", "/31": "255.255.255.254", "/32": "255.255.255.255"}
 
     def __init__(self, host=None, username=None, password=None, **enable):
 
@@ -60,7 +60,8 @@ class Routing_Asa(Abstract.Routing):
         except TypeError:
             self.enable = None
 
-        self.initialize_class_methods()  # Initiate class methods
+        self.create_db = DatabaseOps.RoutingDatabase()
+        self.initialize_class_methods()
         self.database()
 
     def initialize_class_methods(self):
@@ -85,7 +86,7 @@ class Routing_Asa(Abstract.Routing):
             try:
                 if re.findall(r'(?<=\s)255.*(?=\s)', prefix):
                     mask = re.findall(r'(?<=\s)255.*(?=\s)', prefix)
-                    prefix_length = [k for k, v in Routing_Asa.prefix_to_mask.items() if mask[0] == v]
+                    prefix_length = [k for k, v in RoutingAsa.prefix_to_mask.items() if mask[0] == v]
                     network_id = re.findall(r'(?<=\s)[0-9].*(?=\s[0-9])', prefix)
                     self.prefix = network_id[0] + prefix_length[0]
             except IndexError as error:
@@ -95,7 +96,7 @@ class Routing_Asa(Abstract.Routing):
             try:
                 if re.findall(r'(?<=\s)0.0.0.0(?=\s)', prefix):
                     mask = re.findall(r'(?<=\s)0.0.0.0(?=\s)', prefix)
-                    prefix_length = [k for k, v in Routing_Asa.prefix_to_mask.items() if mask[0] == v]
+                    prefix_length = [k for k, v in RoutingAsa.prefix_to_mask.items() if mask[0] == v]
                     if "0.0.0.0" in prefix:
                         self.prefix = "0.0.0.0/0"
                     else:
@@ -107,7 +108,7 @@ class Routing_Asa(Abstract.Routing):
             try:
                 if re.findall(r'(?<=\s)255.*(?=\sis)', prefix):
                     mask = re.findall(r'(?<=\s)255.*(?=\sis)', prefix)
-                    prefix_length = [k for k, v in Routing_Asa.prefix_to_mask.items() if mask[0] == v]
+                    prefix_length = [k for k, v in RoutingAsa.prefix_to_mask.items() if mask[0] == v]
                     network_id = re.findall(r'(?<=\s)[0-9].*(?=\s[0-9])', prefix)
                     self.prefix = network_id[0] + prefix_length[0]
             except IndexError as error:
@@ -116,13 +117,16 @@ class Routing_Asa(Abstract.Routing):
         # Check to see if self.enable has been assigned. Create connection object, save object to instance attribute
 
         if self.enable is None:
-            create_netmiko_connection = connect_with.netmiko_w_enable(host= self.host, username= self.username, password= self.password)
+            create_netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
+                                                                     username=self.username,
+                                                                     password=self.password)
         else:
-            create_netmiko_connection = connect_with.netmiko_w_enable(host= self.host, username= self.username, password= self.password,
-                                                                        enable_pass=self.enable)
-        self.netmiko_connection = create_netmiko_connection
+            create_netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
+                                                                     username=self.username,
+                                                                     password=self.password,
+                                                                     enable_pass=self.enable)
 
-        # Get route table using netmiko instance attribute.
+        self.netmiko_connection = create_netmiko_connection
         route_entries = get_routing_table(self.netmiko_connection)
         line = re.findall(r'.*(?=\n)', route_entries)
         get_last_line = re.findall(r'.*$', route_entries)
@@ -147,7 +151,6 @@ class Routing_Asa(Abstract.Routing):
 
         self._routing["None"] = self.routes
         self.routes = collections.defaultdict(list)
-
 
     def slash_ten_and_up(self, routing_entry: str) -> None:
 
@@ -286,16 +289,16 @@ class Routing_Asa(Abstract.Routing):
             route_details["next-hop"] = "connected"
             outgoing_interfaces()
             find_metric()
-    
+
     def neighbors(self):
         pass
-    
+
     def protocols_and_metrics(self, routing_entry: str) -> None:
 
         """Gets route type, Parent protocol/Child type. Ex. OSPF, or OSPF E2. """
 
         route_details = {"protocol": None, "admin-distance": None}
-        find_protocol = [protocol for protocol in Routing_Asa.route_protocols if protocol in routing_entry[0:5]]
+        find_protocol = [protocol for protocol in RoutingAsa.route_protocols if protocol in routing_entry[0:5]]
 
         def write_to_dictionary():
 
@@ -349,9 +352,6 @@ class Routing_Asa(Abstract.Routing):
 
     def database(self):
 
-        # Initiate databse object
-        db_write = databaseops.RoutingDatabase()
-
         for vrf, values_vrf in self._routing.items():
             for prefix, val_prefix in values_vrf.items():
                 routes_attributes = []
@@ -359,8 +359,8 @@ class Routing_Asa(Abstract.Routing):
                     for attribute, value in attributes.items():
                         routes_attributes.append(value)
 
-                # Get the length of the route_attributes list. Each will be a fixed length. Combine next hops, interface, metrics
-                # and tags. This is so we dont have to modify DB rows/columns.
+                # Get the length of the route_attributes list. Each will be a fixed length. Combine next hops,
+                # interface, metrics and tags. This is so we dont have to modify DB rows/columns.
 
                 if len(routes_attributes) == 5:
 
@@ -371,7 +371,7 @@ class Routing_Asa(Abstract.Routing):
                         tag = None
 
                     try:
-                        db_write.db_update_asa(vrf, prefix, routes_attributes[0], routes_attributes[1],
+                        DatabaseOps.db_update_asa(vrf, prefix, routes_attributes[0], routes_attributes[1],
                                                   routes_attributes[2], routes_attributes[3], routes_attributes[4],
                                                   tag)
                     except (IndexError, TypeError) as error:
@@ -390,11 +390,10 @@ class Routing_Asa(Abstract.Routing):
                         next_hops = routes_attributes[2] + ", " + routes_attributes[5]
                         route_metrics = routes_attributes[4] + ", " + routes_attributes[7]
                         interfaces = routes_attributes[3] + ", " + routes_attributes[6]
-                        db_write.db_update_asa(vrf, prefix, routes_attributes[0], routes_attributes[1],
+                        DatabaseOps.db_update_asa(vrf, prefix, routes_attributes[0], routes_attributes[1],
                                                   next_hops, interfaces, route_metrics, tag)
                     except (IndexError, TypeError, NameError) as error:
                         pass
-
 
     @property
     def host(self):
@@ -423,6 +422,3 @@ class Routing_Asa(Abstract.Routing):
     @property
     def routing(self) -> None:
         return self._routing
-
-
-
