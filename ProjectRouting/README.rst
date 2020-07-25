@@ -33,6 +33,7 @@ View routing table from a local sqlite database. Credential entry is here or jus
 
                     + Protocol
                     + Prefix
+                      + Example Queries (192.168.1.0/24, 192.180, or 192.168.1.0)
                     + Metric
                     + AD
                     + Outgoing Interface
@@ -48,7 +49,6 @@ View routing table from a local sqlite database. Credential entry is here or jus
                         Out-Interface(s): GigabitEthernet0/0/5, GigabitEthernet0/0/4
                         Metric(s): 41, 41
                         Tag: None
-                        CDP neighbor(s): Iceland-Core01, Iceland-Core02
                         Total Routes: 1
 
 **Usage w/out DB Tool** 
