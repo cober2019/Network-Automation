@@ -32,8 +32,7 @@ ___________
 View routing table from a local sqlite database. Credential entry is here or just skip credential input if your've previosly populated the  table. You can query the routing table using the following permameters
 
                     + Protocol
-                    + Prefix
-                      + Example Queries (192.168.1.0/24, 192.180, or 192.168.1.0)
+                    + Prefix (Example: 192.168.1.0/24, 192.180, or 192.168.1.0)
                     + Metric
                     + AD
                     + Outgoing Interface
