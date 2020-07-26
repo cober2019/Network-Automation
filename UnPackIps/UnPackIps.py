@@ -22,8 +22,9 @@ class IpRanges:
         ip_set = user_input.split("|")
         subnets = []
         parsed_ips = []
-
-        def check_subnet_overlapp():
+        
+        @staticmethod
+        def check_subnet_overlapp() -> None:
 
             """Checks for overlapping subnets between the pipe \"|\" 10.1.1 | 10.1.1"""
             ...
@@ -35,7 +36,7 @@ class IpRanges:
             else:
                 pass
 
-        def syntax_check(subnet_string: str):
+        def syntax_check(subnet_string: str) -> None:
 
             """Checks to see if the is an [a-zA-Z] char in the string"""
             ...
@@ -127,7 +128,7 @@ class IpParse:
         self.whole_subnets()
         self.assemble_ips()
 
-    def indivisual_ips(self):
+    def indivisual_ips(self) -> None:
 
         """Search for indivisual ips. Ex. 1,50,60,100
         Adds to octet_list and assembled at the bottom of the method"""
@@ -156,7 +157,7 @@ class IpParse:
             except (IndexError, ValueError):
                 pass
 
-    def whole_subnets(self):
+    def whole_subnets(self) -> None:
 
         """Unpack whole subnets"""
         
@@ -176,7 +177,7 @@ class IpParse:
                 else:
                     self._ip_list.append(str(_))
 
-    def whole_ips(self):
+    def whole_ips(self) -> None:
 
         """Finds whole IPs with in the list, Checks to see if they are valid addresses, stores to list"""
 
@@ -202,7 +203,7 @@ class IpParse:
                     ipaddress.ip_address(ip)
                     self._ip_list.append(ip)
 
-    def assemble_ips(self):
+    def assemble_ips(self) -> None:
 
         """ Assembles whole ips with ranges. Ex. 10.1.1.1-10, 192.168.128.50-60. Checks for valid IPs during iteration.
         User inner function to build IPs"""
