@@ -23,7 +23,6 @@ class IpRanges:
         subnets = []
         parsed_ips = []
         
-        @staticmethod
         def check_subnet_overlapp() -> None:
 
             """Checks for overlapping subnets between the pipe \"|\" 10.1.1 | 10.1.1"""
