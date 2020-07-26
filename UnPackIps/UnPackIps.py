@@ -57,8 +57,3 @@ class IpRanges:
                 ranges += range(l, h + 1)
         return ranges
 
-
-call_class = IpRanges()
-range_user = "10.10.1.1-10,20-30,34|192.168.1.1-10,54,100-110|10.10.10.0/24"
-get_ips = call_class.get_ips(user_input=range_user)
-print(get_ips)
