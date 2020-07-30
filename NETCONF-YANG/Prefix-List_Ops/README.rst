@@ -14,7 +14,6 @@ __________
 
 + ipaddress
 + re
-+ collections
 + xmltodict
 + ncclient
 + netmiko
