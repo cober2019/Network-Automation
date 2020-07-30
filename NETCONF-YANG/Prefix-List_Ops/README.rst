@@ -30,7 +30,7 @@ Device Modules Tested
 Usage
 --------------
 
-**Create Objects/Call Class**
+**Call Function**
 
             >>> view_prefix_list(username="cisco", password="cisco", host="10.48.1.51")
             <IPOperations.isr_lists.IpOps object at 0x0000024A786C8248>
