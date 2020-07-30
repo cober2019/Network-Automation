@@ -158,7 +158,6 @@ def get_prefix_list(username, password, host) -> Tuple[list, Any]:
 
     intf_info = netconf_session.get(xml_filter)
     intf_dict = xmltodict.parse(intf_info.xml)["rpc-reply"]["data"]
-    print(intf_dict)
 
     # Check to see if the configuration is empty
     if intf_dict is None:
