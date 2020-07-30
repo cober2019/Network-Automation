@@ -37,7 +37,7 @@ Usage
 
 **View Prefix Lists**
 
-            >>> call_class.view_prefix_list()
+            >>> view_prefix_list()
             local-prefixes
             Test1
                         5 permit 192.168.1.0/24
@@ -61,20 +61,20 @@ Usage
 
     **Send with prefix only**
 
-            >>> call_class.send_prefix_list(name="HelpMe", prefix="192.168.1.0/24", seq="5", action="permit")
+            >>> send_prefix_list(name="HelpMe", prefix="192.168.1.0/24", seq="5", action="permit")
             HelpMe
                 5 permit 192.168.1.0/24
 
     **Send with prefix and ge**
 
-            >>> call_class.send_prefix_list(name="HelpMe", prefix="192.168.2.0/24", seq="10", action="permit", ge="26")
+            >>> send_prefix_list(name="HelpMe", prefix="192.168.2.0/24", seq="10", action="permit", ge="26")
             HelpMe
                 5 permit 192.168.1.0/24
                 10 permit 192.168.2.0/24 26
 
     **Send with prefix, ge, le**
 
-            >>> call_class.send_prefix_list(name="HelpMe", prefix="192.168.3.0/24", seq="15", action="permit", ge="26", le="32")
+            >>> send_prefix_list(name="HelpMe", prefix="192.168.3.0/24", seq="15", action="permit", ge="26", le="32")
             HelpMe
                 5 permit 192.168.1.0/24
                 10 permit 192.168.2.0/24 26
@@ -84,7 +84,7 @@ Usage
 
     **Seqeunce Check**
 
-        >>> call_class.send_prefix_list(name="HelpMe", prefix="172.16.1.0/24", seq="5", action="permit")
+        >>> send_prefix_list(name="HelpMe", prefix="172.16.1.0/24", seq="5", action="permit")
         Traceback (most recent call last):
           File "<input>", line 1, in <module>
           File "C:\Users\JoeSmo\PycharmProjects\IPOperations\IPOperations\isr_lists.py", line 422, in send_prefix_list
@@ -93,7 +93,7 @@ Usage
 
     **Prefix Check**
 
-        >>> call_class.send_prefix_list(name="HelpMe", prefix="192.168.1.0/24", seq="20", action="permit")
+        >>> send_prefix_list(name="HelpMe", prefix="192.168.1.0/24", seq="20", action="permit")
             Traceback (most recent call last):
               File "<input>", line 1, in <module>
               File "C:\Users\JoeSmo\PycharmProjects\IPOperations\IPOperations\isr_lists.py", line 424, in send_prefix_list
@@ -102,7 +102,7 @@ Usage
 
     **Overlapping Prefix Check**
 
-        >>> call_class.send_prefix_list(name="HelpMe", prefix="192.168.1.0/26", seq="20", action="permit")
+        >>> send_prefix_list(name="HelpMe", prefix="192.168.1.0/26", seq="20", action="permit")
             Traceback (most recent call last):
               File "<input>", line 1, in <module>
               File "C:\Users\JoeSmo\PycharmProjects\IPOperations\IPOperations\isr_lists.py", line 502, in send_prefix_list
@@ -116,7 +116,7 @@ Usage
     **external the program will warn you of this. If your selection no, the prefix will be canceled and an expection will**
     **be thrown. If yes, the prefix will be added to the list.**
 
-        >>> call_class.send_prefix_list(name="HelpMe", prefix="10.10.12.0/24", seq="30", action="permit")
+        >>> send_prefix_list(name="HelpMe", prefix="10.10.12.0/24", seq="30", action="permit")
         Prefix is external/not local, Are you sure you want to add (yes/no)?
         no
         Traceback (most recent call last):
