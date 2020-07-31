@@ -304,4 +304,3 @@ def send_prefix_list(username, password, host, **list_attributes) -> None:
 
 # ^^^^^^^^^^^^^^^^^^^^ End user funtions ^^^^^^^^^^^^^^^^^^^^
 
-view_prefix_list(username="cisco", password="cisco", host="10.48.1.51")
