@@ -31,18 +31,6 @@ def is_seq_list(list_or_dict):
     return make_list
 
 
-def is_ge_or_le(list_attributes):
-    # Check ge or le for configuration template variable
-    try:
-        mask = list_attributes["ge"]
-        ge_le = "ge"
-    except KeyError:
-        mask = list_attributes["le"]
-        ge_le = "le"
-
-    return mask, ge_le
-
-
 def is_permit_or_deny(sequence) -> str:
     """Gets key, permit or deny from prefix statement"""
 
@@ -64,12 +52,12 @@ def check_duplicate_ge_le(prefix_lists, list_name, seq, prefix, ge=None, le=None
         lists = is_seq_list(prefix_list["seq"])
         for sequence in lists:
             action = is_permit_or_deny(sequence)
-            if list_name == prefix_list["name"] and seq == sequence["no"]:
+            if list_name == prefix_list.get("name") and seq == sequence.get("no"):
                 raise ValueError("Sequence Exist")
-            if sequence[action]["ip"][-2:] == ge or sequence[action]["ip"][-2:] == ge_le and prefix == sequence[action]["ip"]:
-                raise ValueError(f"ge_le value overlaps with prefix-length: seq {sequence['no']} prefix: {sequence[action]['ip']}")
-            if sequence[action]["ip"][-2:] == le or sequence[action]["ip"][-2:] == ge_le and prefix == sequence[action]["ip"]:
-                raise ValueError(f"ge_le value overlaps with prefix-length: seq {sequence['no']} prefix: {sequence[action]['ip']}")
+            if sequence[action].get("ip")[-2:] == ge or sequence[action].get("ip")[-2:] == ge_le and prefix == sequence[action].get("ip"):
+                raise ValueError(f"ge_le value overlaps with prefix-length: seq {sequence['no']} prefix: {sequence[action].get('ip')}")
+            if sequence[action].get("ip")[-2:] == le or sequence[action].get("ip")[-2:] == ge_le and prefix == sequence[action].get("ip"):
+                raise ValueError(f"ge_le value overlaps with prefix-length: seq {sequence['no']} prefix: {sequence[action].get('ip')}")
 
 
 def check_duplicate(prefix_lists, list_name, seq, proposed_prefix) -> None:
@@ -81,10 +69,10 @@ def check_duplicate(prefix_lists, list_name, seq, proposed_prefix) -> None:
         for sequence in lists:
             action = is_permit_or_deny(sequence)
             if list_name == prefix_list["name"] and seq == sequence["no"]:
-                raise ValueError(f"Sequence Exist Seq: {sequence['no']}")
-            if list_name == prefix_list["name"] and ipaddress.IPv4Network(proposed_prefix).\
-                    overlaps(ipaddress.IPv4Network(sequence[action]["ip"])):
-                raise ValueError(f"Prefix Exist/Overlaps List: {list_name} Seq:{sequence['no']}")
+                raise ValueError(f"Sequence Exist Seq: {sequence.get('no')}")
+            if list_name == prefix_list.get("name") and ipaddress.IPv4Network(proposed_prefix).\
+                    overlaps(ipaddress.IPv4Network(sequence[action].get("ip"))):
+                raise ValueError(f"Prefix Exist/Overlaps List: {list_name} Seq:{sequence.get('no')}")
 
 
 def is_overlapping(proposed_cidrs, current_cidrs, sequence, proposed_prefix, list_name, current_prefix) -> None:
@@ -96,40 +84,33 @@ def is_overlapping(proposed_cidrs, current_cidrs, sequence, proposed_prefix, lis
         pass
 
 
-def check_overlapping(prefix_lists, proposed_prefix, list_name, ge=None, le=None, ge_le=None, mask=None) -> None:
+def check_overlapping(prefix_lists, proposed_prefix, list_name, ge=None, le=None) -> None:
     """Checks to see if the proposed prefix overlaps with a current prefix statement"""
-
-    proposed_cidrs = None
-    current_cidrs = None
-
-    if le is not None and le is not None:
-        proposed_cidrs = list(range(int(ge), int(le)))
-    if ge_le == "ge":
-        proposed_cidrs = list(range(int(mask), 33))
-    if ge_le == "le":
-        proposed_cidrs = list(range(6, int(mask)))
 
     for prefix_list in prefix_lists:
         lists = is_seq_list(prefix_list["seq"])
         for sequence in lists:
             action = is_permit_or_deny(sequence)
 
-            if prefix_list["name"] == list_name and ipaddress.IPv4Network(proposed_prefix).overlaps(ipaddress.IPv4Network(sequence[action]["ip"])):
+            if prefix_list.get("name") == list_name and ipaddress.IPv4Network(proposed_prefix).overlaps(ipaddress.IPv4Network(sequence[action].get("ip"))):
                 # Get existing ge/le and compare to proposed ge/le
                 try:
-                    current_cidrs = list(range(int(sequence[action]["ge"]), int(sequence[action]["le"])))
+                    proposed_cidrs = list(range(int(ge), int(le)))
+                    current_cidrs = list(range(int(sequence[action].get("ge")), int(sequence[action].get("le"))))
                     is_overlapping(proposed_cidrs, current_cidrs, sequence, proposed_prefix, list_name, sequence[action]["ip"])
-                except (KeyError, TypeError, UnboundLocalError):
+                except TypeError:
                     pass
                 try:
-                    current_cidrs = list(range(int(sequence[action]["ge"]), 33))
+                    proposed_cidrs = list(range(int(ge), 33))
+                    current_cidrs = list(range(int(sequence[action].get("ge")), 33))
                     is_overlapping(proposed_cidrs, current_cidrs, sequence, proposed_prefix, list_name, sequence[action]["ip"])
-                except (KeyError, TypeError, UnboundLocalError):
+                except TypeError:
                     pass
                 try:
-                    current_cidrs = list(range(int(sequence[action]["ip"][-2:]), int(sequence[action]["le"])))
-                    is_overlapping(proposed_cidrs, current_cidrs, sequence, proposed_prefix, list_name, sequence[action]["ip"])
-                except (KeyError, TypeError, UnboundLocalError):
+                    proposed_cidrs = list(range(6, int(le)))
+                    current_cidrs = list(range(int(sequence[action].get("ip")[-2:]), int(sequence[action].get("le"))))
+                    is_overlapping(proposed_cidrs, current_cidrs, sequence, proposed_prefix, list_name, sequence[action].get("ip"))
+                except TypeError:
                     pass
 
 
@@ -194,7 +175,6 @@ def find_prefix(username, password, host, prefix) -> None:
 
     for prefix_list in prefix_lists[0]:
         lists = is_instance(prefix_list["seq"])
-        # Config is list if only one prefix statement in list
         for sequence in lists:
             action = is_permit_or_deny(sequence)
             try:
@@ -213,19 +193,11 @@ def view_prefix_list(username, password, host) -> None:
     prefix_lists = get_prefix_list(username, password, host)
 
     for prefix_list in prefix_lists[0]:
-        print(prefix_list["name"])
+        print(prefix_list.get("name"))
         lists = is_instance(prefix_list["seq"])
-        # Config is list if only one prefix statement in list
         for sequence in lists:
             action = is_permit_or_deny(sequence)
-            if "ge" in sequence[action] and "le" in sequence[action]:
-                print(sequence["no"], action, sequence[action]["ip"], sequence[action]["ge"], sequence[action]["le"])
-            if "ge" in sequence[action] and "le" not in sequence[action]:
-                print(sequence["no"], action, sequence[action]["ip"], sequence[action]["ge"])
-            if "le" in sequence[action] and "ge" not in sequence[action]:
-                print(sequence["no"], action, sequence[action]["ip"], sequence[action]["le"])
-            if "le" not in sequence[action] and "ge" not in sequence[action]:
-                print(sequence["no"], action, sequence[action]["ip"])
+            print(sequence.get("no"), action, sequence[action].get("ip"), sequence[action].get("ge", ""), sequence[action].get("le", ""))
         print("\n")
 
 
@@ -237,7 +209,7 @@ def send_prefix_list(username, password, host, **list_attributes) -> None:
     # Get prefix-list configuration
     prefix_lists = get_prefix_list(username, password, host)
     search_for_route = Get_Routing.find_prefix(host=host, username=username, password=password,
-                                               proposed_prefix=list_attributes["prefix"])
+                                               proposed_prefix=list_attributes.get("prefix"))
 
     # Check to see if the proposed prefix in the current routing table
     if True in search_for_route.values():
@@ -245,59 +217,43 @@ def send_prefix_list(username, password, host, **list_attributes) -> None:
     else:
         pass
 
-    # Depending on user inputs/arguments, one of 4 config templates will be choosen. If the device doesnt have prefix-list, bypass the checks.
+    # Build device configurations using the following arguments
 
-    if "le" in list_attributes and "ge" in list_attributes:
+    config_template = f"""<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
+                <prefix-list><prefixes><name>{list_attributes["name"]}</name> 
+                <seq>
+                <no>{list_attributes['seq']}</no> 
+                <{list_attributes["action"]}>
+                <ip>{list_attributes["prefix"]}</ip>"""
+
+    if list_attributes.get("le") and list_attributes.get("ge"):
         if prefix_lists[0] is not None:
-            check_overlapping(prefix_lists[0], list_attributes["prefix"], list_attributes["name"], ge=list_attributes["ge"], le=list_attributes["le"])
-            check_duplicate_ge_le(prefix_lists[0], list_attributes["name"], list_attributes["seq"], list_attributes["prefix"], ge=list_attributes["ge"], le=list_attributes["le"])
+            check_overlapping(prefix_lists[0], list_attributes.get("prefix"), list_attributes.get("name"), ge=list_attributes.get("ge"), le=list_attributes.get("le"))
+            check_duplicate_ge_le(prefix_lists[0], list_attributes.get("name"), list_attributes.get("seq"), list_attributes.get("prefix"), ge=list_attributes.get("ge"), le=list_attributes.get("le"))
 
-        config_template = f"""<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
-                    <prefix-list><prefixes><name>{list_attributes["name"]}</name> 
-                    <seq>
-                    <no>{list_attributes["seq"]}</no>
-                    <{list_attributes["action"]}>
-                    <ip>{list_attributes["prefix"]}</ip> 
-                    <ge>{list_attributes["ge"]}</ge>
-                    <le>{list_attributes["le"]}</le>
-                    </{list_attributes["action"]}>
-                    </seq>
-                    </prefixes></prefix-list></ip></native></config>"""
+        config_template = config_template + f"""<ge>{list_attributes["ge"]}</ge>
+                          <le>{list_attributes["le"]}</le>
+                          </{list_attributes["action"]}>"""
 
-    elif "ge" in list_attributes or "le" in list_attributes:
+    elif list_attributes.get("ge") or list_attributes.get("le"):
 
-        ge_le = is_ge_or_le(list_attributes)
         if prefix_lists[0] is not None:
-            check_overlapping(prefix_lists[0], list_attributes["prefix"], list_attributes["name"],  ge_le=ge_le[1], mask=ge_le[0])
-            check_duplicate_ge_le(prefix_lists[0], list_attributes["name"], list_attributes["seq"], list_attributes["prefix"], ge=ge_le)
+            check_overlapping(prefix_lists[0], list_attributes.get("prefix"), list_attributes.get("name"))
+            check_duplicate_ge_le(prefix_lists[0], list_attributes.get("name"), list_attributes.get("seq"),
+                                  list_attributes.get("prefix"), le=list_attributes.get("le"), ge=list_attributes.get("ge"))
+        if list_attributes.get("ge"):
+            config_template = config_template + f"""<ge>{list_attributes.get("ge")}</ge>
+                                                </{list_attributes["action"]}>"""
+        if list_attributes.get("le"):
+            config_template = config_template + f"""<le>{list_attributes.get("le")}</le>
+                                                </{list_attributes["action"]}>"""
 
-        # Check ge or le for configuration template variable
-        config_template = f"""<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
-                    <prefix-list><prefixes><name>{list_attributes["name"]}</name> 
-                    <seq>
-                    <no>{list_attributes['seq']}</no> 
-                    <{list_attributes["action"]}>
-                    <ip>{list_attributes["prefix"]}</ip> 
-                    <{ge_le[1]}>{ge_le[0]}</{ge_le[1]}> 
-                    </{list_attributes["action"]}>
-                    </seq>
-                    </prefixes></prefix-list></ip></native></config>"""
+    else:
+        check_duplicate(prefix_lists[0], list_attributes.get("name"), list_attributes.get("seq"), list_attributes.get("prefix"))
+        config_template = config_template + f"""</{list_attributes["action"]}>"""
 
-    elif "le" not in list_attributes and "ge" not in list_attributes:
-        if prefix_lists[0] is not None:
-            check_overlapping(prefix_lists[0], list_attributes["prefix"], list_attributes["name"])
-            check_duplicate(prefix_lists[0], list_attributes["name"], list_attributes["seq"], list_attributes["prefix"])
-
-        config_template = f"""<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
-                    <prefix-list><prefixes><name>{list_attributes["name"]}</name> 
-                    <seq>
-                    <no>{list_attributes["seq"]}</no> 
-                    <{list_attributes["action"]}>
-                    <ip>{list_attributes["prefix"]}</ip>
-                    </{list_attributes["action"]}>
-                    </seq>
-                    </prefixes></prefix-list></ip></native></config>"""
-
+    # Close XML elements out at the end of the configuration template
+    config_template = config_template + f"""</seq></prefixes></prefix-list></ip></native></config>"""
     # Send the configuration via netconf
     prefix_lists[1].edit_config(config=config_template, target="running")
 
