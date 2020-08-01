@@ -220,20 +220,20 @@ def send_prefix_list(username, password, host, **list_attributes) -> None:
     # Build device configurations using the following arguments
 
     config_template = f"""<config><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><ip>
-                <prefix-list><prefixes><name>{list_attributes["name"]}</name> 
+                <prefix-list><prefixes><name>{list_attributes.get("name")}</name> 
                 <seq>
-                <no>{list_attributes['seq']}</no> 
-                <{list_attributes["action"]}>
-                <ip>{list_attributes["prefix"]}</ip>"""
+                <no>{list_attributes.get("seq")}</no> 
+                <{list_attributes.get("action")}>
+                <ip>{list_attributes.get("prefix")}</ip>"""
 
     if list_attributes.get("le") and list_attributes.get("ge"):
         if prefix_lists[0] is not None:
             check_overlapping(prefix_lists[0], list_attributes.get("prefix"), list_attributes.get("name"), ge=list_attributes.get("ge"), le=list_attributes.get("le"))
             check_duplicate_ge_le(prefix_lists[0], list_attributes.get("name"), list_attributes.get("seq"), list_attributes.get("prefix"), ge=list_attributes.get("ge"), le=list_attributes.get("le"))
 
-        config_template = config_template + f"""<ge>{list_attributes["ge"]}</ge>
-                          <le>{list_attributes["le"]}</le>
-                          </{list_attributes["action"]}>"""
+        config_template = config_template + f"""<ge>{list_attributes.get("ge")}</ge>
+                          <le>{list_attributes.get("le")}</le>
+                          </{list_attributes.get("action")}>"""
 
     elif list_attributes.get("ge") or list_attributes.get("le"):
 
@@ -243,14 +243,14 @@ def send_prefix_list(username, password, host, **list_attributes) -> None:
                                   list_attributes.get("prefix"), le=list_attributes.get("le"), ge=list_attributes.get("ge"))
         if list_attributes.get("ge"):
             config_template = config_template + f"""<ge>{list_attributes.get("ge")}</ge>
-                                                </{list_attributes["action"]}>"""
+                                                </{list_attributes.get("action")}>"""
         if list_attributes.get("le"):
             config_template = config_template + f"""<le>{list_attributes.get("le")}</le>
-                                                </{list_attributes["action"]}>"""
+                                                </{list_attributes.get("action")}>"""
 
     else:
         check_duplicate(prefix_lists[0], list_attributes.get("name"), list_attributes.get("seq"), list_attributes.get("prefix"))
-        config_template = config_template + f"""</{list_attributes["action"]}>"""
+        config_template = config_template + f"""</{list_attributes.get("action")}>"""
 
     # Close XML elements out at the end of the configuration template
     config_template = config_template + f"""</seq></prefixes></prefix-list></ip></native></config>"""
