@@ -118,3 +118,23 @@ Description:
                 TenGigabitEthernet 0/0/0 is down
                 TenGigabitEthernet 0/0/1 is down
                 Port-channel-subinterface None is up
+
+**Example 9 (Get IP Interfaces w/HSRP: )**
+
+        >>> get_ip_interfaces(username="cisco", password="cisco", host="192.168.1.1")
+                Vlan45
+                IP: 10.10.45.2 255.255.255.0
+                Priority: 110
+                Group: 100
+                Standby Address: 10.10.45.1
+                Vlan50
+                IP: 10.10.50.2 255.255.255.0
+                Priority: 110
+                Group: 100
+                Standby Address: 10.10.50.1
+                Vlan51
+                IP: 10.10.51.2 255.255.255.0
+                Priority: 110
+                Group: 100
+                Standby Address: 10.10.51.1
+        
