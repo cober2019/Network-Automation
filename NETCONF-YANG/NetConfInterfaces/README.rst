@@ -12,11 +12,10 @@ Description:
 
 **NETCONF Interfaces allows Network Engineers to view a wide range of data from a given interface:**
 
-+ Interface policy/queueing statistics
 + Trunk Interfaces
-+ Interface Input/Output
++ Access Inrerfaces
++ IP Interfaces
 + Interface Uptime
-+ Interface Bandwidth Usage (Polled During Method Initiation)
 + Interface Status (up/down, admin up/down, phys address, speed, ip)
 
 **Example 3 (Interface Uptime: )**
