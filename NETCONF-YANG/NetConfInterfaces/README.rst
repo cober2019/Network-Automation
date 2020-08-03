@@ -100,7 +100,6 @@ Description:
         >>> get_access_ports(username="cisco", password="cisco", host="192.168.1.1")
                 GigabitEthernet1/0/1
                 Vlan: 10
-                
                 GigabitEthernet1/0/2
                 Vlan: Native
         
