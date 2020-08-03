@@ -97,8 +97,12 @@ Description:
 
 **Example 7 (Get VLAN Access Ports: )**
 
-        >>> call_class.view_vlan_access_ports()
-        {'GigabitEthernet1/0/15': '77'}
+        >>> get_access_ports(username="cisco", password="cisco", host="192.168.1.1")
+                GigabitEthernet1/0/1
+                Vlan: 10
+                
+                GigabitEthernet1/0/2
+                Vlan: Native
         
 **Example 8 (Interface up/down: )**
 
