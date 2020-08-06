@@ -250,5 +250,3 @@ class RoutingIos(Abstract.Routing):
                     DatabaseOps.db_update_ios_xe(vrf=vrf, prefix=prefix, protocol=routes_attributes[0], admin_distance=routes_attributes[1], metric=route_metrics,
                                                  nexthops=next_hops, interfaces=interfaces, tag=None, age=route_age)
 
-
-getroutes = RoutingIos(host="192.168.156.20", username="admin", password="C!sco!@#")
