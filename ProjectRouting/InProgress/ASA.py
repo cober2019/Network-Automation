@@ -10,8 +10,6 @@ import Software.DeviceLogin as ConnectWith
 def get_routing_table(netmiko_connection: object) -> str:
     """Using the connection object created from the netmiko_login(), get routes from device"""
 
-    routes = None
-
     netmiko_connection.send_command(command_string="terminal pager 0")
     routes = netmiko_connection.send_command(command_string="show route")
 
@@ -169,5 +167,3 @@ class RoutingAsa(Abstract.Routing):
                     DatabaseOps.db_update_asa(vrf=vrf, prefix=prefix, protocol=routes_attributes[0],
                                               admin_distance=routes_attributes[1], metric=route_metrics,
                                               nexthops=next_hops, interfaces=interfaces, tag=None, age=route_age)
-
-
