@@ -20,7 +20,7 @@ def get_vrfs(netmiko_connection: object):
         if "Name" in line:
             pass
         else:
-            vrf = line.split(" ")[2]
+            vrf = line.split()[0]
             vrfs.append(vrf)
 
     return vrfs
@@ -36,7 +36,7 @@ def get_routing_table(netmiko_connection: object, vrfs=None):
         routes = netmiko_connection.send_command(command_string="show ip route")
     elif vrfs:
         netmiko_connection.send_command(command_string="terminal length 0")
-        routes = netmiko_connection.send_command(command_string="show ip route vrf %s" % vrfs[0])
+        routes = netmiko_connection.send_command(command_string=f"show ip route vrf {vrfs}")
 
     return routes
 
@@ -61,6 +61,7 @@ class RoutingIos(Abstract.Routing):
         self.prefix = None
         self.protocol = None
         self.mask = None
+        self.vrf = None
 
         try:
             self.enable = enable["enable"]
@@ -68,9 +69,12 @@ class RoutingIos(Abstract.Routing):
             self.enable = None
 
         self.create_db = DatabaseOps.RoutingDatabase()
-        self.initialize_class_methods()  # Initiate class methods
+        self.device_login()
+        self._parse_global_routing_entries()
+        self._parse_vrf_routing_entries()
+        self.database()
 
-    def initialize_class_methods(self):
+    def device_login(self):
 
         """Using Netmiko, this methis logs onto the device and gets the routing table. It then loops through each prefix
         to find the routes and route types."""
@@ -78,64 +82,55 @@ class RoutingIos(Abstract.Routing):
         # Check to see if self.enable has been assigned. Create connection object, save object to instance attribute
 
         if self.enable is None:
-            create_netmiko_connection = ConnectWith.netmiko(host=self.host,
-                                                            username=self.username,
-                                                            password=self.password)
+            self.netmiko_connection = ConnectWith.netmiko(host=self.host,
+                                                          username=self.username,
+                                                          password=self.password)
         else:
-            create_netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
-                                                                     username=self.username,
-                                                                     password=self.password,
-                                                                     enable_pass=self.enable)
+            self.netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
+                                                                   username=self.username,
+                                                                   password=self.password,
+                                                                   enable_pass=self.enable)
 
-        self.netmiko_connection = create_netmiko_connection
+    def _parse_vrf_routing_entries(self):
+
+        self.prefix = None
         vrfs = get_vrfs(self.netmiko_connection)
-        self._parse_global_routing_entries()
-        self._parse_vrf_routing_entries(vrfs)
-        self.database()
-
-    def _parse_vrf_routing_entries(self, vrfs):
-
         for vrf in vrfs:
-            route_entries = get_routing_table(self.netmiko_connection, vrfs=vrfs)
-            cli_line = route_entries.split("\n")
-            for routing_entry in cli_line:
-                self._find_prefix(routing_entry)
-                self._route_breakdown(routing_entry)
-                self._routing[vrf] = self.routes
-
-            self.routes = collections.defaultdict(list)
+            self.vrf = vrf
+            route_entries = get_routing_table(self.netmiko_connection, vrfs=vrf)
+            list(map(self._route_breakdown, route_entries.splitlines()))
+            self._routing[self.vrf] = self.routes
 
     def _parse_global_routing_entries(self):
 
         route_entries = get_routing_table(self.netmiko_connection)
-        line = re.findall(r'.*(?=\n)', route_entries)
-        get_last_line = re.findall(r'.*$', route_entries)
-        line.append(get_last_line[0])
-
-        for routing_entry in line:
-            self._find_prefix(routing_entry)
-            self._route_breakdown(routing_entry)
-            self._routing["global"] = self.routes
-
+        list(map(self._route_breakdown, route_entries.splitlines()))
+        self._routing["global"] = self.routes
         self.routes = collections.defaultdict(list)
 
     def _write_to_dict(self, route_details):
 
-        # Pass if protocol key is None. Preventsd type errors elsewhere
-        if route_details.get("protocol") is None:
-            pass
-        else:
+        if self.vrf is None and route_details.get("protocol") is not None:
+            self.routes[self.prefix].append(route_details)
+
+        elif self.vrf is not None and route_details.get("protocol") is not None:
             self.routes[self.prefix].append(route_details)
 
     def _find_prefix(self, prefix):
 
-        # Standard routing entires will mask
         if prefix.rfind("via") == -1:
+            try:
+                self.prefix = str(ipaddress.IPv4Network(prefix.split()[2]))
+            except (ipaddress.AddressValueError, IndexError, ValueError):
+                pass
+
             try:
                 self.prefix = str(ipaddress.IPv4Network(prefix.split()[1]))
             except (ipaddress.AddressValueError, IndexError, ValueError):
                 pass
+
         elif prefix.rfind("via") != -1:
+
             try:
                 self.prefix = str(ipaddress.IPv4Network(prefix.split()[1]))
             except (ipaddress.AddressValueError, IndexError, ValueError):
@@ -147,6 +142,7 @@ class RoutingIos(Abstract.Routing):
                 self.mask = prefix.split()[0][-3:]
             except (ipaddress.AddressValueError, IndexError, ValueError):
                 pass
+
         # Add self.mask to entries that are variably subnetted, line 139
         try:
             if prefix.rfind("via") != -1 and prefix.split()[1][-3] != "/" and prefix.split()[1][-2] != "/":
@@ -180,10 +176,15 @@ class RoutingIos(Abstract.Routing):
         route_details = {"protocol": None, "admin-distance": None, "metric": None,
                          "next-hop": None, "route-age": None, "interface": "None"}
 
+        self._find_prefix(routing_entry)
         protocol = self._get_protocol(routing_entry)
 
         if routing_entry.rfind("connected") != -1:
             route_details["admin-distance"] = 0
+            route_details["metric"] = 0
+            route_details["next-hop"] = routing_entry.split()[4].strip(",")
+            route_details["route-age"] = "permanent"
+            route_details["interface"] = routing_entry.split()[5].strip(",")
             route_details["protocol"] = "C"
         elif routing_entry.rfind("via") != -1:
             if routing_entry.split()[0].rfind("[") == -1:
@@ -232,14 +233,13 @@ class RoutingIos(Abstract.Routing):
                 routes_attributes = []
                 for attributes in val_prefix:
                     for attribute, value in attributes.items():
-                        # Save routing attributes to list in preperation for DB write
                         routes_attributes.append(value)
 
-                # Get the length of the list. Each will be a fixed length. Combine next hops, interface, metrics
-                # and tags. This is so we dont have to modify DB rows/columns.
                 if len(routes_attributes) == 6:
-                    DatabaseOps.db_update_ios_xe(vrf=vrf, prefix=prefix, protocol=routes_attributes[0], admin_distance=routes_attributes[1],
-                                                 metric=routes_attributes[2], nexthops=routes_attributes[3], interfaces=routes_attributes[5], tag=None, age=routes_attributes[4])
+                    DatabaseOps.db_update_ios_xe(vrf=vrf, prefix=prefix, protocol=routes_attributes[0],
+                                                 admin_distance=routes_attributes[1],
+                                                 metric=routes_attributes[2], nexthops=routes_attributes[3],
+                                                 interfaces=routes_attributes[5], tag=None, age=routes_attributes[4])
 
                 if len(routes_attributes) == 12:
                     next_hops = routes_attributes[3] + ", " + routes_attributes[9]
@@ -247,5 +247,8 @@ class RoutingIos(Abstract.Routing):
                     interfaces = routes_attributes[5] + ", " + routes_attributes[11]
                     route_age = routes_attributes[4] + ", " + routes_attributes[10]
 
-                    DatabaseOps.db_update_ios_xe(vrf=vrf, prefix=prefix, protocol=routes_attributes[0], admin_distance=routes_attributes[1], metric=route_metrics,
+                    DatabaseOps.db_update_ios_xe(vrf=vrf, prefix=prefix, protocol=routes_attributes[0],
+                                                 admin_distance=routes_attributes[1], metric=route_metrics,
                                                  nexthops=next_hops, interfaces=interfaces, tag=None, age=route_age)
+
+
