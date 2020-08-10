@@ -3,10 +3,9 @@ Project Routing
 **Description**
 --------------
 
-  Project Routing is an open-source project which goal is to collect and store routing tabled by vendor and vendor table types. The tables are stored in two different ways.
+  Project Routing is an open-source project which goal is to collect and store routing tabled by vendor and vendor table types. All routes are stored in a local SQL db
+  using sqllite3.
   
-  + Memorey, dictionary format
-  + SqlLite3
 
 **Contributions:**
 
