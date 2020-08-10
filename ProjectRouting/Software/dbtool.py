@@ -88,7 +88,7 @@ if __name__ == '__main__':
                 DbQueries.print_protocols(get_tables[0])
                 protocol = input("Protocol: ")
                 print("\n")
-                DbQueries.search_db_asa(context=None, protocol=protocol)
+                DbQueries.search_db_asa(protocol=protocol)
 
             elif get_tables[0] == "Routing_IOS_XE":
                 DbQueries.get_vrfs(get_tables[0])
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
                 prefix = input("Prefix: ")
                 print("\n")
-                DbQueries.search_db_asa(context=None, prefix=prefix)
+                DbQueries.search_db_asa(prefix=prefix)
 
             elif get_tables[0] == "Routing_IOS_XE":
 
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
                 metric = input("Metric: ")
                 print("\n")
-                DbQueries.search_db_asa(context=None, metric=metric)
+                DbQueries.search_db_asa(metric=metric)
 
             elif get_tables[0] == "Routing_IOS_XE":
 
@@ -166,7 +166,7 @@ if __name__ == '__main__':
                 DbQueries.get_admin_disatnces(get_tables[0])
                 ad = input("AD: ")
                 print("\n")
-                DbQueries.search_db_asa(context=None, ad=ad)
+                DbQueries.search_db_asa(ad=ad)
 
             elif get_tables[0] == "Routing_IOS_XE":
 
@@ -195,7 +195,7 @@ if __name__ == '__main__':
                 DbQueries.print_routing_interfaces(table=get_tables[0])
                 interface = input("Interface: ")
                 print("\n")
-                DbQueries.search_db_asa(context=None, interface=interface)
+                DbQueries.search_db_asa(interface=interface)
 
             elif get_tables[0] == "Routing_IOS_XE":
 
@@ -224,7 +224,7 @@ if __name__ == '__main__':
                 DbQueries.get_tags(table=get_tables[0])
                 tag = input("Tag: ")
                 print("\n")
-                DbQueries.search_db_asa(context=None, tag=tag)
+                DbQueries.search_db_asa(tag=tag)
 
             elif get_tables[0] == "Routing_IOS_XE":
 
