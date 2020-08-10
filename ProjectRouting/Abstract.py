@@ -8,10 +8,6 @@ class Routing(ABC):
         pass
 
     @abstractmethod
-    def device_login(self):
-        pass
-
-    @abstractmethod
     def _find_prefix(self, routing_entry):
         pass
 
