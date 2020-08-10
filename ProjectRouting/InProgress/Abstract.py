@@ -4,11 +4,11 @@ from abc import ABC, abstractmethod
 class Routing(ABC):
 
     @abstractmethod
-    def initialize_class_methods(self):
+    def device_login(self):
         pass
 
     @abstractmethod
-    def _parse_global_routing_entries(self):
+    def device_login(self):
         pass
 
     @abstractmethod
