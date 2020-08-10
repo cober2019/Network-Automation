@@ -37,36 +37,31 @@ class RoutingAsa(Abstract.Routing):
             self.enable = None
 
         self.create_db = DatabaseOps.RoutingDatabase()
-        self.initialize_class_methods()
+        self.device_login()
+        self._parse_global_routing_entries()
+        self.database()
 
-    def initialize_class_methods(self):
+    def device_login(self):
         """Logs into a device using netmiko. Check for enables password, begins parsing data and call databse
         method for DB writing"""
 
         # Check to see if self.enable has been assigned. Create connection object, save object to instance attribute
 
         if self.enable is None:
-            create_netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
-                                                                     username=self.username,
-                                                                     password=self.password)
+            self.netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
+                                                                   username=self.username,
+                                                                   password=self.password)
         else:
-            create_netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
-                                                                     username=self.username,
-                                                                     password=self.password,
-                                                                     enable_pass=self.enable)
-
-        self.netmiko_connection = create_netmiko_connection
-        self._parse_global_routing_entries()
-        self.database()
+            self.netmiko_connection = ConnectWith.netmiko_w_enable(host=self.host,
+                                                                   username=self.username,
+                                                                   password=self.password,
+                                                                   enable_pass=self.enable)
 
     def _parse_global_routing_entries(self):
         """Gets routing table and calls methods to parse and save routing attributes"""
 
         route_entries = get_routing_table(self.netmiko_connection)
-        cli_line = route_entries.split("\n")
-        for routing_entry in cli_line:
-            self._find_prefix(routing_entry)
-            self._route_breakdown(routing_entry)
+        list(map(self._route_breakdown, route_entries.splitlines()))
 
         self._routing["None"] = self.routes
         self.routes = collections.defaultdict(list)
@@ -86,6 +81,7 @@ class RoutingAsa(Abstract.Routing):
                     self.prefix = str(ipaddress.ip_address(prefix.split()[1])) + " " + prefix.split()[2]
                 except (ipaddress.AddressValueError, IndexError, ValueError):
                     pass
+
         if prefix.rfind("via") != -1:
             if prefix.split()[1] == "S" or "S*":
                 try:
@@ -112,7 +108,9 @@ class RoutingAsa(Abstract.Routing):
         route_details = {"protocol": None, "admin-distance": None, "metric": None,
                          "next-hop": None, "route-age": None, "interface": "None"}
 
+        self._find_prefix(routing_entry)
         self._get_protocol(routing_entry)
+
         if routing_entry.rfind("connected") != -1:
             route_details["admin-distance"] = 0
             route_details["protocol"] = "C"
@@ -167,3 +165,4 @@ class RoutingAsa(Abstract.Routing):
                     DatabaseOps.db_update_asa(vrf=vrf, prefix=prefix, protocol=routes_attributes[0],
                                               admin_distance=routes_attributes[1], metric=route_metrics,
                                               nexthops=next_hops, interfaces=interfaces, tag=None, age=route_age)
+
