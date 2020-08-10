@@ -1,6 +1,5 @@
 """Helper class to parse routing entries and store to sql database"""
 
-import re
 import collections
 import Database.DatabaseOps as DatabaseOps
 import Abstract
