@@ -1,5 +1,6 @@
 """Helper class to parse routing entries and store to sql database"""
 
+
 import collections
 import Database.DatabaseOps as DatabaseOps
 import Abstract
@@ -19,8 +20,7 @@ def get_vrfs(netmiko_connection: object):
         if "Name" in line:
             pass
         else:
-            vrf = line.split()[0]
-            vrfs.append(vrf)
+            vrfs.append(line.split()[0])
 
     return vrfs
 
@@ -49,7 +49,7 @@ class RoutingIos(Abstract.Routing):
     Routing_db = sqlite3.connect("Routing")
     cursor = Routing_db.cursor()
 
-    def __init__(self, host=None, username=None, password=None, **enable):
+    def __init__(self, host=None, username=None, password=None, enable=None):
 
         self.host = host
         self.username = username
@@ -61,11 +61,7 @@ class RoutingIos(Abstract.Routing):
         self.protocol = None
         self.mask = None
         self.vrf = None
-
-        try:
-            self.enable = enable["enable"]
-        except KeyError:
-            self.enable = None
+        self.enable = enable
 
         self.create_db = DatabaseOps.RoutingDatabase()
         self.device_login()
