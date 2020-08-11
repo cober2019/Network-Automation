@@ -30,11 +30,7 @@ class RoutingAsa(Abstract.Routing):
         self._routing = {}
         self.prefix = None
         self.protocol = None
-
-        try:
-            self.enable = enable
-        except TypeError:
-            self.enable = None
+        self.enable = enable
 
         self.create_db = DatabaseOps.RoutingDatabase()
         self.device_login()
