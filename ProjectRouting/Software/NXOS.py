@@ -54,8 +54,7 @@ def get_vrfs(netmiko_connection, vdc) -> list:
         elif not line.split():
             pass
         else:
-            vrf = line.split()[0]
-            vrfs.append(vrf)
+            vrfs.append(line.split()[0])
 
     return vrfs
 
@@ -64,7 +63,7 @@ class RoutingNexus(Abstract.Routing):
     route_protocols = ("L", "C", "S", "R", "M", "B", "D", "D EX", "O", "O IA", "O N1", "O N2", "O E1", "O E2", "i",
                        "i su", "i L1", "i l2", "*", "U", "o", "P", "H", "l", "a", "+", "%", "p", "S*")
 
-    def __init__(self, host=None, username=None, password=None, **enable):
+    def __init__(self, host=None, username=None, password=None, enable=None):
 
         self.host = host
         self.username = username
@@ -76,11 +75,7 @@ class RoutingNexus(Abstract.Routing):
         self.prefix = None
         self.vrf = None
         self.vdc = None
-
-        try:
-            self.enable = enable["enable"]
-        except KeyError:
-            self.enable = None
+        self.enable = enable
 
         self.create_db = DataBaseOps.RoutingDatabase()
         self.device_login()  # Initiate class methods
