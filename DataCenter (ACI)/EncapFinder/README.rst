@@ -7,7 +7,7 @@ Encap Finder
   
 **Usages**
 ___________
-**Outputs have bee modifed for confidentiality**
+***Outputs have bee modifed for confidentiality**
 
 
 **Just simply input your apic, username, and password when prompted.**
