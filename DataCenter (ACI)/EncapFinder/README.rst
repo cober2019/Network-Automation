@@ -23,7 +23,7 @@ Enter desired encap when prompted:
                
 Get Results:
 
-           >>>    Access Policy Details:
+           >>>   Access Policy Details:
                  VLAN Pool(s): Pool-1
                                Pool-2
                                Pool-3
