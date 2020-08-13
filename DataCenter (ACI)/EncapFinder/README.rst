@@ -21,7 +21,7 @@ ___________
                |---------------------------------|
                Encap: 2000
                
-**Attached Encapsulation:**
+**EPG Attached Encapsulation:**
 
            >>>   Access Policy Details:
                  VLAN Pool(s): Pool-1
@@ -47,7 +47,7 @@ ___________
                                Path: 101: eth1/30
 
            
-**L3Out Encapsulation:**
+**Tenant L3Out Encapsulation:**
 
             >>>    Access Policy Details:
                    VLAN Pool(s): Pool-1
