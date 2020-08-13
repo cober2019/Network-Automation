@@ -5,7 +5,6 @@ Encap Finder
 
  Use EncapFinder to find where a encapsulation is assigned and what policies its associtied with.
   
-***Outputs have bee modifed for confidentiality**
 **Usages**
 ___________
 **Outputs have bee modifed for confidentiality**
