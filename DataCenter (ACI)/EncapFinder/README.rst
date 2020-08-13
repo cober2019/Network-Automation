@@ -9,19 +9,19 @@ Encap Finder
 **Usages**
 ___________
 
-Just simply input your apic, username, and password when prompted. 
+**Just simply input your apic, username, and password when prompted.**
 
            >>> APIC: 192.168.1.1
                Username: JoeSmo
                Password: Bananas
                
-Enter desired encap when prompted:
+**Enter desired encap when prompted:**
 
            >>> |-Target Encap
                |---------------------------------|
                Encap: 2000
                
-Get Results:
+**Attached Encapsulation:**
 
            >>>   Access Policy Details:
                  VLAN Pool(s): Pool-1
@@ -46,9 +46,23 @@ Get Results:
                                Path: 101-102: VPN-2
                                Path: 101: eth1/30
 
+           
+**L3Out Encapsulation:**
 
-
-
+            >>>    Access Policy Details:
+                   VLAN Pool(s): Pool-1
+                                 Pool-2
+                   Domain(s):    Dom-1
+                                 DOM-1
+                                 DOM-1
+                   AAEP(s):      AEP-1
+                                 AEP-2
+                                 AEP-3
+                   Encap Loc:    Tenant: DMZ
+                                 L3Out: Internet-Edge
+                                 Interface: IFP-SVI1000
+                   Path Attach:  EP: Edge-RTR-01
+                                 EP: Edge-RTR-02
 
 
     
