@@ -3,7 +3,7 @@ ACI Encap Finder
 **Description**
 --------------
 
- Use EncapFinder to find where a encapsulation is assigned and what policies its associtied with.
+ **Use EncapFinder to find where a encapsulation is assigned and what policies its associtied with.**
   
 **Usages**
 ___________
