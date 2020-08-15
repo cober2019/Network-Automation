@@ -1,15 +1,16 @@
 Endpoint Finder
 ------------------
 **Description:**
+__________________
 
-Use Endpoint Finder to find endpoint your ACI fabric. Query via IP address or MAC to receive a detailed report of the EP location.
+  Use Endpoint Finder to find endpoint your ACI fabric. Query via IP address or MAC to receive a detailed report of the EP location.
 
 
 **Usage**
 ___________
-***Querying by MAC provides more a more detailed report then by IP**
+  ***Querying by MAC provides more a more detailed report then by IP**
 
-**Find endpoint by IP address:** 
+  **Find endpoint by IP address:** 
 
                >>> Reverse Lookup:      00:50:56:61:27:33
                    Tenant:              Storage
@@ -19,7 +20,7 @@ ___________
                    Encapsulation:       vlan-2345
                    Reporting Leafs:     103, 104
                    
-**Find endpoint by MAC:** 
+  **Find endpoint by MAC:** 
 
                >>> Reverse Lookup:      10.10.10.1
                    Tenant:              Storage
