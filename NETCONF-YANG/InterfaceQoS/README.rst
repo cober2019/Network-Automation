@@ -31,7 +31,7 @@ Usage
 
   **View Single Interfaces:**
   
-           >>>  get_interfaces(username="admin", password="cisco#", host="192.168.1.1", interface="GigabitEthernet0/0/0")
+           >>>  get_interfaces(username="admin", password="cisco", host="192.168.1.1", interface="GigabitEthernet0/0/0")
                 GigabitEthernet0/0/0
                 Policy Direction: outbound
                 Policy Name: 100-Meg
