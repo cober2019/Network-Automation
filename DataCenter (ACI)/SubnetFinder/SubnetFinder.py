@@ -44,7 +44,7 @@ def apic_login() -> tuple:
     print("Fabric Credentials:\n")
     apic = input("APIC: ")
     username = input("Username: ")
-    password = input("Password")
+    password = input("Password: ")
 
     uri = f"https://{apic}/api/mo/aaaLogin.xml"
     warnings.filterwarnings('ignore', message='Unverified HTTPS request')
