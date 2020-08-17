@@ -111,10 +111,13 @@ def find_ip_endpoints(endpoint, session, apic) -> None:
         ep_loc = fvCEp.get("dn")
         ep_domain = fvCEp.get("lcC")
 
-    # Using json dictionary, collecting the nodes report the enpoint.
-    for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvIp', {}).get('children',{}):
-        reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get('id', {})
-        leafs.append(reporting_node)
+    try:
+        # Using json dictionary, collecting the nodes report the enpoint.
+        for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvIp', {}).get('children',{}):
+            reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get('id', {})
+            leafs.append(reporting_node)
+    except IndexError:
+        pass
 
     display_endpoint_data(ep_loc, encap, ep_domain, mac, paths)
 
@@ -144,17 +147,19 @@ def find_mac_endpoints(endpoint, session, apic) -> None:
         path = parse_policy_group(fvRsCEpToPathEp)
         if path is not None:
             paths.append(path)
-
-    # Using json dictionary, collecting the nodes report the enpoint.
-    for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvRsHyper', {}).get('children', {}):
-        reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get('id', {})
-        leafs.append(reporting_node)
-    for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvRsToVm', {}).get('children', {}):
-        reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get("id", {})
-        leafs.append(reporting_node)
-    for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvRsCEpToPathEp', {}).get('children', {}):
-        reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get('id', {})
-        leafs.append(reporting_node)
+    try:
+        # Using json dictionary, collecting the nodes report the enpoint.
+        for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvRsHyper', {}).get('children', {}):
+            reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get('id', {})
+            leafs.append(reporting_node)
+        for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvRsToVm', {}).get('children', {}):
+            reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get("id", {})
+            leafs.append(reporting_node)
+        for node in root[1].get('imdata', {})[0].get('fvCEp', {}).get('children', {})[0].get('fvRsCEpToPathEp', {}).get('children', {}):
+            reporting_node = node.get('fvReportingNode', {}).get('attributes', {}).get('id', {})
+            leafs.append(reporting_node)
+    except IndexError:
+        pass
 
     display_endpoint_data(ep_loc, encap, ep_domain, ip, paths)
 
@@ -178,9 +183,10 @@ def display_endpoint_data(ep_loc, encap, ep_domain, reverse, paths) -> None:
         # If path list is not empty print paths. Paths are empty when querying by IP
         if paths:
             print(f" Paths:               {', '.join(paths)}\n\n\n")
-
+        input("\nPress Enter to close")
     except AttributeError:
-        input("Endpoint not Found")
+        input("\nEndpoint not Found, Press Enter to close")
+
 
 
 def input_endpoint(session, apic) -> None:
