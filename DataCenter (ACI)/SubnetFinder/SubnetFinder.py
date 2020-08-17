@@ -1,4 +1,4 @@
-"""Help program for locating subnets in ACI"""
+"""Helper program for locating subnets in ACI"""
 
 import requests
 import xml.etree.ElementTree as ET
