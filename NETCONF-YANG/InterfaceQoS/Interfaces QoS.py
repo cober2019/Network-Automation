@@ -135,8 +135,6 @@ def has_qos(username, password, host):
             print(f"Qos Policy Assigned: Not Assigned\n")
 
 
-has_qos(username="admin", password="C!sco!@#", host="192.168.156.20")
-
 
 
 
