@@ -36,6 +36,8 @@ def create_netconf_connection(username, password, host) -> manager:
 
     except manager.operations.errors.TimeoutExpiredError:
         raise ConnectionError(f"Connection to {host} failed")
+    except manager.transport.AuthenticationError:
+        raise ConnectionError(f"Invalid Credentials")
 
     return netconf_session
 
@@ -133,6 +135,33 @@ def has_qos(username, password, host):
             print(f"Qos Policy Assigned: Assign->Policy Name: {interface.get('diffserv-target-entry', {}).get('policy-name', {})}\n")
         else:
             print(f"Qos Policy Assigned: Not Assigned\n")
+
+
+if __name__ == '__main__':
+
+    print("Netconf Qos\n")
+    print("1. View All Qos Interfaces")
+    print("2. View Single Interface")
+    print("3. Check if Interface has QoS\n")
+
+    selection = input("Selecection: ")
+
+    if selection == "1":
+        username = input("Username: ")
+        password = input("Password: ")
+        host = input("Host: ")
+        get_interfaces(username=username, password=password, host=host)
+    elif selection == "2":
+        username = input("Username: ")
+        password = input("Password: ")
+        host = input("Host: ")
+        interface = input("Interface: ")
+        get_interfaces(username=username, password=password, host=host, interface=interface)
+    elif selection == "3":
+        username = input("Username: ")
+        password = input("Password: ")
+        host = input("Host: ")
+        has_qos(username=username, password=password, host=host)
 
 
 
