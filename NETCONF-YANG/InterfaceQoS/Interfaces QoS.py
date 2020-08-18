@@ -58,29 +58,29 @@ def print_queues(policies) -> None:
             print(f"{b}  {' '.join(i)}")
 
 
-def is_key(interface) -> list:
+def is_key(config) -> list:
     """Check for interface key, two possibilities"""
 
     try:
-        int_type = interface.get('name', {}).get('#text', {})
+        int_type = config.get('name', {}).get('#text', {})
     except AttributeError:
-        int_type = interface['name']
+        int_type = config['name']
 
     return int_type
 
 
-def parse_stats(interface) -> None:
+def parse_stats(config) -> None:
     """Search key value pairs, print policy, queues, stats"""
 
-    key = is_key(interface)
+    key = is_key(config)
     policies = collections.defaultdict(list)
     # Check interface for policy application, skip if not applied
-    if interface.get("diffserv-target-entry", {}).get("direction", {}):
+    if config.get("diffserv-target-entry", {}).get("direction", {}):
         print(
-            f"\n-------------------------\n{key}\nPolicy Direction: {interface.get('diffserv-target-entry', {}).get('direction', {})}")
+            f"\n-------------------------\n{key}\nPolicy Direction: {config.get('diffserv-target-entry', {}).get('direction', {})}")
         print(
-            f"Policy Name: {interface.get('diffserv-target-entry', {}).get('policy-name', {})}\n-------------------------\n")
-        for stat in interface.get("diffserv-target-entry", {}).get("diffserv-target-classifier-statistics", {}):
+            f"Policy Name: {config.get('diffserv-target-entry', {}).get('policy-name', {})}\n-------------------------\n")
+        for stat in config.get("diffserv-target-entry", {}).get("diffserv-target-classifier-statistics", {}):
             # Creates list and resets at each iteration
             queue = []
             # Write dictionary values to list, add string formatting
@@ -95,19 +95,19 @@ def parse_stats(interface) -> None:
             queue.append(f"{stat.get('queuing-statistics', {}).get('wred-stats', {}).get('early-drop-pkts', {}):20}")
             queue.append(f"{stat.get('queuing-statistics', {}).get('wred-stats', {}).get('early-drop-bytes', {}):20}")
             # Write list as value to key which is our policy name
-            policies[interface.get('diffserv-target-entry', {}).get('policy-name', {})].append(queue)
+            policies[config.get('diffserv-target-entry', {}).get('policy-name', {})].append(queue)
         print_queues(policies)
 
 
-def get_interfaces(username, password, host, interface=None) -> None:
+def get_interfaces(username, password, host, interface_name=None) -> None:
     """Gets one interface with policies, queues, and stats"""
 
-    if interface is not None:
+    if interface_name is not None:
 
         int_stats = f"""<filter>
                     <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
                     <interface>
-                    <name>{interface}</name>
+                    <name>{interface_name}</name>
                     </interface>
                     </interfaces-state>
                     </filter>"""
@@ -127,6 +127,8 @@ def get_interfaces(username, password, host, interface=None) -> None:
     make_ints_lists = is_instance(int_info)
     # Iterate through make_ints_lists using map funtion, call parses stats, send list
     list(map(parse_stats, make_ints_lists))
+    main()
+
 
 
 def has_qos(username, password, host) -> None:
@@ -141,17 +143,19 @@ def has_qos(username, password, host) -> None:
 
     # Check to see if value us a list or dict, makes list if not. Helps cut down on code
     make_ints_lists = is_instance(int_info)
-    for interface in make_ints_lists:
-        print(f"{interface['name']}\n-------------------------")
+    for config in make_ints_lists:
+        print(f"{config['name']}\n-------------------------")
         # Check interface for policy application, mark policy as "Not Assigned" if no policy
-        if interface.get("diffserv-target-entry", {}).get("direction", {}):
+        if config.get("diffserv-target-entry", {}).get("direction", {}):
             print(
-                f"Qos Policy Assigned: Assign->Policy Name: {interface.get('diffserv-target-entry', {}).get('policy-name', {})}\n")
+                f"Qos Policy Assigned: Assign->Policy Name: {config.get('diffserv-target-entry', {}).get('policy-name', {})}\n")
         else:
             print(f"Qos Policy Assigned: Not Assigned\n")
 
+    main()
 
-if __name__ == '__main__':
+
+def main():
 
     print("Netconf Qos\n")
     print("1. View All Qos Interfaces")
@@ -170,9 +174,13 @@ if __name__ == '__main__':
         user = input("Username: ")
         pwd = input("Password: ")
         interface = input("Interface: ")
-        get_interfaces(username=user, password=pwd, host=device, interface=interface)
+        get_interfaces(username=user, password=pwd, host=device, interface_name=interface)
     elif selection == "3":
         device = input("Host: ")
         user = input("Username: ")
         pwd = input("Password: ")
         has_qos(username=user, password=pwd, host=device)
+
+
+if __name__ == '__main__':
+    main()
