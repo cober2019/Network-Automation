@@ -11,10 +11,11 @@ all_ints = f"""<filter>
            </interfaces-state>
            </filter>"""
 
+
 # ------------------------ pre-deployements funtions -----------------------
 
 
-def is_instance(list_or_dict):
+def is_instance(list_or_dict) -> list:
     """convert anything not a list to list"""
 
     if isinstance(list_or_dict, list):
@@ -42,17 +43,22 @@ def create_netconf_connection(username, password, host) -> manager:
     return netconf_session
 
 
-def print_queues(policies):
+def print_queues(policies) -> None:
     """Join list which are the queues. Add worw titles to row using zip(tuple)"""
 
-    cat = ("Queue      ->", "Bytes In   ->", "Bytes Out  ->", "Drop Bytes ->", "Drop Pkts  ->")
+    cat = ("Queue       ->", "Class Rate  ->",
+           "Class Pkts  ->", "Class Bytes ->",
+           "Out Bytes   ->", "Out Pkts    ->",
+           "Drop Bytes  ->", "Drop Pkts   ->",
+           "WRED Pkts   ->", "WRED Bytes  ->")
+
     for v in policies.values():
         queue = (list(zip(*v)))
         for b, i in zip(cat, queue):
             print(f"{b}  {' '.join(i)}")
 
 
-def is_key(interface):
+def is_key(interface) -> list:
     """Check for interface key, two possibilities"""
 
     try:
@@ -63,30 +69,37 @@ def is_key(interface):
     return int_type
 
 
-def parse_stats(interface):
+def parse_stats(interface) -> None:
     """Search key value pairs, print policy, queues, stats"""
 
     key = is_key(interface)
     policies = collections.defaultdict(list)
     # Check interface for policy application, skip if not applied
     if interface.get("diffserv-target-entry", {}).get("direction", {}):
-        print(f"\n-------------------------\n{key}\nPolicy Direction: {interface.get('diffserv-target-entry', {}).get('direction', {})}")
-        print(f"Policy Name: {interface.get('diffserv-target-entry', {}).get('policy-name', {})}\n-------------------------\n")
+        print(
+            f"\n-------------------------\n{key}\nPolicy Direction: {interface.get('diffserv-target-entry', {}).get('direction', {})}")
+        print(
+            f"Policy Name: {interface.get('diffserv-target-entry', {}).get('policy-name', {})}\n-------------------------\n")
         for stat in interface.get("diffserv-target-entry", {}).get("diffserv-target-classifier-statistics", {}):
             # Creates list and resets at each iteration
             queue = []
             # Write dictionary values to list, add string formatting
             queue.append(f"{stat.get('classifier-entry-name', {}):<20}")
-            queue.append(f"{stat.get('classifier-entry-statistics', {}).get('classified-bytes', {}):<20}")
+            queue.append(f'{stat.get("classifier-entry-statistics", {}).get("classified-rate", {}):<20}')
+            queue.append(f"{stat.get('classifier-entry-statistics', {}).get('classified-bytes', {}):20}")
             queue.append(f"{stat.get('classifier-entry-statistics', {}).get('classified-pkts', {}):20}")
+            queue.append(f"{stat.get('queuing-statistics', {}).get('output-bytes', {}):20}")
+            queue.append(f"{stat.get('queuing-statistics', {}).get('output-pkts', {}):20}")
             queue.append(f"{stat.get('queuing-statistics', {}).get('drop-pkts', {}):20}")
             queue.append(f"{stat.get('queuing-statistics', {}).get('drop-bytes', {}):20}")
+            queue.append(f"{stat.get('queuing-statistics', {}).get('wred-stats', {}).get('early-drop-pkts', {}):20}")
+            queue.append(f"{stat.get('queuing-statistics', {}).get('wred-stats', {}).get('early-drop-bytes', {}):20}")
             # Write list as value to key which is our policy name
             policies[interface.get('diffserv-target-entry', {}).get('policy-name', {})].append(queue)
         print_queues(policies)
 
 
-def get_interfaces(username, password, host, interface=None):
+def get_interfaces(username, password, host, interface=None) -> None:
     """Gets one interface with policies, queues, and stats"""
 
     if interface is not None:
@@ -116,7 +129,7 @@ def get_interfaces(username, password, host, interface=None):
     list(map(parse_stats, make_ints_lists))
 
 
-def has_qos(username, password, host):
+def has_qos(username, password, host) -> None:
     """Check to see if the interface is assigned a policy"""
 
     # Create NETCONF Session, get config
@@ -132,7 +145,8 @@ def has_qos(username, password, host):
         print(f"{interface['name']}\n-------------------------")
         # Check interface for policy application, mark policy as "Not Assigned" if no policy
         if interface.get("diffserv-target-entry", {}).get("direction", {}):
-            print(f"Qos Policy Assigned: Assign->Policy Name: {interface.get('diffserv-target-entry', {}).get('policy-name', {})}\n")
+            print(
+                f"Qos Policy Assigned: Assign->Policy Name: {interface.get('diffserv-target-entry', {}).get('policy-name', {})}\n")
         else:
             print(f"Qos Policy Assigned: Not Assigned\n")
 
@@ -147,24 +161,18 @@ if __name__ == '__main__':
     selection = input("Selecection: ")
 
     if selection == "1":
-        username = input("Username: ")
-        password = input("Password: ")
-        host = input("Host: ")
-        get_interfaces(username=username, password=password, host=host)
+        device = input("Host: ")
+        user = input("Username: ")
+        pwd = input("Password: ")
+        get_interfaces(username=user, password=pwd, host=device)
     elif selection == "2":
-        username = input("Username: ")
-        password = input("Password: ")
-        host = input("Host: ")
+        device = input("Host: ")
+        user = input("Username: ")
+        pwd = input("Password: ")
         interface = input("Interface: ")
-        get_interfaces(username=username, password=password, host=host, interface=interface)
+        get_interfaces(username=user, password=pwd, host=device, interface=interface)
     elif selection == "3":
-        username = input("Username: ")
-        password = input("Password: ")
-        host = input("Host: ")
-        has_qos(username=username, password=password, host=host)
-
-
-
-
-
-
+        device = input("Host: ")
+        user = input("Username: ")
+        pwd = input("Password: ")
+        has_qos(username=user, password=pwd, host=device)
