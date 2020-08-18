@@ -9,10 +9,15 @@ Description:
 Usage
 ========
  ***WRED stats pull zero for Cisco even if there is drops**
- 
+          >>> 1. View All Qos Interfaces
+              2. View Single Interface
+              3. Check if Interface has QoS
+              |
+              Selecection: 
+                           
     **View All Interfaces:** 
   
-          >>> get_interfaces(username="admin", password="cisco", host="192.168.1.1")
+          >>> 
               |
               GigabitEthernet0/0/0
               Policy Direction: outbound
@@ -46,7 +51,7 @@ Usage
               
   **View Single Interfaces:**
   
-           >>>  get_interfaces(username="admin", password="cisco", host="192.168.1.1", interface="GigabitEthernet0/0/0")
+           >>>  
                 |
                 GigabitEthernet0/0/1
                 Policy Direction: outbound
@@ -65,7 +70,7 @@ Usage
 
   **Check Interfaces For Assigned Policies:**
 
-        >>> has_qos(username="admin", password="cisco", host="192.168.1.1")
+        >>> 
             TenGigabitEthernet0/0/0
             Qos Policy Assigned: Not Assigned
             TenGigabitEthernet0/0/1
