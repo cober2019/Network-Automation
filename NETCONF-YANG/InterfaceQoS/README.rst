@@ -4,7 +4,7 @@ Interface QoS
 Description:
 ============
 
-  **Interfaces QoS uses IETF YANG model to retrieve interface stats via NETCONFIG. You can view a single interface, all interfaces or do a simple check to see if any policies are assigned**
+  **Interfaces QoS uses IETF YANG model to retrieve interface stats via NETCONF. You can view a single interface, all interfaces or do a simple check to see if any policies are assigned**
   
 Usage
 ========
