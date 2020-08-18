@@ -8,7 +8,7 @@ Description:
   
 Usage
 ========
- **WRED stats pull 0 for Cisco even if there is drops)**
+ ***WRED stats pull zero for Cisco even if there is drops**
  
     **View All Interfaces:** 
   
