@@ -9,6 +9,8 @@ Description:
 Usage
 ========
  ***WRED stats pull zero for Cisco even if there is drops**
+    **Main Menu:**
+    
           >>> 1. View All Qos Interfaces
               2. View Single Interface
               3. Check if Interface has QoS
