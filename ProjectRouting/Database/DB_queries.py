@@ -1,11 +1,15 @@
 """Helper funtions for routing table databse lookups/queries"""
 
 import sqlite3
+from openpyxl import Workbook
+import os
+from Software import dbtool as DbTool
 
 mydb = sqlite3.connect("Routing")
 cursor = mydb.cursor()
 cursor_2 = mydb.cursor()
 route_tables = []
+
 
 # Begin DB Table information-----------------------------------------------
 
@@ -35,6 +39,7 @@ def get_db_tables_with_data() -> list:
 
     return full_dbs
 
+
 # End DB Table information-----------------------------------------------
 
 # Begin DB Quiries-------------------------------------------------------
@@ -43,200 +48,190 @@ def get_db_tables_with_data() -> list:
 def query_db_nexus(vdc, vrf, query, index) -> None:
     """Find routes based off query, can be full route with prefix, no mask, or just octets (192.168.)"""
 
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_Nexus')]
-    if get_table_rows[0][0] == 0:
-        print("No Routes In Table")
-    else:
-        vdc_query = cursor.execute('SELECT * FROM Routing_Nexus WHERE vdc=?', (vdc,))
-        matched_query = 0
-        for row in vdc_query:
-            if vrf in row[1] and query in row[index] and "," in row[index]:
-                print(f"\nVDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}")
+    vdc_query = cursor.execute('SELECT * FROM Routing_Nexus WHERE vdc=?', (vdc,))
+    matched_query = 0
+    for row in vdc_query:
+        if vrf in row[1] and query in row[index] and "," in row[index]:
+            print(
+                f"\nVDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
+                f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}")
 
-                matched_query += 1
+            matched_query += 1
 
-            elif vrf == row[1] and query == row[index]:
-                print(f"\nVDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}")
+        elif vrf == row[1] and query == row[index]:
+            print(
+                f"\nVDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
+                f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}")
 
-                matched_query += 1
+            matched_query += 1
 
-        print(f"\nTotal Routes: {matched_query}")
+    print(f"\nTotal Routes: {matched_query}")
 
 
 def query_db_asa(query, index) -> None:
     """Find databse entries with arbitrary routing attributes. Checks for single hope metric or multi path
     using \',\' between metrics"""
 
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_ASA')]
-    if get_table_rows[0][0] == 0:
-        print("No Routes In Table")
-    else:
-        context_query = cursor.execute('SELECT * FROM Routing_ASA WHERE context=?', ("None",))
+    context_query = cursor.execute('SELECT * FROM Routing_ASA WHERE context=?', ("None",))
+    matched_query = 0
+    for row in context_query:
+        if query in row[index] and "," in row[index]:
+            print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+                  f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}")
 
-        matched_query = 0
-        for row in context_query:
-            if query in row[index] and "," in row[index]:
-                print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}")
+            matched_query += 1
 
-                matched_query += 1
+        elif query == row[index]:
+            print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+                  f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}")
 
-            elif query == row[index]:
-                print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}")
+            matched_query += 1
 
-                matched_query += 1
-
-        print(f"\nTotal Routes: {matched_query}")
+    print(f"\nTotal Routes: {matched_query}")
 
 
 def query_db_ios(vrf, query, index) -> None:
     """Find databse entries with arbitrary routing attributes"""
 
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_IOS_XE')]
-    if get_table_rows[0][0] == 0:
-        print("No Routes In Table")
-    else:
-        vrf_query = cursor.execute('SELECT * FROM Routing_IOS_XE WHERE vrf=?', (vrf,))
+    vrf_query = cursor.execute('SELECT * FROM Routing_IOS_XE WHERE vrf=?', (vrf,))
+    matched_query = 0
+    for row in vrf_query:
+        if query in row[index] and "," in row[index]:
+            print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+                  f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}")
 
-        matched_query = 0
-        for row in vrf_query:
-            if query in row[index] and "," in row[index]:
-                print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}")
+            matched_query += 1
 
-                matched_query += 1
+        elif query == row[index]:
+            print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+                  f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}")
 
-            elif query == row[index]:
-                print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}")
+            matched_query += 1
 
-                matched_query += 1
-
-        print(f"\nTotal Routes: {matched_query}")
+    print(f"\nTotal Routes: {matched_query}")
 
 
 def query_db_ios_routes(vrf, query, index) -> None:
     """Find routes based off query, can be full route with prefix, no mask, or just octets (192.168.)"""
 
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_IOS_XE')]
-    if get_table_rows[0][0] == 0:
-        print("No Routes In Table")
-    else:
-        vrf_query = cursor.execute('SELECT * FROM Routing_IOS_XE WHERE vrf=?', (vrf,))
+    vrf_query = cursor.execute('SELECT * FROM Routing_IOS_XE WHERE vrf=?', (vrf,))
+    matched_query = 0
+    for row in vrf_query:
+        if query in row[index]:
+            print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+                  f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}\n")
 
-        matched_query = 0
-        for row in vrf_query:
-            if query in row[index]:
-                print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}\n")
+            matched_query += 1
 
-                matched_query += 1
-
-            else:
-                pass
-
-        print(f"\nTotal Routes: {matched_query}")
+    print(f"\nTotal Routes: {matched_query}")
 
 
 def query_db_nexus_routes(vdc, vrf, query, index) -> None:
     """Find routes based off query, can be full route with prefix, no mask, or just octets (192.168.)"""
 
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_Nexus')]
-    if get_table_rows[0][0] == 0:
-        print("No Routes In Table")
-    else:
-        vdc_query = cursor.execute('SELECT * FROM Routing_Nexus WHERE vdc=?', (vdc,))
+    vdc_query = cursor.execute('SELECT * FROM Routing_Nexus WHERE vdc=?', (vdc,))
+    matched_query = 0
+    for row in vdc_query:
+        if vrf == row[1] and query in row[index]:
+            print(f"VDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
+                  f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}\n")
 
-        matched_query = 0
-        for row in vdc_query:
-            if vrf == row[1] and query in row[index]:
-                print(f"VDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}\n")
+            matched_query += 1
 
-                matched_query += 1
-
-            else:
-                pass
-        print(f"\nTotal Routes: {matched_query}")
+    print(f"\nTotal Routes: {matched_query}")
 
 
 def query_db_asa_routes(query, index) -> None:
     """Find routes based off query, can be full route with prefix, no mask, or just octets (192.168.)"""
 
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_ASA')]
-    if get_table_rows[0][0] == 0:
-        print("No Routes In Table")
-    else:
-        context_query = cursor.execute('SELECT * FROM Routing_ASA WHERE context=?', ("None",))
+    context_query = cursor.execute('SELECT * FROM Routing_ASA WHERE context=?', ("None",))
 
-        matched_query = 0
-        for row in context_query:
-            if query in row[index]:
-                print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}")
+    matched_query = 0
+    for row in context_query:
+        if query in row[index]:
+            print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+                  f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}")
 
-                matched_query += 1
+            matched_query += 1
 
-        print(f"\nTotal Routes: {matched_query}")
+    print(f"\nTotal Routes: {matched_query}")
 
 
-def view_routes_asa() -> None:
+def view_routes_asa(table) -> None:
     """View all database entries, no filters"""
 
-    get_tables_names()
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_ASA')]
+    print(f"\nRouting Table: {table}\n__________________\n")
+    query = cursor.execute('SELECT * FROM Routing_ASA')
+    matched_query = 0
+    for row in query:
+        print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+              f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}\n")
+        matched_query += 1
 
-    for table in route_tables:
-        if get_table_rows[0][0] == 0:
-            continue
-        else:
-            print(f"\nRouting Table: {table}\n__________________\n")
-            query = cursor.execute('SELECT * FROM Routing_ASA')
-            for row in query:
-                print(f"\nContext: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[4]}\nOut-Interface(s): {row[5]}\nMetric(s): {row[6]}\nTag: {row[7]}\nAge: {row[8]}\n")
-
-    print(f"\nTotal Routes: {get_table_rows[0][0]}")
+    print(f"Total Routes: {matched_query}")
 
 
-def view_routes_ios() -> None:
+def view_routes_ios(table) -> None:
     """View all database entries, no filters"""
 
-    get_tables_names()
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_IOS_XE')]
+    print(f"\nRouting Table: {table}\n__________________\n")
+    query = cursor.execute('SELECT * FROM Routing_IOS_XE')
+    matched_query = 0
+    for row in query:
+        print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
+              f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}\n")
+        matched_query += 1
 
-    for table in route_tables:
-        if get_table_rows[0][0] == 0:
-            continue
-        else:
-            print(f"\nRouting Table: {table}\n__________________\n")
-            query = cursor.execute('SELECT * FROM Routing_IOS_XE')
-            for row in query:
-                print(f"\nVRF: {row[0]}\nPrefix: {row[1]}\nProtocol: {row[2]}\nAdmin-Distance: {row[3]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[4]}\nTag: {row[7]}\nAge: {row[8]}\n")
-
-    print(f"\nTotal Routes: {get_table_rows[0][0]}")
+    print(f"Total Routes: {matched_query}")
 
 
-def view_routes_nexus() -> None:
+def view_routes_nexus(table) -> None:
     """View all database entries, no filters"""
 
-    get_tables_names()
-    get_table_rows = [row for row in cursor.execute('SELECT count(*) FROM Routing_Nexus')]
-    for table in route_tables:
-        if get_table_rows[0][0] == 0:
-            continue
-        else:
-            print(f"\nRouting Table: {table}\n__________________\n")
-            query = cursor.execute('SELECT * FROM Routing_Nexus')
-            for row in query:
-                print(f"VDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
-                      f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}\n")
+    print(f"\nRouting Table: {table}\n__________________\n")
+    query = cursor.execute('SELECT * FROM Routing_Nexus')
+    matched_query = 0
+    for row in query:
+        print(f"VDC: {row[0]}\nVRF: {row[1]}\nPrefix: {row[2]}\nProtocol: {row[3]}\nAdmin-Distance: {row[4]}\n"
+              f"Hop(s): {row[5]}\nOut-Interface(s): {row[6]}\nMetric(s): {row[7]}\nTag: {row[8]}\nAge: {row[9]}\n")
+        matched_query += 1
 
-    print(f"\nTotal Routes: {get_table_rows[0][0]}")
+    print(f"Total Routes: {matched_query}")
+
+
+def export_excel(table):
+    """Reads database and writes to excel file"""
+
+    routes = Workbook()
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    routes_file = dir_path + '\\RoutingTable.xlsx'
+    active_sheet = routes.active
+    get_tables_names()
+
+    query = cursor.execute('SELECT * FROM %s' % table)
+    excel_row = 1
+    for row in query:
+        active_sheet.cell(row=excel_row, column=1, value=row[0])
+        active_sheet.cell(row=excel_row, column=2, value=row[1])
+        active_sheet.cell(row=excel_row, column=3, value=row[2])
+        active_sheet.cell(row=excel_row, column=4, value=row[3])
+        active_sheet.cell(row=excel_row, column=5, value=row[4])
+        active_sheet.cell(row=excel_row, column=6, value=row[5])
+        active_sheet.cell(row=excel_row, column=7, value=row[6])
+        active_sheet.cell(row=excel_row, column=8, value=row[7])
+        active_sheet.cell(row=excel_row, column=9, value=row[8])
+        if table == "Routing_Nexus":
+            active_sheet.cell(row=excel_row, column=10, value=row[9])
+        excel_row += 1
+    check_permission(routes, routes_file)
+
+
+def check_permission(workbook, filepath):
+    try:
+        workbook.save(filename=filepath)
+    except OSError:
+        print(f"Unable to save file, check permission for {filepath}")
+        DbTool.main()
 
 
 # End DB Quiries-------------------------------------------------------
@@ -376,6 +371,7 @@ def print_protocols(table) -> None:
                 print(f"+ {k[0]}")
         print("\n")
 
+
 # End query Helpers. Prequery attributes----------------------------
 
 # Begin query builders----------------------------------------------
@@ -404,7 +400,8 @@ def search_db_ios(vrf=None, prefix=None, protocol=None, metric=None, ad=None, ta
         query_db_ios(vrf=vrf, query=interface, index=6)
 
 
-def search_db_nexus(vdc=None, vrf=None, prefix=None, protocol=None, metric=None, ad=None, tag=None, interface=None) -> None:
+def search_db_nexus(vdc=None, vrf=None, prefix=None, protocol=None, metric=None, ad=None, tag=None,
+                    interface=None) -> None:
     """Find databse entries by artbitrary attribute using **attributes (kwargs)
                             vrf, admin-distance, metric, prefix, next-hop, tag"""
 
