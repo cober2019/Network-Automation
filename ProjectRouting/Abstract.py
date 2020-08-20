@@ -20,12 +20,9 @@ class Routing(ABC):
         pass
 
     @abstractmethod
-    def _write_to_dict(self, route_details):
+    def clear_lists(self):
         pass
 
-    @abstractmethod
-    def database(self):
-        pass
 
 
 
