@@ -23,8 +23,15 @@ ___________
 
 **Database Tool** 
 
-View routing table from a local sqlite database. Credential entry is here or just skip credential input if your've previosly populated the table. You can query the routing table using the following permameters
+Get and view routing tables from a local sqlite database. Credential entry is here or just skip credential input if your've previosly populated the table. You can query the routing table using the following permameters
 
+When loading the tool you will see:
+  
+  **Database populated? Press enter to skip. Enter any other key to populate new table.**
+      Press Enter if you ran the code again your desired table already or Input a key and press enter to populate a new table
+**You can query the table for the following parameters:**
+  
+  
                     + Protocol
                     + Prefix (Example: 192.168.1.0/24, 192.180, or 192.168.1.0)
                     + Metric
