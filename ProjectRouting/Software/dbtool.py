@@ -1,8 +1,10 @@
+"""Helper tool for quering route table databases"""
+
 from Database import DB_queries as DbQueries
 from Software import NXOS, IOSXE, ASA
 
-if __name__ == '__main__':
 
+def main():
     skip_login = input("Database populated? Press enter to skip. Enter any other key to populate new table. ")
     print("\n")
 
@@ -27,31 +29,31 @@ if __name__ == '__main__':
             same_as_username_password = input("Enable Password same as user password(yes/no)? ").lower()
             if same_as_username_password == "yes":
                 if selection == "1":
-                    IOSXE. RoutingIos(host=device_ip, username=username, password=password, enable=password)
+                    IOSXE.RoutingIos(host=device_ip, username=username, password=password, enable=password)
                 elif selection == "2":
-                    NXOS. RoutingNexus(host=device_ip, username=username, password=password, enable=password)
+                    NXOS.RoutingNexus(host=device_ip, username=username, password=password, enable=password)
                 elif selection == "3":
-                    ASA. RoutingAsa(host=device_ip, username=username, password=password, enable=password)
+                    ASA.RoutingAsa(host=device_ip, username=username, password=password, enable=password)
 
             elif same_as_username_password == "no":
 
                 enable = input("Enable Password(yes/no)? ")
 
                 if selection == "1":
-                    IOSXE. RoutingIos(host=device_ip, username=username, password=password, enable=enable)
+                    IOSXE.RoutingIos(host=device_ip, username=username, password=password, enable=enable)
                 elif selection == "2":
-                    NXOS. RoutingNexus(host=device_ip, username=username, password=password, enable=enable)
+                    NXOS.RoutingNexus(host=device_ip, username=username, password=password, enable=enable)
                 elif selection == "3":
-                    ASA. RoutingAsa(host=device_ip, username=username, password=password, enable=enable)
+                    ASA.RoutingAsa(host=device_ip, username=username, password=password, enable=enable)
 
         elif enable_question == "no":
 
             if selection == "1":
-                IOSXE. RoutingIos(host=device_ip, username=username, password=password)
+                IOSXE.RoutingIos(host=device_ip, username=username, password=password)
             elif selection == "2":
-                NXOS. RoutingNexus(host=device_ip, username=username, password=password)
+                NXOS.RoutingNexus(host=device_ip, username=username, password=password)
             elif selection == "3":
-                ASA. RoutingAsa(host=device_ip, username=username, password=password)
+                ASA.RoutingAsa(host=device_ip, username=username, password=password)
 
         while True:
             get_tables = DbQueries.get_db_tables_with_data()
@@ -76,7 +78,8 @@ if __name__ == '__main__':
         print("4. Search by AD")
         print("5. Search by Interface")
         print("6. Search by Tag")
-        print("7. Full Table\n")
+        print("7. Full Table")
+        print("8. Export to Excel\n")
 
         selection = input("Selection: ")
         print("\n")
@@ -96,7 +99,7 @@ if __name__ == '__main__':
                 DbQueries.print_protocols(get_tables[0])
                 protocol = input("Protocol: ")
                 print("\n")
-                DbQueries.search_db_ios(vrf=None, protocol=protocol)
+                DbQueries.search_db_ios(vrf=vrf, protocol=protocol)
 
             elif get_tables[0] == "Routing_Nexus":
 
@@ -248,19 +251,17 @@ if __name__ == '__main__':
 
         elif selection == "7":
             if get_tables[0] == "Routing_ASA":
-                DbQueries.view_routes_asa()
+                DbQueries.view_routes_asa("Routing_ASA")
             elif get_tables[0] == "Routing_IOS_XE":
-                DbQueries.view_routes_ios()
+                DbQueries.view_routes_ios("Routing_IOS_XE")
             elif get_tables[0] == "Routing_Nexus":
-                DbQueries.view_routes_nexus()
+                DbQueries.view_routes_nexus("Routing_Nexus")
 
+        elif selection == "8":
+            DbQueries.export_excel(get_tables[0])
         else:
             print("Invalid Selection")
 
 
-
-
-
-
-
-
+if __name__ == '__main__':
+    main()
