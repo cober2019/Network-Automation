@@ -30,7 +30,7 @@ Get and view routing tables from a local sqlite database. Credential entry is he
 When loading the tool you will see:
   
   **Database populated? Press enter to skip. Enter any other key to populate new table.**
-      Press Enter if you ran the code again your desired table already or Input a key and press enter to populate a new table
+      Press enter if your routing table has been populated or input any key and press enter to populate a new table.
 **You can query the table for the following parameters:**
   
   
