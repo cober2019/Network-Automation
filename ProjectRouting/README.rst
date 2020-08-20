@@ -4,17 +4,12 @@ Project Routing
 --------------
 
   Project Routing is an open-source project which goal is to collect and store routing tabled by vendor and vendor table types. All routes are stored in a local SQL db
-  using sqllite3.
+  using sqllite3 or using the DB tool you can export routes to an excel sheet.
   
 
 **Contributions:**
 
   For contributions to the project please use the blueprint from Abstract.py file. Following the abstract methods will allow you to create code for a specific vendor.
-
-**Status**
-______
-
-Under Developement
 
 Routing Table Compatibility
 ___________
@@ -71,7 +66,20 @@ View routing table from a local sqlite database. Credential entry is here or jus
                         Age: 2w4d, 2w4d
 
 
-
-
+**Export Routes to Excel**
+                  
+                  >>> DB_Query Tool-------------
+                      |
+                      Table: Routing_IOS_XE
+                      |
+                      1. Search by protocol
+                      2. Search by prefix
+                      3. Search by metric
+                      4. Search by AD
+                      5. Search by Interface
+                      6. Search by Tag
+                      7. Full Table
+                      **8. Export to Excel** <-----Option (Files is saved to Databse foler in ProjectRouting)
+              
 
     
