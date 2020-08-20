@@ -79,7 +79,7 @@ View routing table from a local sqlite database. Credential entry is here or jus
                       5. Search by Interface
                       6. Search by Tag
                       7. Full Table
-                      **8. Export to Excel** <-----Option (Files is saved to Databse foler in ProjectRouting)
+                      **8. Export to Excel** <-----Option (Files is saved to Database folder in ProjectRouting directory)
               
 
     
