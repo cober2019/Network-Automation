@@ -68,7 +68,7 @@ View routing table from a local sqlite database. Credential entry is here or jus
 
 **Export Routes to Excel**
                   
-                  >>> DB_Query Tool-------------
+                  >>> DB_Query Tool
                       |
                       Table: Routing_IOS_XE
                       |
