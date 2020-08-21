@@ -23,9 +23,7 @@ ___________
 
 **Database Tool** 
 
-Path: Software/dbtool
-
-Get and view routing tables from a local sqlite database. Credential entry is here or just skip credential input if your've previosly populated the table. You can query the routing table using the following permameters
+Get and view routing tables from a local sqlite database. Credential entry is here or just skip credential input if you've previosly populated the table. You can query the routing table using the following permameters
 
 When loading the tool you will see:
   
