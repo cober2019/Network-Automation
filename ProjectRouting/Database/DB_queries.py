@@ -3,7 +3,6 @@
 import sqlite3
 from openpyxl import Workbook
 import os
-from Software import dbtool as DbTool
 
 mydb = sqlite3.connect("Routing")
 cursor = mydb.cursor()
@@ -231,7 +230,7 @@ def check_permission(workbook, filepath):
         workbook.save(filename=filepath)
     except OSError:
         print(f"Unable to save file, check permission for {filepath}")
-        DbTool.main()
+        input("Press Enter to close")
 
 
 # End DB Quiries-------------------------------------------------------
