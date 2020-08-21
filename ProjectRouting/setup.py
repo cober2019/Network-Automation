@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/cober2019/Network-Automation/tree/master/ProjectRouting",
     packages=find_packages(),
-    install_requires=("ipaddress", "sqlite3", "collections", "netmiko", "time", "os"),
+    install_requires=("ipaddress", "sqlite3", "collections", "netmiko", "time", "os", "openpyxl"),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
