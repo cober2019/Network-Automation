@@ -3,70 +3,10 @@
 from Database import DB_queries as DbQueries
 from Software import NXOS, IOSXE, ASA
 
+get_tables = DbQueries.get_db_tables_with_data()
 
-def main():
-    skip_login = input("Database populated? Press enter to skip. Enter any other key to populate new table. ")
-    print("\n")
 
-    if skip_login != "":
-
-        print("OS Options\n")
-
-        print("1. IOS XE")
-        print("2. Nexus OS")
-        print("3. ASA\n")
-
-        selection = input("Selection: ")
-        print("\n")
-
-        device_ip = input("Device IP: ")
-        username = input("Username: ")
-        password = input("Password: ")
-
-        enable_question = input("Enable Password(yes/no)? ").lower()
-
-        if enable_question == "yes":
-            same_as_username_password = input("Enable Password same as user password(yes/no)? ").lower()
-            if same_as_username_password == "yes":
-                if selection == "1":
-                    IOSXE.RoutingIos(host=device_ip, username=username, password=password, enable=password)
-                elif selection == "2":
-                    NXOS.RoutingNexus(host=device_ip, username=username, password=password, enable=password)
-                elif selection == "3":
-                    ASA.RoutingAsa(host=device_ip, username=username, password=password, enable=password)
-
-            elif same_as_username_password == "no":
-
-                enable = input("Enable Password(yes/no)? ")
-
-                if selection == "1":
-                    IOSXE.RoutingIos(host=device_ip, username=username, password=password, enable=enable)
-                elif selection == "2":
-                    NXOS.RoutingNexus(host=device_ip, username=username, password=password, enable=enable)
-                elif selection == "3":
-                    ASA.RoutingAsa(host=device_ip, username=username, password=password, enable=enable)
-
-        elif enable_question == "no":
-
-            if selection == "1":
-                IOSXE.RoutingIos(host=device_ip, username=username, password=password)
-            elif selection == "2":
-                NXOS.RoutingNexus(host=device_ip, username=username, password=password)
-            elif selection == "3":
-                ASA.RoutingAsa(host=device_ip, username=username, password=password)
-
-        while True:
-            get_tables = DbQueries.get_db_tables_with_data()
-            if not get_tables:
-                continue
-            else:
-                break
-    else:
-        get_tables = DbQueries.get_db_tables_with_data()
-        if not get_tables:
-            print("No routing table")
-        else:
-            pass
+def query_menu_options():
 
     while True:
 
@@ -261,6 +201,71 @@ def main():
             DbQueries.export_excel(get_tables[0])
         else:
             print("Invalid Selection")
+
+        query_menu_options()
+
+
+def main():
+
+    print("Routing Tables Lookup Tool")
+    print("\n1. Fetch new routing table\n2. Search existing table (Previous fetch)\n")
+    selection = input("Selection: ")
+
+    if selection == "1":
+
+        print("\nOS Options\n")
+
+        print("1. IOS XE")
+        print("2. Nexus OS")
+        print("3. ASA\n")
+
+        selection = input("Selection: ")
+        print("\n")
+
+        device_ip = input("Device IP: ")
+        username = input("Username: ")
+        password = input("Password: ")
+
+        enable_question = input("Enable Password(yes/no)? ").lower()
+
+        if enable_question == "yes":
+            same_as_username_password = input("Enable Password same as user password(yes/no)? ").lower()
+            if same_as_username_password == "yes":
+                if selection == "1":
+                    IOSXE.RoutingIos(host=device_ip, username=username, password=password, enable=password)
+                elif selection == "2":
+                    NXOS.RoutingNexus(host=device_ip, username=username, password=password, enable=password)
+                elif selection == "3":
+                    ASA.RoutingAsa(host=device_ip, username=username, password=password, enable=password)
+
+            elif same_as_username_password == "no":
+
+                enable = input("Enable Password(yes/no)? ")
+
+                if selection == "1":
+                    IOSXE.RoutingIos(host=device_ip, username=username, password=password, enable=enable)
+                elif selection == "2":
+                    NXOS.RoutingNexus(host=device_ip, username=username, password=password, enable=enable)
+                elif selection == "3":
+                    ASA.RoutingAsa(host=device_ip, username=username, password=password, enable=enable)
+
+        elif enable_question == "no":
+
+            if selection == "1":
+                IOSXE.RoutingIos(host=device_ip, username=username, password=password)
+            elif selection == "2":
+                NXOS.RoutingNexus(host=device_ip, username=username, password=password)
+            elif selection == "3":
+                ASA.RoutingAsa(host=device_ip, username=username, password=password)
+
+        query_menu_options()
+
+    elif selection == "2":
+
+        if not get_tables:
+            print("No routing table")
+        else:
+            query_menu_options()
 
 
 if __name__ == '__main__':
