@@ -3,7 +3,7 @@ ClassMaps
 
 Description
 ------------
-  **Using NETCONF/YANG model ios-xe-native you can view and create/send class-maps. YANG Model: CISCO-IOS-XE-Native**
+  **View, buid, and send class-map configuration via NETCONF/YANG. YANG Model: CISCO-IOS-XE-Native**
   
 Usage
 -------
