@@ -8,6 +8,9 @@ Description
 Usage
 -------
 
+ **OS: IOS-XE (16.07.02, 16.09.04, 16.06.01)  ------>**
+ **Device Models: Cat 3850, ISR 4331, ASR1000-X**
+
 **Main Menu:**
 
           >>> NETCONF QoS using ios-xe-native YANG model
