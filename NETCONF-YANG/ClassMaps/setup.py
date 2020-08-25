@@ -4,7 +4,7 @@ with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="ProjectRouting",
+    name="NETCONF Class-maps",
     version="1.0.0",
     author="Chris Oberdalhoff",
     author_email="cober91130@gmail.com",
