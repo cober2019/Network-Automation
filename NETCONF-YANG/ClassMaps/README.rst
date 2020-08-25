@@ -61,3 +61,9 @@ Usage
                   |
                   Tag: 5
                   Tag: <- Use CTRL + C to exit loop after desire tags are enetered
+
+**Send Config: Config file is stored in local directory**
+
+            >>> Configuration Files:
+                ClassMaps.xml   <- Newly created config file
+                Selection: ClassMaps.xml
