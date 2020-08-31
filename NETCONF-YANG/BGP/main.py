@@ -1,4 +1,4 @@
-"""Helper program enabling a user view and configure via NETCONF/YANG"""
+"""Helper program enabling a user to create and view class maps via NETCONF/YANG"""
 
 import xml.etree.cElementTree as xml
 import lxml.etree as ET
@@ -134,4 +134,10 @@ def get_class_maps(host, username, password):
     search_strings(bgp_details)
 
 
-get_class_maps(host=, username=, password=)
+if __name__ == '__main__':
+
+    device = input("Device: ")
+    user = input("Username: ")
+    password = input("Paasword: ")
+
+    get_class_maps(host=device, username=user, password=password)
