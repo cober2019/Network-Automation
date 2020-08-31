@@ -1,6 +1,5 @@
-"""Helper program enabling a user to create and view BGPvia NETCONF/YANG"""
+"""Helper program enabling a user to create and view class maps via NETCONF/YANG"""
 
-import xml.etree.cElementTree as xml
 import lxml.etree as ET
 from ncclient import manager
 import Checks.Prints as MatchType
@@ -122,8 +121,9 @@ def search_strings(config):
     except TypeError:
         pass
 
+    input("")
 
-def get_class_maps(host, username, password):
+def get_bgp(host, username, password):
     """Gets device class-map configuration"""
 
     session = create_netconf_connection(host, username, password)
@@ -140,4 +140,4 @@ if __name__ == '__main__':
     user = input("Username: ")
     password = input("Paasword: ")
 
-    get_class_maps(host=device, username=user, password=password)
+    get_bgp(host=device, username=user, password=password)
