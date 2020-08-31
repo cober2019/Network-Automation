@@ -1,4 +1,4 @@
-"""Helper program enabling a user to create and view class maps via NETCONF/YANG"""
+"""Helper program enabling a user to create and view BGPvia NETCONF/YANG"""
 
 import xml.etree.cElementTree as xml
 import lxml.etree as ET
