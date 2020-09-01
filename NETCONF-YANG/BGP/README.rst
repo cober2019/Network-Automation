@@ -24,15 +24,20 @@ ___________
                        _
               Address Family: unicast
                  AF Neighbor Information:
-                        Neighbor: 2.2.2.2   
-                       Route-Map: None           Direction: None
-                     Prefix-list: None           Direction: None
-                        Activate: Yes
-                        _
-                        Neighbor: 10.1.1.1  
-                       Route-Map: None           Direction: None
-                     Prefix-list: None           Direction: None
-                        Activate: Yes
+                         _
+                         Neighbor: 2.2.2.2   
+                    Next-Hop-Self: Yes
+                  Route-Reflector: Yes
+                        Route-Map: None           Direction: None
+                      Prefix-list: None           Direction: None
+                         Activate: Yes
+                         _
+                         Neighbor: 10.1.1.1  
+                    Next-Hop-Self: No
+                  Route-Reflector: No
+                        Route-Map: None           Direction: None
+                      Prefix-list: None           Direction: None
+                         Activate: Yes
                         _
                  AF Redistribution:
                          Protocol: connected      Route-map: None
