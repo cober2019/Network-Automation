@@ -7,8 +7,8 @@ ___________
   **This program currently allows you to view certain BGP configuration. All avaible output optionS are showN in the example below.**
   
   
-          >>> -----------------------
-              Local AS: 12345 -------
+          >>> 
+              Local AS: 12345
                  Neighbors
                        Remote AS: 12345
                         Neighbor: 2.2.2.2
