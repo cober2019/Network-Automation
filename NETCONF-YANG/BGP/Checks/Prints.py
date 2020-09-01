@@ -29,19 +29,18 @@ def networks(config):
 
 def legacy_redistribution(protocol, details):
 
-    if protocol == "connected" and isinstance(details, dict):
+    if protocol == "connected":
         print(f"Protocol: {protocol:<15} "
               f"{'Route-map: ' + details.get('route-map') + ' -----> '}"
               f"{'Metric: ' + details.get('metric')}")
 
-    if protocol == "ospf" and isinstance(details, dict):
-        print(f"Protocol: {protocol:<15} Routing ID: {details.get('id') + ' ----->'}  "
-              f"{' Route-map: ' + details.get('non-vrf').get('route-map') + ' ----->'} "
-              f"{'Metric: ' + details.get('non-vrf').get('metric')}")
+    if protocol == "ospf":
+        print(f"Protocol: {protocol:<15} Routing ID: {details.get('id', {}) + ' ----->'}  "
+              f"{' Route-map: ' + details.get('non-vrf', {}).get('route-map', {}) + ' ----->'} "
+              f"{'Metric: ' + details.get('non-vrf', {}).get('metric', {})}")
 
 
-
-def af_redistribution(protocol, key, value):
+def af_redistribution(protocol, value=None):
 
     if protocol == "connected":
         print(f"Protocol: {protocol:<15} Route-map: {value}")
@@ -49,7 +48,7 @@ def af_redistribution(protocol, key, value):
     if protocol == "ospf" and isinstance(value, str):
         print(f"Protocol: {protocol:<15} Proccess-ID: {value}")
     elif protocol == "ospf" and isinstance(value, dict):
-        print(f"Protocol: {protocol:<15} Route-map: {value.get('route-map')}")
+        print(f"Protocol: {protocol:<15} Route-map: {value.get('route-map', 'None')}")
 
 
 
