@@ -83,7 +83,6 @@ def search_strings(config):
 
         af = config.get('address-family').get(key_1[0]).get(key_2[0])
         print(f"\nAF Name: {af.get('af-name')} -------\n")
-        list(map(MatchType.address_family, af.get('neighbor')))
         if af.get("redistribute"):
             print(f"\nAF Redistribution: {af.get('af-name')}-----------------------\n")
             [MatchType.af_redistribution(k, v) for k, v in af.get("redistribute").items()]
