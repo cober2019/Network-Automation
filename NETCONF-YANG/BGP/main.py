@@ -103,7 +103,6 @@ def get_bgp(host, username, password):
     config_data = session.get(get_policies)
     qos_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
     bgp_details = qos_details["native"].get("router", {}).get("bgp", {})
-    print(bgp_details)
     search_strings(bgp_details)
 
 
