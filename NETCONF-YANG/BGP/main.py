@@ -1,14 +1,10 @@
 """Helper program enabling a user to create and view class maps via NETCONF/YANG"""
 
-import lxml.etree as ET
 from ncclient import manager
 import Checks.Prints as MatchType
-from ncclient.operations import RPCError
 import xmltodict
-import os
 
 
-class_file = None
 get_policies = """<filter><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
 <router/>
 </native>
@@ -16,17 +12,6 @@ get_policies = """<filter><native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-n
 
 
 # -------------------------------- Begin Supporting Functions ----------------------------
-
-def is_instance(list_or_dict):
-    """Converts dictionary to list"""
-
-    if isinstance(list_or_dict, list):
-        make_list = list_or_dict
-    else:
-        make_list = [list_or_dict]
-
-    return make_list
-
 
 def create_netconf_connection(host, username, password) -> manager:
     """Creates devince connection, get and converts configuration"""
@@ -43,56 +28,6 @@ def create_netconf_connection(host, username, password) -> manager:
         raise ConnectionError(f"Invalid Credentials")
 
     return netconf_session
-
-
-def check_rpc_reply(response):
-    """Checks RPC Reply for string. Notifies user config was saved"""
-
-    if response.rfind("Save running-config successful") != -1:
-        print("\nConfiguration Saved!")
-    else:
-        print("\nConfiguration Not Saved!")
-
-
-def save_running_config(session):
-    """Save new configuration to running config"""
-
-    save_payload = """
-                       <cisco-ia:save-config xmlns:cisco-ia="http://cisco.com/yang/cisco-ia"/>
-                       """
-    try:
-        response = session.dispatch(ET.fromstring(save_payload)).xml
-        check_rpc_reply(response)
-    except RPCError as error:
-        print("\nAn error has ocuured, pleqase try again!")
-
-
-def send_configuration(host, user, password, config):
-    """Send configuration via NETCONF"""
-
-    session = create_netconf_connection(host, user, password)
-    config_file = open(config).read()
-
-    try:
-        session.edit_config(config_file, target="running")
-        save_running_config(session)
-    except manager.operations.errors.TimeoutExpiredError:
-        raise ConnectionError(f"Connection to {host} failed")
-    except manager.transport.AuthenticationError:
-        raise ConnectionError(f"Invalid Credentials")
-
-
-def save_to_file(config):
-    """Finds current directory, creates file, saves file"""
-
-    global class_file
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    class_file = dir_path + '\\ClassMaps.xml'
-
-    try:
-        config.write(file_or_filename=class_file)
-    except OSError:
-        raise OSError("Unable to save configuration to file, permission error")
 
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ End Supporting Functions ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -163,6 +98,6 @@ if __name__ == '__main__':
 
     device = input("Device: ")
     user = input("Username: ")
-    password = input("Paasword: ")
+    pwrd = input("Paasword: ")
 
-    get_bgp(host=device, username=user, password=password)
+    get_bgp(host=device, username=user, password=pwrd)
