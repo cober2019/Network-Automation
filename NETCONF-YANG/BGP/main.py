@@ -32,7 +32,7 @@ def create_netconf_connection(host, username, password) -> manager:
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ End Supporting Functions ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-def af_family_asr(config):
+def af_family_asr(config) -> None:
     """Get and parse address-family for ASR YANG"""
 
     if config.get('address-family', {}).get('no-vrf', {}).get('ipv4', {}).get('ipv4-unicast', {}):
@@ -62,7 +62,7 @@ def af_family_asr(config):
                 list(map(MatchType.networks, af.get('ipv4-unicast').get('prefix-list', {})))
 
 
-def af_family_isr(config):
+def af_family_isr(config) -> None:
     """Get and parse address-family for ISR YANG"""
 
     # Cisco ISR,
@@ -94,7 +94,7 @@ def af_family_isr(config):
                 list(map(MatchType.networks, af.get('prefix-list', {})))
 
 
-def legacy(config):
+def legacy(config) -> None:
     """Legacy routing config, non address-family"""
 
     if config.get('neighbor'):
@@ -110,7 +110,7 @@ def legacy(config):
         list(map(MatchType.networks, config.get('prefix-list', {})))
 
 
-def search_config(config):
+def search_config(config) -> None:
     """Parse and prints router BGP configuration"""
 
     # Get legacy routing configuration
@@ -126,7 +126,7 @@ def search_config(config):
     input("\nEnd Program, Press Enter to Close")
 
 
-def get_bgp(host, username, password):
+def get_bgp(host, username, password) -> None:
     """Gets device BGP configuration"""
 
     session = create_netconf_connection(host, username, password)
