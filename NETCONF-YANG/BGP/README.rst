@@ -4,7 +4,7 @@ NETCONF BGP (Under Development)
 Description
 ___________
 
-  **This program currently allows you to view certain BGP configuration. Only viewing BGP configuration is possible right now. Viewable options show below**
+  **This program currently allows you to view certain BGP configuration. Viewable options shown below**
   
   
           >>> 
