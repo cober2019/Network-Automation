@@ -32,84 +32,114 @@ def create_netconf_connection(host, username, password) -> manager:
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ End Supporting Functions ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-def search_strings(config):
+def af_family_asr(config):
+    """Get and parse address-family for ASR YANG"""
+
+    if config.get('address-family', {}).get('no-vrf', {}).get('ipv4', {}).get('ipv4-unicast', {}):
+        # Find vrfs, if any
+        key_1 = [k for k, v in dict.fromkeys(config.get('address-family')).items()]
+        for i in key_1:
+            # If vrf print address-family vrf
+            if i == "with-vrf":
+                print(f"\nAddress Family: {config.get('af-name')} -------")
+                print(f"{'VRF: ' + config.get('address-family').get('with-vrf', {}).get('ipv4').get('ipv4-unicast', {}).get('vrf').get('name')} -------")
+
+            # Find ip type, v4 or v6. v4 only supported for now
+            key_2 = [k for k, v in dict.fromkeys(config.get('address-family').get(i)).items()]
+            af = config.get('address-family').get(i).get(key_2[0])
+
+            if af.get('ipv4-unicast').get('neighbor'):
+                print(f"\nAddress Family: {af.get('af-name')} -------")
+                print(f"\n   AF Neighbors:\n")
+                list(map(MatchType.address_family, af.get('ipv4-unicast').get('neighbor')))
+            if af.get('ipv4-unicast').get('redistribute'):
+                print(f"\n   AF Redistribution:\n")
+                [MatchType.redistribution(k, v) for k, v in af.get('ipv4-unicast').get("redistribute").items()]
+            if af.get('ipv4-unicast').get('networks'):
+                print(f"   AF Network Statements:\n")
+                list(map(MatchType.networks, af.get('ipv4-unicast').get('networks')))
+            if af.get('ipv4-unicast').get('prefix-list'):
+                list(map(MatchType.networks, af.get('ipv4-unicast').get('prefix-list', {})))
+
+
+def af_family_isr(config):
+    """Get and parse address-family for ISR YANG"""
+
+    # Cisco ISR,
+    if config.get('address-family'):
+        # Find vrfs, if any
+        if_vrf = [k for k, v in dict.fromkeys(config.get('address-family')).items()]
+        for i in if_vrf:
+            # If vrf print address-family vrf
+            if i == "with-vrf":
+                print(f"\nAddress Family: {config.get('af-name')} "
+                      f"{'VRF: ' + config.get('address-family').get('with-vrf', {}).get('ipv4').get('vrf').get('name')} -------")
+
+            # Find ip type, v4 or v6. v4 only supported for now
+            ip_type = [k for k, v in dict.fromkeys(config.get('address-family').get(i)).items()]
+            af = config.get('address-family').get(i).get(ip_type[0])
+
+            # Begin configuration for BGP perameters
+            if af.get('neighbor'):
+                print(f"\nAddress Family: {af.get('af-name')} -------")
+                print(f"\n   AF Neighbor Information:\n")
+                list(map(MatchType.address_family, af.get('neighbor')))
+            if af.get("redistribute"):
+                print(f"\n   AF Redistribution:\n")
+                [MatchType.redistribution(k, v) for k, v in af.get("redistribute").items()]
+            if af.get('network'):
+                print(f"\n   AF Network Statements:\n")
+                list(map(MatchType.networks, af.get('network', {})))
+            if af.get('prefix-list'):
+                list(map(MatchType.networks, af.get('prefix-list', {})))
+
+
+def legacy(config):
+    """Legacy routing config, non address-family"""
+
+    if config.get('neighbor'):
+        print(f"   Neighbors -------------\n")
+        list(map(MatchType.neighbor, config.get('neighbor', {})))
+    if config.get('network'):
+        print(f"\n   Network Statements-----------------------\n")
+        list(map(MatchType.networks, config.get('network', {})))
+    if config.get("redistribute"):
+        print(f"\n   Redistribution -----------------------\n")
+        [MatchType.redistribution(k, v) for k, v in config.get("redistribute", {}).items()]
+    if config.get('prefix-list'):
+        list(map(MatchType.networks, config.get('prefix-list', {})))
+
+
+def search_config(config):
     """Parse and prints router BGP configuration"""
 
     # Get legacy routing configuration
     print(f"\n-----------------------\nLocal AS: {config.get('id')} -------\n")
 
-    if config.get('bgp').get('log-neighbor-changes') is not None:
-        print(f"Logging Neighbor: {config.get('bgp').get('log-neighbor-changes')}")
+    if config.get('bgp', {}).get('log-neighbor-changes', {}):
+        print(f"Logging Neighbor: {config.get('bgp').get('log-neighbor-changes')}\n")
 
-    if config.get('neighbor') is not None:
-        print(f"\n-----------------------\nNeighbors -------------\n")
-        list(map(MatchType.neighbor, config.get('neighbor', {})))
+    legacy(config)
+    af_family_asr(config)
+    af_family_isr(config)
 
-    if config.get('network') is not None:
-        print(f"\nNetwork Statements-----------------------\n")
-        list(map(MatchType.networks, config.get('network', {})))
-
-    # Legacy routing configuration
-    if config.get("redistribute"):
-        print(f"\nRedistribution -----------------------\n")
-        try:
-            [MatchType.legacy_redistribution(k, v) for k, v in config.get("redistribute").items()]
-        except AttributeError:
-            pass
-
-    # Cisco ASR
-    if config.get('address-family').get('no-vrf').get('ipv4').get('ipv4-unicast'):
-        key_1 = [k for k, v in dict.fromkeys(config.get('address-family')).items()]
-        key_2 = [k for k, v in dict.fromkeys(config.get('address-family').get(key_1[0])).items()]
-
-        af = config.get('address-family').get(key_1[0]).get(key_2[0])
-        print(f"\nAF Name: {af.get('af-name')} -------\n")
-        
-        if af.get('ipv4-unicast').get('neighbor'):
-            print(f"\nNeighbors -------\n")
-            list(map(MatchType.address_family, af.get('ipv4-unicast').get('neighbor')))
-        if af.get('ipv4-unicast').get('redistribute'):
-            protocols = [k for k, v in dict.fromkeys(af.get('ipv4-unicast').get('redistribute')).items()]
-            print(f"\nAF Redistribution: {af.get('af-name')}-----------------------\n")
-            [[MatchType.af_redistribution(i, v) for k, v in af.get('ipv4-unicast').get('redistribute').get(i).items()] for i in protocols]
-        if af.get('ipv4-unicast').get('networks'):
-            print(f"\nNetworks -------\n")
-            list(map(MatchType.networks, af.get('ipv4-unicast').get('networks')))
-
-    # Cisco ISR
-    else:
-        key_1 = [k for k, v in dict.fromkeys(config.get('address-family')).items()]
-        key_2 = [k for k, v in dict.fromkeys(config.get('address-family').get(key_1[0])).items()]
-
-        af = config.get('address-family').get(key_1[0]).get(key_2[0])
-        print(f"\nAF Name: {af.get('af-name')} -------\n")
-        if af.get("redistribute"):
-            print(f"\nAF Redistribution: {af.get('af-name')}-----------------------\n")
-            [MatchType.af_redistribution(k, v) for k, v in af.get("redistribute").items()]
-        if af.get('neighbor'):
-            print(f"\nNeighbor Statements-----------------------\n")
-            list(map(MatchType.neighbor, af.get('neighbor', {})))
-        if af.get('network') is not None:
-            print(f"\nNetwork Statements-----------------------\n")
-            list(map(MatchType.networks, af.get('network', {})))
-
-    input("")
+    input("\nEnd Program, Press Enter to Close")
 
 
 def get_bgp(host, username, password):
-    """Gets device class-map configuration"""
+    """Gets device BGP configuration"""
 
     session = create_netconf_connection(host, username, password)
     config_data = session.get(get_policies)
     qos_details = xmltodict.parse(config_data.xml)["rpc-reply"]["data"]
     bgp_details = qos_details["native"].get("router", {}).get("bgp", {})
-    search_strings(bgp_details)
+    search_config(bgp_details)
 
 
 if __name__ == '__main__':
 
     device = input("Device: ")
     user = input("Username: ")
-    pwrd = input("Paasword: ")
+    pwd = input("Password: ")
 
-    get_bgp(host=device, username=user, password=pwrd)
+    get_bgp(host=device, username=user, password=pwd)
