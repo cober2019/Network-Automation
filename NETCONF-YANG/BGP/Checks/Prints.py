@@ -1,7 +1,7 @@
 """Helper functions to search class-map configurations"""
 
 
-def neigh_options(config):
+def neigh_options(config) -> tuple:
     """Gets various neighbor configuration options"""
 
     next_hop = ["Yes" for k in dict.fromkeys(config) if k == "next-hop-self"]
@@ -22,7 +22,7 @@ def neigh_options(config):
 
     return next_hop, reflector, soft_reconfig, activate
 
-def neighbor(config):
+def neighbor(config) -> None:
     """Gets legacy neighbor config"""
 
     check_options = neigh_options(config)
@@ -34,7 +34,7 @@ def neighbor(config):
     print(f"{'Soft-Reconfig: ':>20}{check_options[2][0]}")
     print("\n")
 
-def address_family(config):
+def address_family(config) -> None:
     """Gets AF neighbor config"""
 
     check_options = neigh_options(config)
@@ -45,12 +45,12 @@ def address_family(config):
     print(f"{'Prefix-list: ':>20}{config.get('prefix-list', {}).get('prefix-list-name', 'None'):<15}Direction: {config.get('prefix-list', {}).get('inout', 'None')}")
     print(f"{'Activate: ':>20}{check_options[3][0]}\n")
 
-def networks(config):
+def networks(config) -> None:
     """Gets Anetwork statementsg"""
 
     print(f"{'Network:':>20} {config.get('number', 'None'):>10}  Mask: {config.get('mask', 'None')}")
 
-def redistribution(protocol, details):
+def redistribution(protocol, details) -> None:
     """Gets legacy redistribution config"""
 
     if protocol == "connected":
