@@ -8,44 +8,54 @@ ___________
   
   
           >>> 
-              Local AS: 12345
-                 Neighbors
-                       Remote AS: 12345
-                        Neighbor: 2.2.2.2
-                   Next-Hop-Self: No
-                 Route-Reflector: No
-                   Soft-Reconfig: No
+             Local AS: 12345
+                _
+                Neighbors
+                      _
+                      Remote AS: 12345
+                       Neighbor: 2.2.2.2
+                  Next-Hop-Self: No
+                Route-Reflector: No
+                  Soft-Reconfig: No
+                      _
+                      Remote AS: 54321
+                       Neighbor: 10.1.1.1
+                  Next-Hop-Self: No
+                Route-Reflector: No
+                  Soft-Reconfig: No
+                  _
+             Address Family: unicast -------
+                _
+                AF Neighbor Information:
+                _
+                       Neighbor: 2.2.2.2   
+                  Next-Hop-Self: Yes
+                Route-Reflector: Yes
+                      Route-Map: None           Direction: None
+                    Prefix-list: None           Direction: None
+                       Activate: Yes
                        _
-                       Remote AS: 54321
-                        Neighbor: 10.1.1.1
-                   Next-Hop-Self: No
-                 Route-Reflector: No
-                   Soft-Reconfig: No
+                       Neighbor: 10.1.1.1  
+                  Next-Hop-Self: No
+                Route-Reflector: No
+                      Route-Map: None           Direction: None
+                    Prefix-list: None           Direction: None
+                       Activate: Yes
                        _
-              Address Family: unicast
-                 AF Neighbor Information:
-                         _
-                         Neighbor: 2.2.2.2   
-                    Next-Hop-Self: Yes
-                  Route-Reflector: Yes
-                        Route-Map: None           Direction: None
-                      Prefix-list: None           Direction: None
-                         Activate: Yes
-                         _
-                         Neighbor: 10.1.1.1  
-                    Next-Hop-Self: No
-                  Route-Reflector: No
-                        Route-Map: None           Direction: None
-                      Prefix-list: None           Direction: None
-                         Activate: Yes
+                AF Redistribution:
                         _
-                 AF Redistribution:
-                         Protocol: connected      Route-map: None
-                         Protocol: ospf           Route-map: None
+                        Protocol: connected
+                        _
+                        Protocol: ospf  20
+                       Route-map: None             Metric: None
+                        _
+                        Protocol: static 
+                       Route-map: None             Metric: 30
+                       _
+                AF Network Statements:
                          _
-                 AF Network Statements:
-                          Network:    1.1.1.0  Mask: 255.255.255.0
-                          Network:    3.3.3.0  Mask: 255.255.255.0
-                          Network:   10.0.0.0  Mask: 255.255.255.0
-                          _
-              End Program, Press Enter to Close
+                         Network:    1.1.1.0  Mask: 255.255.255.0
+                         Network:    3.3.3.0  Mask: 255.255.255.0
+                         Network:   10.0.0.0  Mask: 255.255.255.0
+                         _
+             End Program, Press Enter to Close
