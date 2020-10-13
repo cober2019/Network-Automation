@@ -1,3 +1,5 @@
+"""Helper class that gets and returns data via netmiko"""
+
 import logging
 import collections
 
