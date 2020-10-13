@@ -87,7 +87,8 @@ class NetconfInterfaces:
         self.config = is_instance(intf_dict)
 
     def get_stats(self):
-
+        """Get interface statistics"""
+          
         int_stats = f"""<filter>
                    <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
                    <interface>
@@ -146,7 +147,7 @@ class NetconfInterfaces:
                     print(f"Standby Address: {interface.get('standby').get('standby-list').get('ip').get('address')}")
 
     def get_trunk_ports(self) -> list:
-        """Compile access ports"""
+        """Compile trunk ports"""
 
         trunks = []
 
@@ -183,7 +184,8 @@ class NetconfInterfaces:
         return trunks
 
     def get_port_channels(self) -> list:
-
+        """Get port-channel interfaces"""
+                          
         port_channels = []
 
         for ints in interface_types:
