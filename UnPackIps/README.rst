@@ -26,7 +26,7 @@ Usage
 
 **Example 2: Unpacking w/ Ping**
 
-          >>> ping(user_input="10.48.1.130, 131, 133| 192.168.156.22, 1|8.8.8.8")
+          >>> ping(user_input="10.1.1.130, 131, 133| 192.168.1.22, 1|8.8.8.8")
           10.1.1.130 up | Latency: 314ms Time: Mon, 19 Oct 2020 20:56:01 +0000
           10.1.1.130 up | Latency: 326ms Time: Mon, 19 Oct 2020 20:56:01 +0000
           10.1.1.130 up | Latency: 246ms Time: Mon, 19 Oct 2020 20:56:01 +0000
@@ -47,10 +47,10 @@ Usage
           192.168.1.22 up | Latency: 226ms Time: Mon, 19 Oct 2020 20:56:27 +0000
           192.168.1.22 up | Latency: 145ms Time: Mon, 19 Oct 2020 20:56:27 +0000
           _
-          192.168.156.1 up | Latency: 142ms Time: Mon, 19 Oct 2020 20:56:30 +0000
-          192.168.156.1 up | Latency: 125ms Time: Mon, 19 Oct 2020 20:56:30 +0000
-          192.168.156.1 up | Latency: 187ms Time: Mon, 19 Oct 2020 20:56:30 +0000
-          192.168.156.1 up | Latency: 214ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+          192.168.1.1 up | Latency: 142ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+          192.168.1.1 up | Latency: 125ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+          192.168.1.1 up | Latency: 187ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+          192.168.1.1 up | Latency: 214ms Time: Mon, 19 Oct 2020 20:56:30 +0000
 
 
 
