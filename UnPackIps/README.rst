@@ -59,19 +59,19 @@ Usage
           >>> INFO:root:
           192.168.156.22 up | Latency: 180ms Time: Mon, 19 Oct 2020 20:56:27 +0000
           INFO:root:
-                    192.168.156.22 up | Latency: 203ms Time: Mon, 19 Oct 2020 20:56:27 +0000
+                    192.168.1.22 up | Latency: 203ms Time: Mon, 19 Oct 2020 20:56:27 +0000
           INFO:root:
-                    192.168.156.22 up | Latency: 226ms Time: Mon, 19 Oct 2020 20:56:27 +0000
+                    192.168.1.22 up | Latency: 226ms Time: Mon, 19 Oct 2020 20:56:27 +0000
           INFO:root:
-                    192.168.156.22 up | Latency: 145ms Time: Mon, 19 Oct 2020 20:56:27 +0000
+                    192.168.1.22 up | Latency: 145ms Time: Mon, 19 Oct 2020 20:56:27 +0000
           INFO:root:
-                    192.168.156.1 up | Latency: 142ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+                    192.168.1.1 up | Latency: 142ms Time: Mon, 19 Oct 2020 20:56:30 +0000
           INFO:root:
-                    192.168.156.1 up | Latency: 125ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+                    192.168.1.1 up | Latency: 125ms Time: Mon, 19 Oct 2020 20:56:30 +0000
           INFO:root:
-                    192.168.156.1 up | Latency: 187ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+                    192.168.1.1 up | Latency: 187ms Time: Mon, 19 Oct 2020 20:56:30 +0000
           INFO:root:
-                    192.168.156.1 up | Latency: 214ms Time: Mon, 19 Oct 2020 20:56:30 +0000
+                    192.168.1.1 up | Latency: 214ms Time: Mon, 19 Oct 2020 20:56:30 +0000
           INFO:root:
                     8.8.8.8 up | Latency: 35ms Time: Mon, 19 Oct 2020 20:56:33 +0000
           INFO:root:
