@@ -108,5 +108,3 @@ def ping(user_input: str = None):
         _diagnose(i, ping_ips)
         print("\n")
 
-
-ping(user_input="10.48.1.130, 131, 133| 192.168.156.22, 1|8.8.8.8")
