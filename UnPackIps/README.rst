@@ -37,10 +37,10 @@ Usage
           10.1.1.131 up | Latency: 274ms Time: Mon, 19 Oct 2020 20:56:05 +0000
           10.1.1.131 up | Latency: 296ms Time: Mon, 19 Oct 2020 20:56:05 +0000
           _
-          !!! 10.1.1.133 Resquest timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
-          !!! 10.1.1.133 Resquest timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
-          !!! 10.1.1.133 Resquest timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
-          !!! 10.1.1.133 Resquest timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
+          !!! 10.1.1.133 Request timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
+          !!! 10.1.1.133 Request timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
+          !!! 10.1.1.133 Rsquest timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
+          !!! 10.1.1.133 Rsquest timed out. | Status: Down | Time: Mon, 19 Oct 2020 20:56:24 +0000 !!!
           _
           192.168.1.22 up | Latency: 180ms Time: Mon, 19 Oct 2020 20:56:27 +0000
           192.168.1.22 up | Latency: 203ms Time: Mon, 19 Oct 2020 20:56:27 +0000
