@@ -1,0 +1,6 @@
+requests
+flask
+flask_jwt_extended
+netmiko
+gunicorn
+
