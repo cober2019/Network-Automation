@@ -1,4 +1,0 @@
-ncclient
-netmiko
-xmltodict
-sqlalchemy

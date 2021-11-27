@@ -1,5 +1,0 @@
-xml.etree.cElementTree
-lxml.etree
-ncclient
-xmltodict
-collections
