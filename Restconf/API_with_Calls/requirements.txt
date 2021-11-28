@@ -1,0 +1,8 @@
+requests
+flask
+flask_jwt_extended
+netmiko
+ipapi
+SQLAlchemy
+gunicorn
+
