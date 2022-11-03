@@ -399,7 +399,6 @@ def Import():
     global g_strBogusLinesNotImported, g_bUseDefaultSessionOptions, strHostName
     strFolderOrig = g_strDefaultFolder
 
-    request_record_by_extattrb()
     g_strHostsFile = f'{os.path.dirname(os.path.realpath(__file__))}/devices.csv'
 
     nStartTime = time.time()
