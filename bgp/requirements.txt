@@ -1,0 +1,7 @@
+paramiko
+netmiko
+ntc_templates
+datetime
+smtplib
+requests
+concurrent.futures
